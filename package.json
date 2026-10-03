@@ -38,7 +38,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "1.56",
+    "html-validate": "^11.16.1",
+    "lighthouse": "^13.5.0",
     "opentype.js": "^2.0.0",
     "typescript": "^6.0.3"
   },
