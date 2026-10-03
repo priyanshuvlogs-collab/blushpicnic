@@ -1,0 +1,264 @@
+# ─────────────────────────────────────────────────────────────
+#  Gallery photos. Each item needs: an image file, alt text that
+#  describes the photo, and which occasion(s) it belongs to.
+#  Occasion ids: picnic-date, birthday, anniversary, be-my-girlfriend, proposal, just-engaged, newly-married, family, appreciation, retirement, new-baby, gender-reveal, baby-shower, announcement, bridal-shower, corporate
+#  showOnHome: true puts it in the home page preview (8 looks best).
+#  placeholder: true marks stand-in images — set to false (or delete
+#  the line) once you swap in a real photo. See HANDOVER.md.
+# ─────────────────────────────────────────────────────────────
+- id: picnic-date-1
+  image: "../assets/photos/gallery-picnic-date-1.jpg"
+  alt: "Placeholder image for a picnic date for two setup in Toronto (real photo coming soon)"
+  occasions: ["picnic-date"]
+  order: 1
+  showOnHome: true
+  placeholder: true
+
+- id: birthday-1
+  image: "../assets/photos/gallery-birthday-1.jpg"
+  alt: "Placeholder image for a birthday picnic setup in Toronto (real photo coming soon)"
+  occasions: ["birthday"]
+  order: 2
+  showOnHome: true
+  placeholder: true
+
+- id: anniversary-1
+  image: "../assets/photos/gallery-anniversary-1.jpg"
+  alt: "Placeholder image for a anniversary picnic setup in Toronto (real photo coming soon)"
+  occasions: ["anniversary"]
+  order: 3
+  showOnHome: true
+  placeholder: true
+
+- id: be-my-girlfriend-1
+  image: "../assets/photos/gallery-be-my-girlfriend-1.jpg"
+  alt: "Placeholder image for a Be My Girlfriend picnic setup in Toronto (real photo coming soon)"
+  occasions: ["be-my-girlfriend"]
+  order: 4
+  showOnHome: true
+  placeholder: true
+
+- id: proposal-1
+  image: "../assets/photos/gallery-proposal-1.jpg"
+  alt: "Placeholder image for a proposal picnic setup in Toronto (real photo coming soon)"
+  occasions: ["proposal"]
+  order: 5
+  showOnHome: true
+  placeholder: true
+
+- id: just-engaged-1
+  image: "../assets/photos/gallery-just-engaged-1.jpg"
+  alt: "Placeholder image for a engagement celebration picnic setup in Toronto (real photo coming soon)"
+  occasions: ["just-engaged"]
+  order: 6
+  showOnHome: false
+  placeholder: true
+
+- id: newly-married-1
+  image: "../assets/photos/gallery-newly-married-1.jpg"
+  alt: "Placeholder image for a newlywed picnic setup in Toronto (real photo coming soon)"
+  occasions: ["newly-married"]
+  order: 7
+  showOnHome: false
+  placeholder: true
+
+- id: family-1
+  image: "../assets/photos/gallery-family-1.jpg"
+  alt: "Placeholder image for a family picnic setup in Toronto (real photo coming soon)"
+  occasions: ["family"]
+  order: 8
+  showOnHome: false
+  placeholder: true
+
+- id: appreciation-1
+  image: "../assets/photos/gallery-appreciation-1.jpg"
+  alt: "Placeholder image for a appreciation picnic setup in Toronto (real photo coming soon)"
+  occasions: ["appreciation"]
+  order: 9
+  showOnHome: false
+  placeholder: true
+
+- id: retirement-1
+  image: "../assets/photos/gallery-retirement-1.jpg"
+  alt: "Placeholder image for a retirement picnic setup in Toronto (real photo coming soon)"
+  occasions: ["retirement"]
+  order: 10
+  showOnHome: false
+  placeholder: true
+
+- id: new-baby-1
+  image: "../assets/photos/gallery-new-baby-1.jpg"
+  alt: "Placeholder image for a welcome baby picnic setup in Toronto (real photo coming soon)"
+  occasions: ["new-baby"]
+  order: 11
+  showOnHome: false
+  placeholder: true
+
+- id: gender-reveal-1
+  image: "../assets/photos/gallery-gender-reveal-1.jpg"
+  alt: "Placeholder image for a gender reveal picnic setup in Toronto (real photo coming soon)"
+  occasions: ["gender-reveal"]
+  order: 12
+  showOnHome: false
+  placeholder: true
+
+- id: baby-shower-1
+  image: "../assets/photos/gallery-baby-shower-1.jpg"
+  alt: "Placeholder image for a baby shower picnic setup in Toronto (real photo coming soon)"
+  occasions: ["baby-shower"]
+  order: 13
+  showOnHome: true
+  placeholder: true
+
+- id: announcement-1
+  image: "../assets/photos/gallery-announcement-1.jpg"
+  alt: "Placeholder image for a pregnancy announcement picnic setup in Toronto (real photo coming soon)"
+  occasions: ["announcement"]
+  order: 14
+  showOnHome: false
+  placeholder: true
+
+- id: bridal-shower-1
+  image: "../assets/photos/gallery-bridal-shower-1.jpg"
+  alt: "Placeholder image for a bridal shower picnic setup in Toronto (real photo coming soon)"
+  occasions: ["bridal-shower"]
+  order: 15
+  showOnHome: true
+  placeholder: true
+
+- id: corporate-1
+  image: "../assets/photos/gallery-corporate-1.jpg"
+  alt: "Placeholder image for a team picnic setup in Toronto (real photo coming soon)"
+  occasions: ["corporate"]
+  order: 16
+  showOnHome: true
+  placeholder: true
+
+- id: picnic-date-2
+  image: "../assets/photos/gallery-picnic-date-2.jpg"
+  alt: "Placeholder image for a picnic date for two setup in Toronto (real photo coming soon)"
+  occasions: ["picnic-date"]
+  order: 17
+  showOnHome: false
+  placeholder: true
+
+- id: birthday-2
+  image: "../assets/photos/gallery-birthday-2.jpg"
+  alt: "Placeholder image for a birthday picnic setup in Toronto (real photo coming soon)"
+  occasions: ["birthday"]
+  order: 18
+  showOnHome: false
+  placeholder: true
+
+- id: anniversary-2
+  image: "../assets/photos/gallery-anniversary-2.jpg"
+  alt: "Placeholder image for a anniversary picnic setup in Toronto (real photo coming soon)"
+  occasions: ["anniversary"]
+  order: 19
+  showOnHome: false
+  placeholder: true
+
+- id: be-my-girlfriend-2
+  image: "../assets/photos/gallery-be-my-girlfriend-2.jpg"
+  alt: "Placeholder image for a Be My Girlfriend picnic setup in Toronto (real photo coming soon)"
+  occasions: ["be-my-girlfriend"]
+  order: 20
+  showOnHome: false
+  placeholder: true
+
+- id: proposal-2
+  image: "../assets/photos/gallery-proposal-2.jpg"
+  alt: "Placeholder image for a proposal picnic setup in Toronto (real photo coming soon)"
+  occasions: ["proposal"]
+  order: 21
+  showOnHome: false
+  placeholder: true
+
+- id: just-engaged-2
+  image: "../assets/photos/gallery-just-engaged-2.jpg"
+  alt: "Placeholder image for a engagement celebration picnic setup in Toronto (real photo coming soon)"
+  occasions: ["just-engaged"]
+  order: 22
+  showOnHome: false
+  placeholder: true
+
+- id: newly-married-2
+  image: "../assets/photos/gallery-newly-married-2.jpg"
+  alt: "Placeholder image for a newlywed picnic setup in Toronto (real photo coming soon)"
+  occasions: ["newly-married"]
+  order: 23
+  showOnHome: false
+  placeholder: true
+
+- id: family-2
+  image: "../assets/photos/gallery-family-2.jpg"
+  alt: "Placeholder image for a family picnic setup in Toronto (real photo coming soon)"
+  occasions: ["family"]
+  order: 24
+  showOnHome: false
+  placeholder: true
+
+- id: appreciation-2
+  image: "../assets/photos/gallery-appreciation-2.jpg"
+  alt: "Placeholder image for a appreciation picnic setup in Toronto (real photo coming soon)"
+  occasions: ["appreciation"]
+  order: 25
+  showOnHome: false
+  placeholder: true
+
+- id: retirement-2
+  image: "../assets/photos/gallery-retirement-2.jpg"
+  alt: "Placeholder image for a retirement picnic setup in Toronto (real photo coming soon)"
+  occasions: ["retirement"]
+  order: 26
+  showOnHome: false
+  placeholder: true
+
+- id: new-baby-2
+  image: "../assets/photos/gallery-new-baby-2.jpg"
+  alt: "Placeholder image for a welcome baby picnic setup in Toronto (real photo coming soon)"
+  occasions: ["new-baby"]
+  order: 27
+  showOnHome: false
+  placeholder: true
+
+- id: gender-reveal-2
+  image: "../assets/photos/gallery-gender-reveal-2.jpg"
+  alt: "Placeholder image for a gender reveal picnic setup in Toronto (real photo coming soon)"
+  occasions: ["gender-reveal"]
+  order: 28
+  showOnHome: false
+  placeholder: true
+
+- id: baby-shower-2
+  image: "../assets/photos/gallery-baby-shower-2.jpg"
+  alt: "Placeholder image for a baby shower picnic setup in Toronto (real photo coming soon)"
+  occasions: ["baby-shower"]
+  order: 29
+  showOnHome: false
+  placeholder: true
+
+- id: announcement-2
+  image: "../assets/photos/gallery-announcement-2.jpg"
+  alt: "Placeholder image for a pregnancy announcement picnic setup in Toronto (real photo coming soon)"
+  occasions: ["announcement"]
+  order: 30
+  showOnHome: false
+  placeholder: true
+
+- id: bridal-shower-2
+  image: "../assets/photos/gallery-bridal-shower-2.jpg"
+  alt: "Placeholder image for a bridal shower picnic setup in Toronto (real photo coming soon)"
+  occasions: ["bridal-shower"]
+  order: 31
+  showOnHome: false
+  placeholder: true
+
+- id: corporate-2
+  image: "../assets/photos/gallery-corporate-2.jpg"
+  alt: "Placeholder image for a team picnic setup in Toronto (real photo coming soon)"
+  occasions: ["corporate"]
+  order: 32
+  showOnHome: false
+  placeholder: true
+

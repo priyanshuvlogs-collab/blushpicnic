@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────────────────────
+#  Packages. Prices are "starting at", before HST.
+#  To change a price, edit priceFrom / extraGuestPrice and redeploy.
+#  Keep the id lines (signature, proposal-romance, celebration) as they are —
+#  booking links use them.
+# ─────────────────────────────────────────────────────────────
+- id: signature
+  name: "Signature Picnic"
+  order: 1
+  featured: false
+  tagline: "Our classic styled picnic for two or more"
+  summary: "A low table dressed with rugs, cushions, florals and real tableware — everything you need for an easy, beautiful afternoon."
+  priceFrom: 375
+  guestsIncluded: 2
+  guestsMax: null
+  guestsLabel: "for 2 guests"
+  extraGuestPrice: 35
+  durationHours: 2
+  includesFrom: null
+  includes:
+    - "Low picnic table"
+    - "Rugs and cushions"
+    - "Tableware and glassware"
+    - "Fresh florals"
+    - "Letter board with your message"
+    - "Bluetooth speaker"
+    - "Games"
+  bestFor: ["picnic-date", "birthday", "anniversary", "family", "appreciation", "just-engaged", "newly-married", "announcement"]
+  image: "../assets/photos/pkg-signature.jpg"
+  imageAlt: "Placeholder photo for the Signature Picnic: low table with rugs, cushions and florals"
+  priceNote: "+$35 per extra guest"
+
+- id: proposal-romance
+  name: "Proposal & Romance"
+  order: 2
+  featured: true
+  tagline: "For the question, or the moment that deserves more"
+  summary: "Everything in the Signature, plus the romantic details: a Marry Me or custom sign, rose petals, candles and a fresh flower arrangement."
+  priceFrom: 495
+  guestsIncluded: 2
+  guestsMax: null
+  guestsLabel: "for 2 guests"
+  extraGuestPrice: null
+  durationHours: 2.5
+  includesFrom: "Everything in the Signature Picnic, plus:"
+  includes:
+    - "“Marry Me” or custom sign"
+    - "Rose petals"
+    - "Candles"
+    - "Fresh flower arrangement"
+  bestFor: ["proposal", "be-my-girlfriend", "anniversary", "picnic-date"]
+  image: "../assets/photos/pkg-proposal-romance.jpg"
+  imageAlt: "Placeholder photo for the Proposal & Romance package: picnic with a Marry Me sign, rose petals and candles"
+  priceNote: "Family or friends joining after? We'll quote extra guests."
+
+- id: celebration
+  name: "Celebration"
+  order: 3
+  featured: false
+  tagline: "A full themed setup for your group"
+  summary: "For birthdays, showers, reveals and team days: a full themed setup with a backdrop, balloon garland or flower arch, custom signage and games."
+  priceFrom: 1200
+  guestsIncluded: 6
+  guestsMax: 8
+  guestsLabel: "for 6–8 guests"
+  extraGuestPrice: null
+  durationHours: 3
+  includesFrom: null
+  includes:
+    - "Full themed setup"
+    - "Backdrop"
+    - "Balloon garland or flower arch"
+    - "Custom signage"
+    - "Games"
+  bestFor: ["birthday", "baby-shower", "gender-reveal", "bridal-shower", "retirement", "corporate", "family", "new-baby"]
+  image: "../assets/photos/pkg-celebration.jpg"
+  imageAlt: "Placeholder photo for the Celebration package: themed group picnic with balloon garland and backdrop"
+  priceNote: "More than 8 guests? We'll quote your group."

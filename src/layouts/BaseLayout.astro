@@ -1,0 +1,101 @@
+---
+import '../styles/global.css';
+import gloockWoff2 from '@fontsource/gloock/files/gloock-latin-400-normal.woff2?url';
+import figtreeWoff2 from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyBar from '../components/StickyBar.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import { getSettings } from '../lib/site';
+
+interface Props {
+  /** Full <title>. Aim for ≤ 60 characters, keyword first, brand last. */
+  title: string;
+  /** 120–160 characters, written for the searcher. */
+  description: string;
+  /** Social share image: an imported image, or a path under /public. Defaults to /og.jpg (1200×630). */
+  image?: ImageMetadata | string;
+  imageAlt?: string;
+  /** JSON-LD objects for this page (see src/lib/schema.ts). */
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+  /** Hide the mobile sticky Book / Text bar (e.g. on /book itself). */
+  hideStickyBar?: boolean;
+  ogType?: 'website' | 'article';
+}
+
+const {
+  title,
+  description,
+  image,
+  imageAlt = 'Blush Picnic — styled luxury picnic setup in Toronto',
+  jsonLd = [],
+  noindex = false,
+  hideStickyBar = false,
+  ogType = 'website',
+} = Astro.props;
+
+const s = await getSettings();
+const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/').replace(/(.)\/$/, '$1');
+const canonical = new URL(path, s.url).href.replace(/\/$/, path === '/' ? '/' : '');
+
+let ogImage = new URL('/og.jpg', s.url).href;
+if (image && typeof image === 'string') ogImage = new URL(image, s.url).href;
+else if (image) {
+  const img = await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+  ogImage = new URL(img.src, s.url).href;
+}
+---
+<!doctype html>
+<html lang="en-CA">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content="#F6E4E1" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link rel="preload" href={gloockWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={figtreeWoff2} as="font" type="font/woff2" crossorigin />
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:site_name" content={s.name} />
+    <meta property="og:locale" content="en_CA" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+
+    {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
+    <slot name="head" />
+  </head>
+  <body class={hideStickyBar ? '' : 'pb-[4.75rem] md:pb-0'}>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header />
+    <main id="main" tabindex="-1" class="outline-none">
+      <slot />
+    </main>
+    <Footer />
+    {!hideStickyBar && <StickyBar />}
+    <ConsentBanner />
+  </body>
+</html>

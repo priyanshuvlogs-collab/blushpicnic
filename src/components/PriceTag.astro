@@ -1,0 +1,22 @@
+---
+// Consistent price display: always "Starting at", always "before HST".
+import { getSettings, money, hours, type Package } from '../lib/site';
+interface Props {
+  pkg: Package;
+  size?: 'sm' | 'md' | 'lg';
+  showDuration?: boolean;
+  class?: string;
+}
+const { pkg, size = 'md', showDuration = true, class: className = '' } = Astro.props;
+const s = await getSettings();
+const d = pkg.data;
+const big = { sm: 'text-2xl', md: 'text-[2.1rem]', lg: 'text-5xl' }[size];
+---
+<div class={className}>
+  <p class="text-sm text-plum-soft">Starting at</p>
+  <p class={`font-display leading-none ${big}`}>{money(d.priceFrom)}</p>
+  <p class="mt-2 text-sm text-plum-soft">
+    {d.guestsLabel}{showDuration && <> · {hours(d.durationHours)}</>} · {s.taxNote}
+    {d.extraGuestPrice !== null && <><br />+{money(d.extraGuestPrice)} per extra guest</>}
+  </p>
+</div>

@@ -1,0 +1,11 @@
+---
+// TEMPORARY stub — the real consent banner + GA4/Meta Pixel loader is built in the analytics step.
+// Contract other components rely on:
+//   • window.bpTrack(eventName, params?) — safe to call any time; no-ops until consent.
+//   • Any element with data-track="<event>" fires that event on click
+//     (extra params from data-track-* attributes, e.g. data-track-location="header").
+//   • An element with [data-consent-open] reopens the cookie settings.
+---
+<script>
+  import '../scripts/track';
+</script>

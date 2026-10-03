@@ -1,0 +1,26 @@
+---
+// Accessible accordion built on <details>/<summary>: keyboard and screen-reader friendly with no JS.
+import Icon from './Icon.astro';
+import { inlineMd } from '../lib/site';
+interface Props {
+  items: { q: string; a: string }[];
+  /** heading level used for each question (keeps the outline valid on every page) */
+  headingLevel?: 'h3' | 'h4';
+  class?: string;
+}
+const { items, headingLevel = 'h3', class: className = '' } = Astro.props;
+const H = headingLevel;
+---
+<div class={`faq-list divide-y divide-line border-y border-line ${className}`}>
+  {items.map((item) => (
+    <details class="group">
+      <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 [&::-webkit-details-marker]:hidden">
+        <H class="heading-sm text-[1.0625rem] md:text-lg">{item.q}</H>
+        <span class="grid size-9 shrink-0 place-items-center rounded-full border border-line transition-transform duration-300 group-open:rotate-180">
+          <Icon name="chevron-down" size={18} />
+        </span>
+      </summary>
+      <div class="measure pb-5 pr-12 text-plum-soft [&_a]:font-semibold [&_a]:text-plum [&_a]:underline [&_a]:decoration-gold [&_a]:decoration-2" set:html={inlineMd(item.a)} />
+    </details>
+  ))}
+</div>

@@ -1,0 +1,21 @@
+---
+// Visible breadcrumb trail. Pair with breadcrumbs() JSON-LD from src/lib/schema.ts using the same crumbs.
+interface Props {
+  crumbs: { name: string; path: string }[]; // Home is added automatically; last crumb = current page
+  class?: string;
+}
+const { crumbs, class: className = '' } = Astro.props;
+const all = [{ name: 'Home', path: '/' }, ...crumbs];
+---
+<nav aria-label="Breadcrumb" class={`text-sm text-plum-soft ${className}`}>
+  <ol class="flex flex-wrap items-center gap-x-2">
+    {all.map((c, i) => (
+      <li class="flex items-center gap-2">
+        {i > 0 && <span aria-hidden="true" class="text-gold-ink">/</span>}
+        {i === all.length - 1
+          ? <span aria-current="page">{c.name}</span>
+          : <a href={c.path} class="inline-flex min-h-11 items-center underline-offset-4 hover:underline">{c.name}</a>}
+      </li>
+    ))}
+  </ol>
+</nav>

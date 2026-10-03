@@ -1,0 +1,45 @@
+{
+  "name": "blushpicnic",
+  "version": "1.0.0",
+  "description": "Blush Picnic — luxury picnic setups in Toronto & the GTA",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro",
+    "placeholders": "node scripts/make-placeholders.mjs",
+    "photos": "node scripts/swap-photos.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/priyanshuvlogs-collab/blushpicnic.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/priyanshuvlogs-collab/blushpicnic/issues"
+  },
+  "homepage": "https://github.com/priyanshuvlogs-collab/blushpicnic#readme",
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource/gloock": "^5.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.5",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@playwright/test": "1.56",
+    "opentype.js": "^2.0.0",
+    "typescript": "^6.0.3"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}

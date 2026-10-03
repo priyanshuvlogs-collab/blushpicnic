@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArchImage from '../components/ArchImage.astro';
+import PriceTag from '../components/PriceTag.astro';
+import FaqList from '../components/FaqList.astro';
+import CtaBand from '../components/CtaBand.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import ReviewsSection from '../components/ReviewsSection.astro';
+import OccasionChips from '../components/OccasionChips.astro';
+import hero from '../assets/photos/hero.jpg';
+import { getPackages } from '../lib/site';
+const pkgs = await getPackages();
+---
+<BaseLayout title="Blush Picnic" description="Styled luxury picnic setups for proposals, birthdays, dates and celebrations across Toronto and the GTA.">
+  <section class="container-x section-y"><h1>Foundation check</h1>
+  <ArchImage src={hero} alt="test" sizes="300px" priority class="w-72" outline />
+  <OccasionChips />
+  {pkgs.map(p => <PriceTag pkg={p} />)}
+  <FaqList items={[{q:'Q?',a:'A **b** [x](/faq)'}]} />
+  </section>
+  <HowItWorks /><ReviewsSection /><CtaBand />
+</BaseLayout>

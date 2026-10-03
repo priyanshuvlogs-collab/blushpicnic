@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────
+#  Add-ons. Set price to a number (e.g. 85) once you know it.
+#  price: null shows "Price on request" and is left out of the live estimate.
+#  PLACEHOLDER — all add-on prices are waiting for the owner.
+# ─────────────────────────────────────────────────────────────
+- id: rose-bouquet
+  name: "Rose bouquet"
+  order: 1
+  description: "A hand-tied bouquet of fresh roses to gift on the day."
+  price: null
+  priceSuffix: ""
+
+- id: neon-sign
+  name: "Neon sign"
+  order: 2
+  description: "A glowing neon sign — perfect for evening setups and photos."
+  price: null
+  priceSuffix: ""
+
+- id: balloon-garland
+  name: "Balloon garland"
+  order: 3
+  description: "An organic balloon garland in your colours."
+  price: null
+  priceSuffix: ""
+
+- id: flower-arch
+  name: "Flower arch"
+  order: 4
+  description: "A floral arch to frame the moment — our most-photographed backdrop."
+  price: null
+  priceSuffix: ""
+
+- id: custom-cake
+  name: "Custom cake"
+  order: 5
+  description: "A custom cake to match your theme and message."
+  price: null
+  priceSuffix: ""
+
+- id: grazing-board
+  name: "Grazing board"
+  order: 6
+  description: "A styled grazing board to share."
+  price: null
+  priceSuffix: ""
+
+- id: photographer
+  name: "Photographer"
+  order: 7
+  description: "A photographer to capture the moment, so you can stay in it."
+  price: null
+  priceSuffix: ""

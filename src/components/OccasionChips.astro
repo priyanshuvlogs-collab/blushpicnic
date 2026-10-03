@@ -1,0 +1,26 @@
+---
+// Horizontally scrollable strip of occasion links (wraps on wide screens).
+import { getOccasions, occasionUrl } from '../lib/site';
+interface Props {
+  label?: string;
+  class?: string;
+  /** limit the number of chips; a final "All occasions" chip is always added */
+  limit?: number;
+  exclude?: string[];
+}
+const { label = 'Occasions we style', class: className = '', limit, exclude = [] } = Astro.props;
+let occasions = (await getOccasions()).filter((o) => !exclude.includes(o.id));
+if (limit) occasions = occasions.slice(0, limit);
+---
+<nav aria-label={label} class={className}>
+  <ul class="-mx-[var(--gutter)] flex snap-x gap-2 overflow-x-auto px-[var(--gutter)] pb-2 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+    {occasions.map((o) => (
+      <li class="shrink-0 snap-start">
+        <a href={occasionUrl(o)} class="inline-flex min-h-11 items-center rounded-full border border-plum/25 bg-cream/60 px-4 text-[0.95rem] font-medium no-underline transition-colors hover:border-plum hover:bg-cream">{o.data.chip}</a>
+      </li>
+    ))}
+    <li class="shrink-0 snap-start">
+      <a href="/occasions" class="inline-flex min-h-11 items-center rounded-full bg-plum px-4 text-[0.95rem] font-medium text-cream no-underline hover:bg-plum-hover">All occasions</a>
+    </li>
+  </ul>
+</nav>

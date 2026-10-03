@@ -1,0 +1,119 @@
+---
+import Wordmark from './Wordmark.astro';
+import Icon from './Icon.astro';
+import { getSettings, telUrl, smsUrl } from '../lib/site';
+
+const s = await getSettings();
+const nav = [
+  { href: '/packages', label: 'Packages' },
+  { href: '/occasions', label: 'Occasions' },
+  { href: '/gallery', label: 'Gallery' },
+  { href: '/about', label: 'About' },
+  { href: '/faq', label: 'FAQ' },
+];
+const here = Astro.url.pathname.replace(/\.html$/, '');
+const isCurrent = (href: string) => here === href || here.startsWith(href + '/');
+---
+<header class="site-header sticky top-0 z-40 border-b border-transparent bg-petal/95 backdrop-blur-sm transition-[border-color] duration-300" data-header>
+  <div class="container-x flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
+    <a href="/" class="-mx-1 flex min-h-12 items-center rounded-md px-1 no-underline" aria-label="Blush Picnic — home">
+      <Wordmark size="md" />
+    </a>
+
+    <nav aria-label="Main" class="hidden lg:block">
+      <ul class="flex items-center gap-1">
+        {nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                'inline-flex min-h-12 items-center rounded-lg px-3 text-[0.98rem] font-medium no-underline transition-colors hover:text-plum-hover',
+                isCurrent(item.href) ? 'underline decoration-gold decoration-2 underline-offset-[0.4em]' : '',
+              ]}
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
+            >{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-1 sm:gap-2">
+      <a href={telUrl(s)} class="hidden min-h-12 items-center gap-2 rounded-lg px-2 text-[0.98rem] font-medium no-underline md:inline-flex" data-track="click_call">
+        <Icon name="phone" size={18} />
+        <span>{s.phoneDisplay}</span>
+      </a>
+      <a href={smsUrl(s)} class="inline-flex size-12 items-center justify-center rounded-full md:hidden" data-track="click_text">
+        <Icon name="message" size={22} label="Text us" />
+      </a>
+      <a href="/book" class="btn btn-primary hidden !min-h-11 !px-5 sm:inline-flex" data-track="booking_cta" data-track-location="header">Book your picnic</a>
+      <button
+        type="button"
+        class="inline-flex size-12 items-center justify-center rounded-full lg:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+      >
+        <span class="sr-only" data-menu-label>Open menu</span>
+        <span data-icon-open><Icon name="menu" size={24} /></span>
+        <span data-icon-close hidden><Icon name="close" size={24} /></span>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="border-t border-line bg-petal lg:hidden" hidden data-menu>
+    <nav aria-label="Mobile" class="container-x py-4">
+      <ul class="divide-y divide-line">
+        {nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="flex min-h-14 items-center justify-between font-display text-2xl no-underline"
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
+            >{item.label}<Icon name="arrow-right" size={20} class="text-plum-soft" /></a>
+          </li>
+        ))}
+      </ul>
+      <div class="mt-6 grid gap-3 pb-2">
+        <a href="/book" class="btn btn-primary btn-lg w-full" data-track="booking_cta" data-track-location="menu">Book your picnic</a>
+        <div class="grid grid-cols-3 gap-2 text-sm">
+          <a href={telUrl(s)} class="btn btn-secondary !px-2" data-track="click_call"><Icon name="phone" size={18} />Call</a>
+          <a href={smsUrl(s)} class="btn btn-secondary !px-2" data-track="click_text"><Icon name="message" size={18} />Text</a>
+          <a href={s.instagramUrl} class="btn btn-secondary !px-2" data-track="click_instagram" rel="noopener"><Icon name="instagram" size={18} />DM</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+
+  if (header) {
+    const onScroll = () => header.classList.toggle('border-line', window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  if (toggle && menu) {
+    const label = toggle.querySelector('[data-menu-label]')!;
+    const iconOpen = toggle.querySelector<HTMLElement>('[data-icon-open]')!;
+    const iconClose = toggle.querySelector<HTMLElement>('[data-icon-close]')!;
+    const setOpen = (open: boolean, returnFocus = false) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+      label.textContent = open ? 'Close menu' : 'Open menu';
+      iconOpen.hidden = open;
+      iconClose.hidden = !open;
+      document.documentElement.classList.toggle('overflow-hidden', open);
+      if (open) menu.querySelector<HTMLElement>('a')?.focus();
+      else if (returnFocus) toggle.focus();
+    };
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) setOpen(false, true);
+    });
+    window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => e.matches && setOpen(false));
+  }
+</script>

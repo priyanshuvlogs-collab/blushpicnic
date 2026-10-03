@@ -1,0 +1,36 @@
+---
+// Closing call-to-action. Every page ends with one; pass occasion/package to pre-select the form.
+import Icon from './Icon.astro';
+import { getSettings, bookUrl, smsUrl } from '../lib/site';
+interface Props {
+  title?: string;
+  text?: string;
+  occasion?: string;
+  package?: string;
+  buttonLabel?: string;
+}
+const s = await getSettings();
+const {
+  title = 'Tell us about your moment',
+  text = `Send a booking request in about three minutes. We reply ${s.replyTime} with availability and your quote.`,
+  occasion,
+  package: pkg,
+  buttonLabel = 'Book your picnic',
+} = Astro.props;
+---
+<section class="container-x section-y" aria-labelledby="cta-title">
+  <div class="relative overflow-hidden rounded-[var(--radius-card)] bg-plum px-6 py-14 text-center text-cream sm:px-12 md:py-20 on-dark">
+    <svg aria-hidden="true" class="pointer-events-none absolute left-1/2 top-6 h-[140%] w-auto -translate-x-1/2 text-gold/30" viewBox="0 0 200 300" fill="none">
+      <path d="M10 300V100a90 90 0 0 1 180 0v200" stroke="currentColor" stroke-width="0.8" />
+    </svg>
+    <div class="relative mx-auto max-w-2xl">
+      <h2 id="cta-title" class="text-cream">{title}</h2>
+      <p class="mx-auto mt-4 max-w-xl text-cream/85">{text}</p>
+      <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a href={bookUrl({ occasion, package: pkg })} class="btn btn-light btn-lg w-full sm:w-auto" data-track="booking_cta" data-track-location="cta_band">{buttonLabel}</a>
+        <a href={smsUrl(s)} class="btn btn-lg w-full border-cream/60 text-cream hover:bg-cream hover:text-plum sm:w-auto" data-track="click_text"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
+      </div>
+      <p class="mt-6 text-sm text-cream/75">Starting prices are {s.taxNote}. {s.locationNote}</p>
+    </div>
+  </div>
+</section>

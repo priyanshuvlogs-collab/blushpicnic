@@ -1,0 +1,35 @@
+---
+// The signature motif: a photo framed in an arch, with an optional fine gold outline.
+// Use for hero images and at most one other place per page.
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  /** CSS sizes attribute — describe the rendered width so the browser picks the right file. */
+  sizes: string;
+  widths?: number[];
+  outline?: boolean;
+  /** Above-the-fold images: load eagerly with high priority (LCP). */
+  priority?: boolean;
+  class?: string;
+  aspect?: string; // e.g. "4/5"
+}
+const { src, alt, sizes, widths = [360, 540, 720, 960, 1280], outline = false, priority = false, class: className = '', aspect = '4/5' } = Astro.props;
+---
+<div class:list={['relative', outline && 'arch-outline', className]}>
+  <Picture
+    src={src}
+    alt={alt}
+    widths={widths.filter((w) => w <= src.width)}
+    sizes={sizes}
+    formats={['avif', 'webp']}
+    fallbackFormat="jpg"
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    decoding={priority ? 'sync' : 'async'}
+    class="arch h-full w-full object-cover"
+    style={`aspect-ratio:${aspect}`}
+  />
+</div>

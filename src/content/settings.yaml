@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────
+#  Blush Picnic — business settings
+#  Edit the values on the right of each colon. Keep the quotes.
+#  After saving, redeploy (see HANDOVER.md).
+# ─────────────────────────────────────────────────────────────
+site:
+  name: "Blush Picnic"
+  domain: "blushpicnic.com"
+  url: "https://blushpicnic.com"
+  email: "blush.picnic25@gmail.com"
+  phoneDisplay: "(647) 878-0539"
+  phoneE164: "+16478780539"
+  # Pre-written text message for the "Text us" buttons
+  smsBody: "Hi Blush Picnic! I'd love to book a picnic. My date is: "
+  instagramHandle: "@blush.picnic"
+  instagramUrl: "https://instagram.com/blush.picnic"
+  serviceArea: "Toronto and the GTA"
+  serviceAreaList:
+    - "Toronto"
+    - "North York"
+    - "Scarborough"
+    - "Etobicoke"
+    - "East York"
+    - "Mississauga"
+    - "Brampton"
+    - "Vaughan"
+    - "Markham"
+    - "Richmond Hill"
+    - "Oakville"
+    - "Pickering"
+    - "Ajax"
+  replyTime: "within 24 hours"
+  tagline: "Luxury picnic setups in Toronto & the GTA"
+  description: "Styled luxury picnic setups for proposals, birthdays, dates and celebrations across Toronto and the GTA. We deliver, set up, style and clean up."
+  deposit:
+    standard: 100
+    largeEventPercent: 50
+    summary: "A $100 deposit (or 50% for larger events) holds your date. The balance is due before your event. Deposits are non-refundable."
+  taxNote: "before HST"
+  locationNote: "Prices vary by location across the GTA. We confirm your exact quote by message."
+
+  # Analytics — paste your IDs here. Leave empty ("") to switch tracking off.
+  # They only load after a visitor accepts cookies.
+  analytics:
+    ga4Id: ""          # e.g. "G-XXXXXXXXXX"  (PLACEHOLDER — waiting for owner)
+    metaPixelId: ""    # e.g. "123456789012345"  (PLACEHOLDER — waiting for owner)
+
+  booking:
+    # "php" = send through our own form handler on Hostinger (recommended)
+    # "web3forms" = backup service if email sending ever breaks (needs an access key below)
+    provider: "php"
+    endpoint: "/api/book.php"
+    web3formsAccessKey: ""
+    letterBoardMaxWords: 7

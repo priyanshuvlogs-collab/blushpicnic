@@ -1,0 +1,113 @@
+# ─────────────────────────────────────────────────────────────
+#  FAQs. Shown on /faq (grouped by category) and, when
+#  showOnHome is true, in the home page preview (5–6 looks best).
+#  Categories: booking, pricing, the-day, locations, policies
+#  Answers can use **bold** and links like [Policies](/policies).
+# ─────────────────────────────────────────────────────────────
+- id: how-to-book
+  question: "How do I book a picnic?"
+  answer: "Send us a booking request through our [booking form](/book) — it takes about three minutes — or text us at (647) 878-0539. We reply within 24 hours to confirm your date and your quote. A deposit then holds your date."
+  category: booking
+  order: 1
+  showOnHome: true
+
+- id: deposit
+  question: "How much is the deposit?"
+  answer: "A **$100 deposit** holds your date, or **50%** for larger events. The balance is due before your event. Deposits are non-refundable."
+  category: booking
+  order: 2
+  showOnHome: true
+
+- id: how-far-ahead
+  question: "How far in advance should I book?"
+  answer: "Send your request as soon as you know your date. If your date is coming up soon, text us at (647) 878-0539 and we'll tell you quickly whether we can make it work."
+  category: booking
+  order: 3
+
+- id: surprise
+  question: "Can you help me keep it a surprise?"
+  answer: "Yes. The booking form has a surprise section where you tell us who's being surprised, who else knows, how they'll arrive, and whether you'd like our team to stay hidden nearby or leave before you arrive."
+  category: booking
+  order: 4
+  showOnHome: true
+
+- id: cost
+  question: "How much does a luxury picnic cost?"
+  answer: "Our **Signature Picnic** starts at $375 for 2 guests (+$35 per extra guest), **Proposal & Romance** starts at $495 for 2 guests, and **Celebration** starts at $1,200 for 6–8 guests. All prices are starting prices, before HST, and vary by location. See [all packages](/packages)."
+  category: pricing
+  order: 1
+  showOnHome: true
+
+- id: location-price
+  question: "Why does the price depend on location?"
+  answer: "We bring everything to you and set up on site, anywhere in Toronto and the GTA, so travel and setup differ from place to place. We confirm your exact quote by message before you pay a deposit."
+  category: pricing
+  order: 2
+
+- id: hst
+  question: "Is HST included?"
+  answer: "No — all prices on our site are before HST."
+  category: pricing
+  order: 3
+
+- id: extra-guests
+  question: "Can I add more guests?"
+  answer: "Yes. The Signature Picnic is $35 per extra guest. The Celebration package covers 6–8 guests, and we'll quote larger groups. For the Proposal & Romance package, tell us who's joining and we'll include them in your quote."
+  category: pricing
+  order: 4
+
+- id: whats-included
+  question: "What's included in a picnic?"
+  answer: "We deliver, set up, style and clean up. The Signature Picnic includes a low table, rugs, cushions, tableware, glassware, florals, a letter board message, a Bluetooth speaker and games. The other packages build on it — see [packages](/packages)."
+  category: the-day
+  order: 1
+  showOnHome: true
+
+- id: food
+  question: "Is food included?"
+  answer: "Food isn't part of the packages, so you're welcome to bring your own. You can also add a grazing board or a custom cake when you book — just tick them in the form, along with any allergies."
+  category: the-day
+  order: 2
+  showOnHome: true
+
+- id: clean-up
+  question: "Do we need to clean up afterwards?"
+  answer: "No. When your time is up, we come back, pack everything away and clean up."
+  category: the-day
+  order: 3
+
+- id: duration
+  question: "How long is a picnic?"
+  answer: "The Signature Picnic is 2 hours, Proposal & Romance is 2.5 hours, and Celebration is 3 hours. If you'd like more time, mention it in your booking request."
+  category: the-day
+  order: 4
+
+- id: where
+  question: "Where can you set up?"
+  answer: "Parks, beaches, backyards, homes and indoor venues across Toronto and the GTA. Not sure where to go? Choose “Not sure yet” in the booking form and we'll suggest a spot."
+  category: locations
+  order: 1
+
+- id: permits
+  question: "Do I need a park permit or can we bring alcohol?"
+  answer: "Rules differ between parks and cities across the GTA. Read our [park permits and alcohol notes](/policies#permits) and tell us your spot in the booking form."
+  category: locations
+  order: 2
+
+- id: weather
+  question: "What happens if it rains?"
+  answer: "Please see our [weather policy](/policies#weather)."
+  category: policies
+  order: 1
+
+- id: refund
+  question: "Is the deposit refundable?"
+  answer: "Deposits are non-refundable. See our [policies](/policies) for details on cancellations and rescheduling."
+  category: policies
+  order: 2
+
+- id: damage
+  question: "What if something gets damaged?"
+  answer: "Please see our [policy on rented decor](/policies#damage)."
+  category: policies
+  order: 3

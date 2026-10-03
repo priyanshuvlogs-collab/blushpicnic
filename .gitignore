@@ -1,0 +1,23 @@
+# build output
+dist/
+dist-*/
+.astro/
+node_modules/
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+blush-config.php
+**/blush-config.php
+!api-config/blush-config.example.php
+deploy.env
+
+# local test artefacts
+test-results/
+playwright-report/
+tests/.mail/
+tests/.tmp/
+.lighthouseci/
+*.log
+.DS_Store

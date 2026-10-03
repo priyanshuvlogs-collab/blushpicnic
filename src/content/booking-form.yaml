@@ -1,0 +1,447 @@
+# ─────────────────────────────────────────────────────────────
+#  Booking form questions.
+#  The form has 4 steps: 1 Occasion & package · 2 When & where ·
+#  3 Details & style · 4 Your details (then Review & send).
+#
+#  Each block below appears for the occasion groups in "appliesTo"
+#  ("*" = everyone). Occasion groups are set per occasion in
+#  src/content/occasions/<occasion>.md  →  formGroup.
+#
+#  Safe edits: labels, help text, placeholders, options, required.
+#  Changing an "id" renames the answer in emails — avoid it.
+#  The server checks answers against this same file, so you never
+#  need to edit any code to change a question.
+# ─────────────────────────────────────────────────────────────
+
+# ── Step 1 ───────────────────────────────────────────────────
+- id: core-occasion
+  title: "Occasion & package"
+  step: 1
+  appliesTo: ["*"]
+  order: 1
+  fields:
+    - id: occasion
+      label: "What are we celebrating?"
+      type: select
+      source: occasions
+      required: true
+    - id: package
+      label: "Which package feels right?"
+      type: radio
+      source: packages
+      required: true
+      help: "Not sure? Pick “Help me choose” and we’ll recommend one."
+
+# ── Step 2 ───────────────────────────────────────────────────
+- id: core-when-where
+  title: "When & where"
+  step: 2
+  appliesTo: ["*"]
+  order: 1
+  fields:
+    - id: date
+      label: "Preferred date"
+      type: date
+      required: true
+      half: true
+      help: "We’ll confirm availability when we reply."
+    - id: backup_date
+      label: "Backup date"
+      type: date
+      half: true
+      help: "Optional, but it helps if your first date is taken."
+    - id: start_time
+      label: "Preferred start time"
+      type: time
+      required: true
+      half: true
+    - id: guests_adults
+      label: "Adults"
+      type: number
+      required: true
+      min: 1
+      max: 300
+      half: true
+    - id: guests_kids
+      label: "Kids"
+      type: number
+      min: 0
+      max: 300
+      half: true
+    - id: location_type
+      label: "Where would you like your picnic?"
+      type: radio
+      required: true
+      options:
+        - "Park"
+        - "Beach"
+        - "Backyard"
+        - "At home (indoors)"
+        - "Indoor venue"
+        - "Not sure yet — suggest a spot"
+    - id: location
+      label: "Address, park name or area"
+      type: text
+      required: true
+      maxLength: 200
+      autocomplete: "street-address"
+      placeholder: "e.g. Trinity Bellwoods Park, or Mississauga"
+      help: "Prices vary by location across the GTA, so this helps us quote accurately."
+    - id: budget
+      label: "Budget range"
+      type: select
+      options:
+        - "Under $500"
+        - "$500 – $800"
+        - "$800 – $1,200"
+        - "$1,200 – $2,000"
+        - "$2,000+"
+        - "Not sure yet"
+
+# ── Step 3: occasion details ────────────────────────────────
+- id: birthday
+  title: "About the birthday"
+  step: 3
+  appliesTo: ["birthday"]
+  order: 1
+  fields:
+    - id: birthday_name
+      label: "Whose birthday is it?"
+      type: text
+      required: true
+      maxLength: 80
+      half: true
+    - id: birthday_age
+      label: "Age they’re turning"
+      type: number
+      min: 1
+      max: 120
+      half: true
+    - id: birthday_favourites
+      label: "Favourite colours or characters"
+      type: text
+      maxLength: 200
+      placeholder: "e.g. lilac and gold, or Bluey"
+
+- id: anniversary
+  title: "About your anniversary"
+  step: 3
+  appliesTo: ["anniversary"]
+  order: 1
+  fields:
+    - id: anniversary_year
+      label: "Which anniversary?"
+      type: number
+      min: 1
+      max: 80
+      half: true
+      placeholder: "e.g. 5"
+    - id: anniversary_photos
+      label: "Printed photos in the setup?"
+      type: radio
+      half: true
+      options: ["Yes please", "No thanks", "Maybe — tell me more"]
+      help: "You can send us the photos after booking."
+    - id: anniversary_place
+      label: "A place that’s special to you both"
+      type: text
+      maxLength: 200
+      placeholder: "Where you met, your first date…"
+
+- id: romance
+  title: "About your person"
+  step: 3
+  appliesTo: ["romance"]
+  order: 1
+  fields:
+    - id: partner_name
+      label: "Your partner’s first name"
+      type: text
+      required: true
+      maxLength: 80
+      half: true
+      autocomplete: "off"
+    - id: partner_colours
+      label: "Their favourite colours"
+      type: text
+      maxLength: 120
+      half: true
+    - id: partner_flowers
+      label: "Their favourite flowers"
+      type: text
+      maxLength: 120
+      placeholder: "e.g. peonies, white roses"
+    - id: sign_wording
+      label: "Sign wording"
+      type: text
+      maxLength: 60
+      placeholder: "e.g. Marry Me? or Be My Girlfriend?"
+    - id: romance_extras
+      label: "Extras you’re considering"
+      type: checkboxes
+      options:
+        - "Flower arch"
+        - "Rose petals and candles"
+        - "Neon sign"
+        - "Photographer"
+        - "Family or friends join after"
+      help: "No commitment — we’ll include these in your quote."
+
+- id: couple
+  title: "About the two of you"
+  step: 3
+  appliesTo: ["couple"]
+  order: 1
+  fields:
+    - id: couple_names
+      label: "Both your names"
+      type: text
+      required: true
+      maxLength: 120
+      placeholder: "e.g. Priya & Daniel"
+    - id: couple_date
+      label: "Engagement or wedding date"
+      type: date
+      half: true
+
+- id: family
+  title: "About the family"
+  step: 3
+  appliesTo: ["family"]
+  order: 1
+  fields:
+    - id: kids_count
+      label: "Number of kids"
+      type: number
+      min: 0
+      max: 50
+      half: true
+    - id: kids_ages
+      label: "Kids’ ages"
+      type: text
+      maxLength: 80
+      half: true
+      placeholder: "e.g. 3, 6 and 9"
+    - id: kids_activities
+      label: "Activities the kids would love"
+      type: text
+      maxLength: 200
+      placeholder: "e.g. colouring, bubbles, lawn games"
+
+- id: honour
+  title: "Who we’re celebrating"
+  step: 3
+  appliesTo: ["honour"]
+  order: 1
+  fields:
+    - id: honouree
+      label: "Who is being honoured?"
+      type: text
+      maxLength: 120
+      half: true
+      placeholder: "Name, or the team"
+    - id: company_name
+      label: "Company name"
+      type: text
+      maxLength: 120
+      half: true
+      autocomplete: "organization"
+      help: "Optional for personal celebrations."
+    - id: honour_message
+      label: "Message or years of service"
+      type: text
+      maxLength: 200
+      placeholder: "e.g. Thank you for 25 years, Linda!"
+    - id: invoice_needed
+      label: "Do you need an invoice?"
+      type: radio
+      options: ["Yes", "No"]
+
+- id: new-baby
+  title: "About the new arrival"
+  step: 3
+  appliesTo: ["new-baby"]
+  order: 1
+  fields:
+    - id: baby_name
+      label: "Baby’s name"
+      type: text
+      maxLength: 80
+      half: true
+    - id: baby_dob
+      label: "Date of birth"
+      type: date
+      half: true
+    - id: quiet_spot
+      label: "Would you like a quiet, shaded spot?"
+      type: radio
+      options: ["Yes please", "No preference"]
+
+- id: baby
+  title: "About the parents-to-be"
+  step: 3
+  appliesTo: ["baby"]
+  order: 1
+  fields:
+    - id: parents_names
+      label: "Parents’ names"
+      type: text
+      required: true
+      maxLength: 120
+      half: true
+    - id: due_date
+      label: "Due date or month"
+      type: text
+      maxLength: 40
+      half: true
+      placeholder: "e.g. March 2027"
+    - id: reveal_method
+      label: "How would you like to reveal?"
+      type: select
+      onlyFor: ["gender-reveal"]
+      options:
+        - "Balloon box or balloon pop"
+        - "Cake cut"
+        - "Confetti"
+        - "Smoke"
+        - "Not sure yet"
+      note: "Heads up: some parks don’t allow smoke or confetti. If your spot is one of them, we’ll suggest a park-friendly reveal."
+
+- id: bridal
+  title: "About the bride"
+  step: 3
+  appliesTo: ["bridal"]
+  order: 1
+  fields:
+    - id: bride_name
+      label: "Bride’s name"
+      type: text
+      required: true
+      maxLength: 80
+      half: true
+    - id: wedding_date
+      label: "Wedding date"
+      type: date
+      half: true
+
+# ── Step 3: surprise (everyone) ─────────────────────────────
+- id: surprise
+  title: "Is it a surprise?"
+  step: 3
+  appliesTo: ["*"]
+  order: 2
+  fields:
+    - id: is_surprise
+      label: "Yes, this is a surprise"
+      type: toggle
+    - id: surprise_for
+      label: "Who is being surprised?"
+      type: text
+      maxLength: 120
+      half: true
+      showIf: { field: "is_surprise", equals: "yes" }
+    - id: surprise_knows
+      label: "Who else knows?"
+      type: text
+      maxLength: 120
+      half: true
+      placeholder: "e.g. her sister, my best friend"
+      showIf: { field: "is_surprise", equals: "yes" }
+    - id: arrival_plan
+      label: "How will they arrive?"
+      type: textarea
+      maxLength: 500
+      placeholder: "e.g. I’ll suggest a walk and bring her to the spot at 5:30"
+      showIf: { field: "is_surprise", equals: "yes" }
+    - id: team_presence
+      label: "Once it’s set up, should our team…"
+      type: radio
+      options: ["Stay hidden nearby", "Leave before you arrive", "Not sure — advise me"]
+      showIf: { field: "is_surprise", equals: "yes" }
+
+# ── Step 3: style & add-ons (everyone) ──────────────────────
+- id: style
+  title: "Style & add-ons"
+  step: 3
+  appliesTo: ["*"]
+  order: 3
+  fields:
+    - id: colours_vibe
+      label: "Colours and vibe"
+      type: text
+      maxLength: 200
+      placeholder: "e.g. blush and ivory, soft and romantic"
+    - id: letter_board
+      label: "Letter board message"
+      type: text
+      maxLength: 60
+      maxWords: 7
+      placeholder: "e.g. Happy 30th Maya"
+      help: "Up to 7 words."
+    - id: addons
+      label: "Add-ons you’d like a price for"
+      type: checkboxes
+      source: addons
+    - id: food_allergies
+      label: "Food plans and allergies"
+      type: textarea
+      maxLength: 500
+      placeholder: "Bringing your own food? Adding a grazing board or cake? Any allergies?"
+    - id: photo_permission
+      label: "May we share photos of your setup on Instagram?"
+      type: radio
+      options: ["Yes, happy to", "Setup only — no faces", "Please don’t share"]
+    - id: notes
+      label: "Anything else we should know?"
+      type: textarea
+      maxLength: 1500
+
+# ── Step 4 ───────────────────────────────────────────────────
+- id: contact
+  title: "Your details"
+  step: 4
+  appliesTo: ["*"]
+  order: 1
+  fields:
+    - id: name
+      label: "Your name"
+      type: text
+      required: true
+      maxLength: 100
+      autocomplete: "name"
+    - id: phone
+      label: "Phone"
+      type: tel
+      required: true
+      maxLength: 30
+      half: true
+      autocomplete: "tel"
+      help: "We usually reply by text."
+    - id: email
+      label: "Email"
+      type: email
+      required: true
+      maxLength: 150
+      half: true
+      autocomplete: "email"
+    - id: instagram
+      label: "Instagram handle"
+      type: text
+      maxLength: 60
+      half: true
+      placeholder: "@yourhandle"
+    - id: contact_pref
+      label: "Best way to reach you"
+      type: radio
+      half: true
+      options: ["Text", "Call", "Email", "Instagram DM"]
+    - id: heard_from
+      label: "How did you hear about us?"
+      type: select
+      options:
+        - "Instagram"
+        - "Google"
+        - "TikTok"
+        - "Friend or family"
+        - "Saw a setup in person"
+        - "Other"

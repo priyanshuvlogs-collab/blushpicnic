@@ -1,0 +1,16 @@
+# ─────────────────────────────────────────────────────────────
+#  Reviews — ONLY real reviews, shared with the client's permission.
+#  The reviews section on the site stays hidden while this list is empty.
+#
+#  To add one, copy this block, remove the "# " at the start of each line,
+#  and fill it in:
+#
+# - id: sarah-proposal-2026
+#   name: "Sarah K."                # first name + initial only
+#   occasion: "Proposal"
+#   text: "Paste the review exactly as the client wrote it."
+#   date: "2026-08"                 # year-month
+#   source: "google"                # google, instagram, email or text
+#   permission: true                # must be true — you asked and they said yes
+# ─────────────────────────────────────────────────────────────
+[]

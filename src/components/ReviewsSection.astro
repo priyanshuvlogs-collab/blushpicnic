@@ -1,0 +1,38 @@
+---
+// Real reviews only (src/content/reviews.yaml). Renders nothing while the list is empty.
+import { getReviews } from '../lib/site';
+interface Props {
+  occasion?: string; // filter by occasion name, e.g. "Proposal"
+  title?: string;
+  limit?: number;
+}
+const { occasion, title = 'Kind words from clients', limit = 6 } = Astro.props;
+let reviews = await getReviews();
+if (occasion) {
+  const matching = reviews.filter((r) => r.data.occasion.toLowerCase() === occasion.toLowerCase());
+  if (matching.length) reviews = matching;
+}
+reviews = reviews.slice(0, limit);
+const sourceLabel = { google: 'Google review', instagram: 'Instagram', email: 'Email', text: 'Text message' } as const;
+---
+{reviews.length > 0 && (
+  <section class="section-y" aria-labelledby="reviews-title">
+    <div class="container-x">
+      <h2 id="reviews-title">{title}</h2>
+      <ul class="mt-10 columns-1 gap-6 md:columns-2 lg:columns-3">
+        {reviews.map((r) => (
+          <li class="mb-6 break-inside-avoid">
+            <figure class="rounded-[var(--radius-card)] bg-cream p-6 md:p-8">
+              <blockquote class="text-plum">
+                <p>“{r.data.text}”</p>
+              </blockquote>
+              <figcaption class="mt-5 text-sm text-plum-soft">
+                <span class="font-semibold text-plum">{r.data.name}</span> · {r.data.occasion} · {sourceLabel[r.data.source]}
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}

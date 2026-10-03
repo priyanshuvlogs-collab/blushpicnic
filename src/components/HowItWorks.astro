@@ -1,0 +1,40 @@
+---
+// Three steps from request to picnic. Copy comes from settings so deposit/reply-time stay in sync.
+import { getSettings, money } from '../lib/site';
+interface Props {
+  title?: string;
+  class?: string;
+}
+const s = await getSettings();
+const { title = 'How it works', class: className = '' } = Astro.props;
+const steps = [
+  {
+    title: 'Tell us your idea',
+    text: 'Send a booking request in about three minutes — your occasion, date, area and the little details that make it yours.',
+  },
+  {
+    title: 'We confirm and hold your date',
+    text: `We reply ${s.replyTime} with availability and your quote. A ${money(s.deposit.standard)} deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date.`,
+  },
+  {
+    title: 'Arrive to a finished picnic',
+    text: 'We deliver, set up and style everything in your spot. When your time is up, we pack it all away and clean up.',
+  },
+];
+---
+<section class={`section-y ${className}`} aria-labelledby="how-title">
+  <div class="container-x">
+    <h2 id="how-title" class="max-w-xl">{title}</h2>
+    <ol class="mt-10 grid gap-10 md:mt-14 md:grid-cols-3 md:gap-8">
+      {steps.map((step, i) => (
+        <li class="relative md:pr-6">
+          <span class="font-display text-5xl leading-none text-gold-ink" aria-hidden="true">{i + 1}</span>
+          <h3 class="mt-4">
+            <span class="sr-only">Step {i + 1}: </span>{step.title}
+          </h3>
+          <p class="mt-3 text-plum-soft">{step.text}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

@@ -1,0 +1,68 @@
+---
+import Wordmark from './Wordmark.astro';
+import Icon from './Icon.astro';
+import { getSettings, getOccasions, telUrl, smsUrl, mailUrl, occasionUrl } from '../lib/site';
+
+const s = await getSettings();
+const occasions = (await getOccasions()).slice(0, 8);
+const year = new Date().getFullYear();
+---
+<footer class="on-dark bg-plum text-cream">
+  <div class="container-x grid gap-12 py-16 md:grid-cols-12 md:py-20">
+    <div class="md:col-span-4">
+      <a href="/" class="inline-flex min-h-12 items-center no-underline" aria-label="Blush Picnic — home">
+        <Wordmark size="lg" class="text-cream" />
+      </a>
+      <p class="mt-4 max-w-xs text-cream/85">
+        Styled luxury picnics across {s.serviceArea}. We deliver, set up, style and clean up — you just arrive.
+      </p>
+      <a href="/book" class="btn btn-light mt-6" data-track="booking_cta" data-track-location="footer">Book your picnic</a>
+    </div>
+
+    <nav aria-label="Footer — explore" class="md:col-span-2">
+      <h2 class="heading-sm text-cream/75">Explore</h2>
+      <ul class="mt-3 space-y-1">
+        {[
+          ['/packages', 'Packages'],
+          ['/occasions', 'Occasions'],
+          ['/gallery', 'Gallery'],
+          ['/about', 'About'],
+          ['/faq', 'FAQ'],
+          ['/policies', 'Policies'],
+          ['/privacy', 'Privacy'],
+        ].map(([href, label]) => (
+          <li><a href={href} class="inline-flex min-h-11 items-center no-underline hover:underline">{label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <nav aria-label="Footer — occasions" class="md:col-span-3">
+      <h2 class="heading-sm text-cream/75">Popular occasions</h2>
+      <ul class="mt-3 space-y-1">
+        {occasions.map((o) => (
+          <li><a href={occasionUrl(o)} class="inline-flex min-h-11 items-center no-underline hover:underline">{o.data.name} picnics</a></li>
+        ))}
+        <li><a href="/occasions" class="inline-flex min-h-11 items-center underline decoration-gold underline-offset-4">All occasions</a></li>
+      </ul>
+    </nav>
+
+    <div class="md:col-span-3">
+      <h2 class="heading-sm text-cream/75">Get in touch</h2>
+      <ul class="mt-3 space-y-1">
+        <li><a href={telUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_call"><Icon name="phone" size={18} />Call {s.phoneDisplay}</a></li>
+        <li><a href={smsUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_text"><Icon name="message" size={18} />Text us</a></li>
+        <li><a href={s.instagramUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_instagram"><Icon name="instagram" size={18} />{s.instagramHandle}</a></li>
+        <li><a href={mailUrl(s)} class="inline-flex min-h-11 items-center gap-3 break-all no-underline hover:underline"><Icon name="mail" size={18} />{s.email}</a></li>
+      </ul>
+      <p class="mt-5 text-sm text-cream/75">
+        Serving {s.serviceAreaList.join(', ')} and across the GTA.
+      </p>
+    </div>
+  </div>
+  <div class="border-t border-cream/15">
+    <div class="container-x flex flex-col gap-2 py-6 text-sm text-cream/75 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} {s.name}. All prices are starting prices, {s.taxNote}.</p>
+      <p><button type="button" class="inline-flex min-h-11 items-center underline underline-offset-4" data-consent-open>Cookie settings</button></p>
+    </div>
+  </div>
+</footer>
