@@ -24,6 +24,8 @@ interface Props {
   /** Hide the mobile sticky Book / Text bar (e.g. on /book itself). */
   hideStickyBar?: boolean;
   ogType?: 'website' | 'article';
+  /** Pre-select this occasion/package in the site-wide Book buttons (header, menu, sticky bar). */
+  book?: { occasion?: string; package?: string };
 }
 
 const {
@@ -35,6 +37,7 @@ const {
   noindex = false,
   hideStickyBar = false,
   ogType = 'website',
+  book,
 } = Astro.props;
 
 const s = await getSettings();
@@ -63,7 +66,7 @@ else if (image) {
     <link rel="preload" href={gloockWoff2} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={figtreeWoff2} as="font" type="font/woff2" crossorigin />
 
-    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -90,12 +93,12 @@ else if (image) {
   </head>
   <body class={hideStickyBar ? '' : 'pb-[4.75rem] md:pb-0'}>
     <a href="#main" class="skip-link">Skip to content</a>
-    <Header />
+    <Header {book} />
     <main id="main" tabindex="-1" class="outline-none">
       <slot />
     </main>
     <Footer />
-    {!hideStickyBar && <StickyBar />}
+    {!hideStickyBar && <StickyBar {book} />}
     <ConsentBanner />
   </body>
 </html>

@@ -6,7 +6,7 @@ order: 8
 formGroup: "family"
 recommendedPackage: "signature"
 metaTitle: "Family Picnic Toronto | Styled Family Picnics | Blush Picnic"
-metaDescription: "A styled family picnic in Toronto or the GTA: low table, cushions, florals and games, set up and cleared away for you. Starting at $375 before HST."
+metaDescription: "A styled family picnic in Toronto or the GTA: low table, cushions, florals and games, set up and cleared away for you. Starting at {price:signature} before HST."
 h1: "A family picnic where everyone gets to sit down"
 lede: "Grandparents in town, cousins visiting, or just a Sunday you want to make count. We set up a styled family picnic in Toronto or across the GTA, and pack it all away when you're done."
 heroImage: "../../assets/photos/occasion-family.jpg"
@@ -22,9 +22,9 @@ highlights:
     text: "We deliver, set up, style and clean up. You bring the family (and the snacks)."
 faqs:
   - q: "How is a family picnic priced?"
-    a: "The Signature Picnic starts at $375 for 2 guests for 2 hours, plus $35 per extra guest, before HST. Tell us how many adults and kids are coming in the booking form and we'll confirm your quote. Prices also vary by location."
+    a: "The Signature Picnic starts at {price:signature} for {guests:signature} for {hours:signature}, plus {extraGuest:signature} per extra guest, before HST. Tell us how many adults and kids are coming in the booking form and we'll confirm your quote. Prices also vary by location."
   - q: "We're a big family. Is there a bigger option?"
-    a: "Yes. Celebration is our full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games, starting at $1,200 for 6–8 guests for 3 hours, before HST. For more than 8 guests, we'll quote your group."
+    a: "Yes. Celebration is our full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games, starting at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST. For more than 8 guests, we'll quote your group."
   - q: "Will there be anything for the kids to do?"
     a: "Games are included in the Signature Picnic. The booking form also has a space for activities your kids would love, so tell us there and we'll factor your ideas into the quote."
   - q: "Where can we have a family picnic?"
@@ -40,7 +40,7 @@ Think back to the last family picnic. Someone packed the car, spread the blanket
 
 We arrive first and set up a low table with rugs and cushions, tableware and glassware, fresh florals, a Bluetooth speaker and games. You bring the family and whatever you'd like to eat, since food isn't part of the packages. When the two hours are up, we come back, pack everything away and clean up. Nobody spends the drive home wondering whose turn it was to fold the rugs.
 
-The Signature Picnic starts at $375 for 2 guests, plus $35 per extra guest, before HST, and prices vary by location across the GTA.
+The Signature Picnic starts at {price:signature} for {guests:signature}, plus {extraGuest:signature} per extra guest, before HST, and prices vary by location across the GTA.
 
 ## Made for real families
 
@@ -48,10 +48,10 @@ The booking form asks how many kids are coming, how old they are and what they'd
 
 A family picnic suits a weekend when the grandparents are visiting, Mother's Day or Father's Day, a cousins' reunion, or simply the first warm Saturday of the year. We can set up in a park, on a beach, in your backyard, at home or in an indoor venue.
 
-For a bigger family or a fully themed day, our Celebration package adds a backdrop, a balloon garland or flower arch and custom signage, starting at $1,200 for 6–8 guests for 3 hours, before HST.
+For a bigger family or a fully themed day, our Celebration package adds a backdrop, a balloon garland or flower arch and custom signage, starting at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST.
 
 ## Getting it on the calendar
 
 1. **Count heads.** Adults, kids and their ages, plus a date and a backup. Allow about three minutes.
-2. **We reply within 24 hours** with availability and a quote. A $100 deposit, or 50% for larger events, holds the day.
+2. **We reply within 24 hours** with availability and a quote. A {deposit} deposit, or {depositPercent} for larger events, holds the day.
 3. **Everyone sits down.** The picnic is ready when you arrive, and the pack-up is ours.

@@ -6,7 +6,7 @@ order: 2
 formGroup: "birthday"
 recommendedPackage: "signature"
 metaTitle: "Birthday Picnic Toronto | Styled Birthday Setups | Blush Picnic"
-metaDescription: "Birthday picnics in Toronto and the GTA, styled in their colours with their name on the board. Starting at $375 before HST, with themed group setups too."
+metaDescription: "Birthday picnics in Toronto and the GTA, styled in their colours with their name on the board. Starting at {price:signature} before HST, with themed group setups too."
 h1: "Birthday picnics, styled around the guest of honour"
 lede: "Tell us whose birthday it is, the age they're turning and the colours (or characters) they love. We'll turn it into a birthday picnic in Toronto or anywhere in the GTA that feels unmistakably theirs."
 heroImage: "../../assets/photos/occasion-birthday.jpg"
@@ -22,7 +22,7 @@ highlights:
     text: "A custom cake, a balloon garland, a neon sign or a photographer are all optional extras, each priced into your quote."
 faqs:
   - q: "Which package is right for a birthday picnic?"
-    a: "For an intimate birthday, the Signature Picnic starts at $375 for 2 guests for 2 hours, plus $35 per extra guest, before HST. For a bigger, fully themed party, Celebration starts at $1,200 for 6–8 guests for 3 hours, before HST, with a backdrop, balloon garland or flower arch, custom signage and games. Prices vary by location."
+    a: "For an intimate birthday, the Signature Picnic starts at {price:signature} for {guests:signature} for {hours:signature}, plus {extraGuest:signature} per extra guest, before HST. For a bigger, fully themed party, Celebration starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST, with a backdrop, balloon garland or flower arch, custom signage and games. Prices vary by location."
   - q: "Can you theme it around a favourite colour or character?"
     a: "There's a field in the booking form for exactly that. Tell us their favourite colours or characters and we'll talk you through the options when we reply. For a full theme with a backdrop and custom signage, choose Celebration."
   - q: "Can we bring a cake, or order one through you?"
@@ -42,9 +42,9 @@ You tell us the essentials in the booking form: whose birthday it is, the age th
 
 ## Two ways to celebrate
 
-**The Signature Picnic** suits a birthday lunch for two or a small circle of friends. It starts at $375 for 2 guests for 2 hours, plus $35 per extra guest, before HST, and includes a low table, rugs, cushions, tableware, glassware, fresh florals, a Bluetooth speaker, games and a letter board with your birthday message.
+**The Signature Picnic** suits a birthday lunch for two or a small circle of friends. It starts at {price:signature} for {guests:signature} for {hours:signature}, plus {extraGuest:signature} per extra guest, before HST, and includes a low table, rugs, cushions, tableware, glassware, fresh florals, a Bluetooth speaker, games and a letter board with your birthday message.
 
-**Celebration** is the full party: a themed setup with a backdrop, a balloon garland or flower arch, custom signage and games. It starts at $1,200 for 6–8 guests for 3 hours, before HST. For a milestone, whether that's a 30th, a sweet sixteen or a parent's 60th, it gives everyone's photos a proper backdrop.
+**Celebration** is the full party: a themed setup with a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST. For a milestone, whether that's a 30th, a sweet sixteen or a parent's 60th, it gives everyone's photos a proper backdrop.
 
 Prices vary by location across the GTA, and we confirm your exact quote by message.
 
@@ -55,5 +55,5 @@ Add a custom cake with their name on it, a neon sign for an evening glow, a graz
 ## From idea to party
 
 1. **Send the birthday details.** A date, a backup date, the area and the colours they love. It takes about three minutes.
-2. **Hear back within 24 hours.** You'll get availability and a quote. A $100 deposit, or 50% for larger events, holds the date.
+2. **Hear back within 24 hours.** You'll get availability and a quote. A {deposit} deposit, or {depositPercent} for larger events, holds the date.
 3. **Bring the birthday person.** Everything is styled when you arrive, and we clean up after the last slice.

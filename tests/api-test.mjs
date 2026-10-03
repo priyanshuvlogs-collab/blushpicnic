@@ -328,7 +328,7 @@ function assertEmails(ref, payload) {
   assert.ok(cli.text.includes(`Thank you, ${CLIENT.first}.`));
   assert.ok(cli.text.includes(occ.name) && cli.text.includes(fmtDate(payload.date)) && cli.text.includes('5:30 PM'));
   assert.match(cli.text, /within 24 hours/);
-  assert.match(cli.text, /\$100 deposit \(or 50% for larger events\) holds your date/);
+  assert.match(cli.text, /\$100 booking deposit \(or 50% for larger events\) holds your date[\s\S]*\$100 refundable security deposit/);
   assert.match(cli.text, /non-refundable/);
   assert.match(cli.text, /\(647\) 878-0539/);
   assert.match(cli.text, /@blush\.picnic/);
@@ -624,18 +624,18 @@ describe('booking handler (file transport)', () => {
     assert.equal(plain.status, 405);
   });
 
-  test('plain form post (no JSON Accept) → 303 to /thank-you, emails sent', async () => {
+  test('plain form post (no JSON Accept) → 303 to /thank-you?ref=…, emails sent', async () => {
     const before = mailFiles().length;
     const r = await post(validPayload('birthday'), { json: false });
     assert.equal(r.status, 303);
-    assert.equal(r.headers.get('location'), '/thank-you');
+    assert.match(r.headers.get('location'), /^\/thank-you\?ref=BP-\d{8}-[A-Z0-9]+$/);
     assert.equal(mailFiles().length, before + 2);
   });
 
   test('plain form post with errors → 303 to /book?error=1', async () => {
     const r = await post({ ...validPayload('birthday'), email: 'nope' }, { json: false });
     assert.equal(r.status, 303);
-    assert.equal(r.headers.get('location'), '/book?error=1');
+    assert.equal(r.headers.get('location'), '/book?error=1#booking-error');
   });
 
   test('X-Requested-With also gets JSON', async () => {
@@ -750,7 +750,7 @@ describe('rate limit', () => {
     assert.equal(mailFiles().length, before);
     const plain = await post(validPayload('proposal'), { json: false });
     assert.equal(plain.status, 303);
-    assert.equal(plain.headers.get('location'), '/book?error=1');
+    assert.equal(plain.headers.get('location'), '/book?error=1#booking-error');
   });
 
   test('stored rate-limit data never contains the raw IP', () => {

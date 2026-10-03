@@ -9,7 +9,12 @@
     "check": "astro check",
     "astro": "astro",
     "placeholders": "node scripts/make-placeholders.mjs",
-    "photos": "node scripts/swap-photos.mjs"
+    "photos": "node scripts/swap-photos.mjs",
+    "test:api": "node tests/api-test.mjs",
+    "test:e2e": "playwright test",
+    "test": "npm run test:api && npm run test:e2e",
+    "deploy": "./deploy.sh",
+    "brand": "node scripts/make-brand.mjs"
   },
   "repository": {
     "type": "git",

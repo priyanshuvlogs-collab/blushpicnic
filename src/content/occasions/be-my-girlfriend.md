@@ -6,7 +6,7 @@ order: 4
 formGroup: "romance"
 recommendedPackage: "proposal-romance"
 metaTitle: "Be My Girlfriend Picnic Toronto | Ask in Style | Blush Picnic"
-metaDescription: "Ask her to be your girlfriend with a styled picnic in Toronto or the GTA: a custom sign, rose petals, candles and fresh flowers. Starting at $495 before HST."
+metaDescription: "Ask her to be your girlfriend with a styled picnic in Toronto or the GTA: a custom sign, rose petals, candles and fresh flowers. Starting at {price:proposal-romance} before HST."
 h1: "Make it official with a Be My Girlfriend picnic"
 lede: "You already know how you feel. Let the sign say it: a styled picnic in Toronto with “Be My Girlfriend?” in your words, rose petals, candles and flowers chosen with her in mind, ready before she arrives."
 heroImage: "../../assets/photos/occasion-be-my-girlfriend.jpg"
@@ -22,15 +22,15 @@ highlights:
     text: "Our team can wait out of sight nearby or be long gone before you arrive. You choose in the booking form."
 faqs:
   - q: "What do I get with a Be My Girlfriend picnic?"
-    a: "We recommend our Proposal & Romance package: everything in the Signature Picnic (low table, rugs, cushions, tableware, glassware, florals, a letter board, a Bluetooth speaker and games) plus a custom sign, rose petals, candles and a fresh flower arrangement. It starts at $495 for 2 guests for 2.5 hours, before HST, and varies by location."
+    a: "We recommend our Proposal & Romance package: everything in the Signature Picnic (low table, rugs, cushions, tableware, glassware, florals, a letter board, a Bluetooth speaker and games) plus a custom sign, rose petals, candles and a fresh flower arrangement. It starts at {price:proposal-romance} for {guests:proposal-romance} for {hours:proposal-romance}, before HST, and varies by location."
   - q: "Is there a lower-key way to ask?"
-    a: "Yes. The Signature Picnic starts at $375 for 2 guests for 2 hours, before HST, and its letter board can carry your question instead of a custom sign."
+    a: "Yes. The Signature Picnic starts at {price:signature} for {guests:signature} for {hours:signature}, before HST, and its letter board can carry your question instead of a custom sign."
   - q: "What should the sign say?"
     a: "Whatever sounds like you. “Be My Girlfriend?” is the classic, but her name, an inside joke or a question only she'd get all work. Add your wording under “Sign wording” in the booking form."
   - q: "Can her friends come over once she says yes?"
     a: "They can. Choose “Family or friends join after” under extras in the booking form, and we'll add the extra guests to your quote."
   - q: "How do I lock in the date?"
-    a: "Send a request with a preferred date and a backup. Within 24 hours we'll reply with availability and your quote. A $100 deposit holds your date, the balance is due before the picnic, and deposits are non-refundable."
+    a: "Send a request with a preferred date and a backup. Within 24 hours we'll reply with availability and your quote. A {deposit} deposit holds your date, the balance is due before the picnic, and deposits are non-refundable."
 related: ["picnic-date", "proposal", "anniversary"]
 ---
 
@@ -38,7 +38,7 @@ related: ["picnic-date", "proposal", "anniversary"]
 
 You could ask over text. People do. But if you've been waiting for the right moment to make it official, a Be My Girlfriend picnic in Toronto gives the question the setting it deserves, and gives your nerves something better to do than rehearse.
 
-You choose the spot: a park she loves, a quiet beach, a backyard, or somewhere indoors. We arrive ahead of you and set a low table with cushions, rugs, tableware and glassware, then add the romantic details from our Proposal & Romance package: a custom sign with your question, rose petals, candles and a fresh flower arrangement. It starts at $495 for 2 guests for 2.5 hours, before HST, and prices vary by location across the GTA. All that's left is to walk her over.
+You choose the spot: a park she loves, a quiet beach, a backyard, or somewhere indoors. We arrive ahead of you and set a low table with cushions, rugs, tableware and glassware, then add the romantic details from our Proposal & Romance package: a custom sign with your question, rose petals, candles and a fresh flower arrangement. It starts at {price:proposal-romance} for {guests:proposal-romance} for {hours:proposal-romance}, before HST, and prices vary by location across the GTA. All that's left is to walk her over.
 
 ## Personal, not over the top
 
@@ -51,5 +51,5 @@ If you'd like a little more, a rose bouquet gives you something to hand her, a n
 ## Your plan, step by step
 
 1. **Pick a date and a spot.** Add a backup date in case your first choice is taken. The whole request takes about three minutes.
-2. **We confirm within 24 hours.** You'll get availability and a quote, and a $100 deposit holds the date.
+2. **We confirm within 24 hours.** You'll get availability and a quote, and a {deposit} deposit holds the date.
 3. **Ask.** Everything is in place when you walk up together. All you need to bring is the question.

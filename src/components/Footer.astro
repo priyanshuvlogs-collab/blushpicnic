@@ -40,7 +40,7 @@ const year = new Date().getFullYear();
       <h2 class="heading-sm text-cream/75">Popular occasions</h2>
       <ul class="mt-3 space-y-1">
         {occasions.map((o) => (
-          <li><a href={occasionUrl(o)} class="inline-flex min-h-11 items-center no-underline hover:underline">{o.data.name} picnics</a></li>
+          <li><a href={occasionUrl(o)} class="inline-flex min-h-11 items-center no-underline hover:underline">{o.data.chip}</a></li>
         ))}
         <li><a href="/occasions" class="inline-flex min-h-11 items-center underline decoration-gold underline-offset-4">All occasions</a></li>
       </ul>
@@ -51,7 +51,8 @@ const year = new Date().getFullYear();
       <ul class="mt-3 space-y-1">
         <li><a href={telUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_call"><Icon name="phone" size={18} />Call {s.phoneDisplay}</a></li>
         <li><a href={smsUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_text"><Icon name="message" size={18} />Text us</a></li>
-        <li><a href={s.instagramUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_instagram"><Icon name="instagram" size={18} />{s.instagramHandle}</a></li>
+        <li><a href={s.instagramUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_instagram"><Icon name="instagram" size={18} />Instagram {s.instagramHandle}</a></li>
+        <li><a href={s.tiktokUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_tiktok"><Icon name="tiktok" size={18} />TikTok {s.tiktokHandle}</a></li>
         <li><a href={mailUrl(s)} class="inline-flex min-h-11 items-center gap-3 break-all no-underline hover:underline"><Icon name="mail" size={18} />{s.email}</a></li>
       </ul>
       <p class="mt-5 text-sm text-cream/75">

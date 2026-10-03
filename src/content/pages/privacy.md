@@ -11,7 +11,7 @@ hasPlaceholders: true
   • This is a DRAFT written for a small Ontario business (PIPEDA and CASL). Please have it
     reviewed, fill in every "Placeholder —" line, then set hasPlaceholders: false above —
     that removes the "please review" banner at the top of the page.
-  • Words in {curly braces} are filled in from settings.yaml: {name} {email} {phone} {text} {instagram}
+  • Words in {curly braces} are filled in from settings.yaml: {name} {email} {phone} {text} {instagram} {tiktok}
   • Keep the id="…" on each heading so links to sections keep working.
 -->
 
@@ -19,7 +19,7 @@ hasPlaceholders: true
 
 <h2 id="who-we-are">Who we are</h2>
 
-{name} creates styled luxury picnics across {serviceArea}. This policy explains how we handle personal information shared with us through this website, by text or phone, by email and on Instagram.
+{name} creates styled luxury picnics across {serviceArea}. This policy explains how we handle personal information shared with us through this website, by text or phone, by email and on Instagram or TikTok.
 
 If you have a question about your information, email {email}.
 
@@ -38,7 +38,7 @@ If you have a question about your information, email {email}.
 
 Only share what you're comfortable with. Fields that aren't required can be left blank.
 
-**When you text, call, email or message us on Instagram**, we receive what you send and your contact details on that service.
+**When you text, call, email or message us on Instagram or TikTok**, we receive what you send and your contact details on that service.
 
 **While you fill in the form**, your browser keeps your answers on your own device (in session storage) so a refresh doesn't lose them. They're removed when you close the tab, and nothing is sent to us until you press send.
 
@@ -50,7 +50,7 @@ We use your information to:
 
 - reply to your request, check availability and send your quote;
 - plan, style and deliver your picnic, and keep in touch about it;
-- take your deposit and payment, and keep the records the law requires.
+- take your deposits and payment, return your security deposit, and keep the records the law requires.
 
 We won't add you to a mailing list or send you marketing messages unless you ask us to. If you ever receive one and would rather not, reply "stop" or email {email} and we'll stop.
 

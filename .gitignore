@@ -12,6 +12,7 @@ blush-config.php
 **/blush-config.php
 !api-config/blush-config.example.php
 deploy.env
+backups/
 
 # local test artefacts
 test-results/

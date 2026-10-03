@@ -1,11 +1,312 @@
 ---
-// TEMPORARY stub — the real consent banner + GA4/Meta Pixel loader is built in the analytics step.
+// Cookie consent + analytics loader. Rendered once per page by BaseLayout.
+//
 // Contract other components rely on:
 //   • window.bpTrack(eventName, params?) — safe to call any time; no-ops until consent.
 //   • Any element with data-track="<event>" fires that event on click
 //     (extra params from data-track-* attributes, e.g. data-track-location="header").
 //   • An element with [data-consent-open] reopens the cookie settings.
+//
+// How it works
+//   • IDs come from settings.yaml → analytics.ga4Id / metaPixelId. The env vars PUBLIC_GA4_ID and
+//     PUBLIC_META_PIXEL_ID override them at build time when set (staging, tests).
+//   • No IDs at all → no banner, nothing loads; [data-consent-open] shows a short note instead.
+//   • With an ID → a light, non-modal banner until the visitor chooses. The choice is stored in
+//     localStorage "bp-consent" as {v:1, analytics:true|false, at:ISO}. Only after "Accept" does
+//     src/scripts/analytics.ts download and start GA4 / the Meta Pixel. Decline = nothing loads.
+import { getSettings } from '../lib/site';
+
+const s = await getSettings();
+const env = import.meta.env;
+
+const GA4_ID = /^G-[A-Z0-9]{4,20}$/;
+const PIXEL_ID = /^\d{6,20}$/;
+function analyticsId(envValue: unknown, yamlValue: string, pattern: RegExp, label: string): string {
+  const id = String(envValue || yamlValue || '').trim();
+  if (id && !pattern.test(id)) {
+    console.warn(`[analytics] Ignoring ${label} "${id}" — it doesn't look like a valid ID. Check settings.yaml.`);
+    return '';
+  }
+  return id;
+}
+const ga4 = analyticsId(env.PUBLIC_GA4_ID, s.analytics.ga4Id, GA4_ID, 'GA4 ID (expected G-XXXXXXXXXX)');
+const pixel = analyticsId(env.PUBLIC_META_PIXEL_ID, s.analytics.metaPixelId, PIXEL_ID, 'Meta Pixel ID (expected digits only)');
+const enabled = Boolean(ga4 || pixel);
+const linkClass =
+  'consent-link font-semibold text-plum underline decoration-gold decoration-2 underline-offset-[0.2em] hover:decoration-plum';
 ---
+{enabled ? (
+  <div
+    class="consent"
+    role="region"
+    aria-label="Cookie preferences"
+    tabindex="-1"
+    hidden
+    data-consent="banner"
+    data-ga4={ga4 || undefined}
+    data-pixel={pixel || undefined}
+  >
+    <p class="consent-text">
+      We use optional analytics cookies to understand which pages help people plan their picnic. You can change this any time.
+      <a href="/privacy#cookies" class={linkClass}>Privacy policy</a>
+    </p>
+    <p class="mt-2 text-[0.9rem] text-plum-soft" data-consent-current hidden></p>
+    <div class="consent-actions mt-4 grid grid-cols-2 gap-3">
+      <button type="button" class="btn btn-secondary consent-btn" data-consent-choice="accept">Accept</button>
+      <button type="button" class="btn btn-secondary consent-btn" data-consent-choice="decline">Decline</button>
+    </div>
+  </div>
+) : (
+  <div class="consent" role="region" aria-label="Cookie preferences" tabindex="-1" hidden data-consent="note">
+    <p class="consent-text">
+      This site doesn’t use analytics or advertising cookies right now, so there’s nothing to switch on or off.
+      <a href="/privacy#cookies" class={linkClass}>Privacy policy</a>
+    </p>
+    <div class="consent-actions mt-4">
+      <button type="button" class="btn btn-secondary consent-btn px-8" data-consent-choice="close">Close</button>
+    </div>
+  </div>
+)}
+<div class="consent-spacer" aria-hidden="true" hidden data-consent-spacer></div>
+<p class="sr-only" role="status" data-consent-status></p>
+
+<style>
+  .consent {
+    position: fixed;
+    z-index: 35; /* above the mobile Book/Text bar (30), below the header and its menu (40) */
+    left: max(0.75rem, env(safe-area-inset-left));
+    right: max(0.75rem, env(safe-area-inset-right));
+    /* --consent-dock = height of whatever is docked along the bottom edge (set by the script) */
+    bottom: calc(max(var(--consent-dock, 0px), env(safe-area-inset-bottom, 0px)) + 0.75rem);
+    margin-inline: auto;
+    max-width: 30rem;
+    padding: 1.1rem 1.1rem 1.15rem;
+    background: var(--color-cream);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: 0 1px 2px rgb(59 23 48 / 0.06), var(--shadow-soft);
+    color: var(--color-plum);
+  }
+  .consent:focus { outline: none; }
+  .consent:focus-visible { outline: 3px solid var(--color-plum); outline-offset: 3px; }
+
+  .consent-text {
+    font-size: 0.97rem;
+    line-height: 1.55;
+    max-width: 60ch;
+  }
+  /* inline link: grow the hit area to ~44px without changing the line box */
+  .consent-link {
+    padding: 0.7rem 0.15rem;
+    margin-inline: -0.15rem;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .consent-btn {
+    min-height: 2.75rem;
+    padding-block: 0.6rem;
+  }
+
+  /* very small phones: keep the banner compact */
+  @media (max-width: 359px) {
+    .consent { padding: 0.9rem 0.9rem 0.95rem; }
+    .consent-text { font-size: 0.92rem; line-height: 1.5; }
+    .consent-actions { margin-top: 0.75rem; }
+  }
+
+  @media (min-width: 768px) {
+    .consent {
+      left: var(--gutter);
+      right: auto;
+      bottom: calc(var(--consent-dock, 0px) + 1.5rem);
+      width: min(28rem, calc(100vw - 2 * var(--gutter)));
+      margin-inline: 0;
+      padding: 1.35rem 1.4rem 1.4rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .consent { transition: bottom 0.25s var(--ease-out-soft); }
+    .consent:not([hidden]) { animation: consent-in 0.45s var(--ease-out-soft) both; }
+    @keyframes consent-in {
+      from { opacity: 0; transform: translateY(10px); }
+    }
+  }
+
+  @media print {
+    .consent, .consent-spacer { display: none !important; }
+  }
+</style>
+
 <script>
   import '../scripts/track';
+
+  type Consent = { v: 1; analytics: boolean; at: string };
+  const KEY = 'bp-consent';
+
+  const panel = document.querySelector<HTMLElement>('[data-consent]');
+  const spacer = document.querySelector<HTMLElement>('[data-consent-spacer]');
+  const status = document.querySelector<HTMLElement>('[data-consent-status]');
+
+  if (panel) setUp(panel);
+
+  function readConsent(): Consent | null {
+    try {
+      const raw = localStorage.getItem(KEY);
+      const c = raw ? (JSON.parse(raw) as Partial<Consent>) : null;
+      return c && c.v === 1 && typeof c.analytics === 'boolean' ? (c as Consent) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function saveConsent(analytics: boolean) {
+    const c: Consent = { v: 1, analytics, at: new Date().toISOString() };
+    try {
+      localStorage.setItem(KEY, JSON.stringify(c));
+    } catch {
+      /* storage blocked: the choice still applies to this page */
+    }
+  }
+
+  function announce(message: string) {
+    if (!status) return;
+    status.textContent = message;
+    window.setTimeout(() => {
+      if (status.textContent === message) status.textContent = '';
+    }, 4000);
+  }
+
+  /**
+   * Height of UI docked along the bottom of the viewport (the mobile Book/Text bar, the booking
+   * form's sticky buttons…), so the banner floats above it instead of covering it.
+   */
+  function dockedHeight(panel: HTMLElement): number {
+    const vh = window.innerHeight;
+    let h = 0;
+    for (const x of [0.2, 0.5, 0.8].map((f) => window.innerWidth * f)) {
+      for (const hit of document.elementsFromPoint(x, vh - 2)) {
+        if (panel.contains(hit)) continue;
+        for (let el: Element | null = hit; el && el !== document.body; el = el.parentElement) {
+          const pos = getComputedStyle(el).position;
+          if (pos !== 'fixed' && pos !== 'sticky') continue;
+          const top = el.getBoundingClientRect().top;
+          if (top > vh * 0.5) h = Math.max(h, vh - top);
+          break;
+        }
+      }
+    }
+    return Math.round(h);
+  }
+
+  function setUp(panel: HTMLElement) {
+    const mode = panel.dataset.consent; // "banner" | "note"
+    const ids = { ga4: panel.dataset.ga4 ?? '', pixel: panel.dataset.pixel ?? '' };
+    const current = panel.querySelector<HTMLElement>('[data-consent-current]');
+    const root = document.documentElement;
+    let opener: HTMLElement | null = null;
+    let frame = 0;
+    let started = false; // analytics started on this page
+
+    const analytics = () => import('../scripts/analytics');
+
+    const layout = () => {
+      frame = 0;
+      if (panel.hidden) return;
+      const dock = dockedHeight(panel);
+      panel.style.setProperty('--consent-dock', `${dock}px`);
+      const h = panel.offsetHeight;
+      // room at the end of the page so the footer can scroll clear of the banner…
+      if (spacer) {
+        spacer.style.height = `${h + 24}px`;
+        // …painted like the footer, so the page doesn't end in a stray band of colour
+        const footer = document.querySelector('body > footer') ?? document.querySelector('footer');
+        spacer.style.backgroundColor = footer ? getComputedStyle(footer).backgroundColor : '';
+      }
+      // …and keyboard focus never lands underneath it (WCAG 2.4.11)
+      root.style.scrollPaddingBottom = `${h + dock + 32}px`;
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(layout);
+    };
+    const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(schedule) : null;
+
+    const show = (fromUser: boolean) => {
+      if (current) {
+        const c = readConsent();
+        current.hidden = !c;
+        if (c) current.textContent = `Analytics cookies are currently ${c.analytics ? 'on' : 'off'}.`;
+      }
+      panel.hidden = false;
+      if (spacer) spacer.hidden = false;
+      layout();
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule, { passive: true });
+      resizeObserver?.observe(panel);
+      // Only move focus when the visitor asked for the panel — never on page load.
+      if (fromUser) panel.focus({ preventScroll: true });
+    };
+
+    const hide = () => {
+      const hadFocus = panel.contains(document.activeElement);
+      panel.hidden = true;
+      if (spacer) {
+        spacer.hidden = true;
+        spacer.style.height = '';
+      }
+      root.style.scrollPaddingBottom = '';
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      resizeObserver?.disconnect();
+      if (hadFocus && opener?.isConnected) opener.focus();
+      opener = null;
+    };
+
+    panel.addEventListener('click', async (e) => {
+      const button = (e.target as Element | null)?.closest<HTMLButtonElement>('[data-consent-choice]');
+      if (!button) return;
+      const choice = button.dataset.consentChoice;
+      if (choice === 'close') return hide();
+
+      const previous = readConsent();
+      const accepted = choice === 'accept';
+      saveConsent(accepted);
+      hide();
+      announce(accepted ? 'Thank you. Analytics cookies are on.' : 'Analytics cookies are off.');
+      try {
+        if (accepted) {
+          (await analytics()).loadAnalytics(ids);
+          started = true;
+        } else if (started || previous?.analytics) {
+          (await analytics()).revokeAnalytics(ids);
+          started = false;
+        }
+      } catch {
+        /* analytics must never break the page */
+      }
+    });
+
+    panel.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hide();
+    });
+
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as Element | null)?.closest<HTMLElement>('[data-consent-open]');
+      if (!trigger) return;
+      e.preventDefault();
+      opener = trigger;
+      show(true);
+    });
+
+    if (mode === 'banner') {
+      const c = readConsent();
+      if (!c) show(false);
+      else if (c.analytics) {
+        started = true;
+        analytics()
+          .then((m) => m.loadAnalytics(ids))
+          .catch(() => {});
+      }
+    }
+  }
 </script>

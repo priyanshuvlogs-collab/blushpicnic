@@ -1,0 +1,187 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Blush Picnic — web server rules for public_html (Hostinger).
+#
+#  Hostinger runs LiteSpeed, which reads Apache 2.4 .htaccess files, so everything
+#  here is plain Apache 2.4 syntax, and anything that needs an optional module sits
+#  inside an <IfModule> guard. Every rule is traced with example URLs in
+#  docs/htaccess-tests.md; rerun those checks after changing anything here.
+#
+#  The build copies this file to dist/.htaccess, and deploying puts it in
+#  public_html/.htaccess. The booking API keeps its own rules in api/.htaccess.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Basics ───────────────────────────────────────────────────────────────────
+# No folder listings. MultiViews off, so only the rules below decide which file
+# answers a URL.
+Options -Indexes
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
+
+DirectoryIndex index.html
+AddDefaultCharset UTF-8
+
+# Our own "page not found" page, also shown (with a 403 status) for blocked files.
+ErrorDocument 404 /404.html
+ErrorDocument 403 /404.html
+
+<IfModule mod_mime.c>
+  AddType image/avif .avif
+  AddType image/webp .webp
+  AddType image/svg+xml .svg
+  AddType font/woff2 .woff2
+  AddType font/woff .woff
+  AddType text/javascript .js .mjs
+  AddType application/manifest+json .webmanifest
+  AddCharset UTF-8 .css .js .mjs .json .xml .txt .webmanifest .svg
+</IfModule>
+
+# ── Redirects and clean URLs ─────────────────────────────────────────────────
+# The site's address for every page is https://blushpicnic.com/<page>, with no
+# "www", no ".html" and no slash at the end. Other forms get one 301 redirect.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 0. Leave the server's own internal lookups alone: the clean-URL step below
+  #    (/packages → packages.html) and error pages (/404.html) are "internal
+  #    redirects" with REDIRECT_STATUS set. Without this, an error page for a
+  #    folder such as /_astro/ would be redirected to /_astro, and back: a loop.
+  RewriteCond %{ENV:REDIRECT_STATUS} !^$
+  RewriteRule ^ - [L]
+
+  # 1. www.blushpicnic.com → https://blushpicnic.com, straight to https (one hop).
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  # 2. http:// → https://. X-Forwarded-Proto covers a CDN or proxy that already
+  #    talks https to the visitor, so we never loop.
+  RewriteCond %{HTTPS} !^on$ [NC]
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # 3. Hidden files and folders (.git, .env, deploy state…) → 403.
+  #    /.well-known/ stays open for SSL certificates and domain checks.
+  RewriteRule (?:^|/)\.(?!well-known(?:/|$)) - [F]
+
+  # 4. The booking API manages itself (api/.htaccess). Nothing below touches it.
+  RewriteRule ^api(?:/|$) - [L]
+
+  # 5. Only the booking handler runs PHP. Any other .php file in public_html
+  #    (for example Hostinger's default.php) → 403.
+  RewriteRule \.(?:php\d?|phtml|phar)$ - [F]
+
+  # 6. /index and /index.html → /
+  #    THE_REQUEST is what the visitor actually asked for, so this never fires on
+  #    the server's own internal lookup of index.html for "/".
+  RewriteCond %{THE_REQUEST} ^[A-Z]+\s/+index(?:\.html)?(?:[?\s]) [NC]
+  RewriteRule ^ / [R=301,L]
+
+  # 7. /packages.html → /packages (and /a/b.html → /a/b). Search engine
+  #    verification files (google….html) are left alone.
+  #    (The capturing condition must be the last one: %1 comes from it.)
+  RewriteCond %{REQUEST_URI} !^/google[0-9a-f]+\.html$ [NC]
+  RewriteCond %{THE_REQUEST} ^[A-Z]+\s/+([^?\s]*?)\.html(?:[?\s]) [NC]
+  RewriteRule ^ /%1 [R=301,L,NE]
+
+  # 8. /packages/ → /packages (any number of trailing slashes). "/" itself and
+  #    real folders are untouched.
+  RewriteCond %{REQUEST_URI} /$
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{THE_REQUEST} ^[A-Z]+\s/+([^?\s]*[^/?\s])/+(?:[?\s])
+  RewriteRule ^ /%1 [R=301,L,NE]
+
+  # 9. Clean URLs: /packages is served from packages.html (no redirect).
+  #    Only extension-less paths, so a missing nested page can never loop.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^([^.]+)$ $1.html [L]
+</IfModule>
+
+# ── Files that must never be served ──────────────────────────────────────────
+# Dotfiles, notes, config templates, dependency manifests, logs and backups.
+<FilesMatch "(?:^\.|\.(?:md|markdown|log|bak|backup|old|orig|sql|sqlite|sh|env|ini|dist|lock|sw[op]|tmp)$|\.example\.php$|^(?:composer|package|package-lock)\.json$|^(?:error_log|php_errorlog)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# ── Caching ──────────────────────────────────────────────────────────────────
+# Pages are always rechecked (cheap: unchanged pages answer "304 Not Modified"),
+# so a deploy shows up immediately. Build files in /_astro/ have a fingerprint in
+# their name (packages.Bx7c9d2a.css) and never change, so browsers keep them for a
+# year. Later sections win, so the fingerprint rule comes last.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html?$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+
+  # sitemap-index.xml, sitemap-0.xml, robots.txt
+  <FilesMatch "\.(?:xml|txt)$">
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+
+  <FilesMatch "\.(?:webmanifest|json)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+
+  <FilesMatch "\.(?:css|m?js)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+
+  # Images and fonts outside /_astro/ (logo, favicons, og.jpg): 30 days.
+  <FilesMatch "\.(?:avif|webp|jpe?g|png|gif|svg|ico|woff2?|ttf|otf|mp4|webm)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+
+  # Fingerprinted build files: name.HASH.ext or name.HASH_VARIANT.ext (HASH = 8 characters).
+  <FilesMatch "\.[A-Za-z0-9_-]{8}(?:_[A-Za-z0-9_-]+)?\.(?:css|m?js|avif|webp|jpe?g|png|gif|svg|woff2?|ttf|otf)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# ── Compression ──────────────────────────────────────────────────────────────
+# Brotli where the server has it (gzip as the fallback for older browsers),
+# otherwise gzip. LiteSpeed compresses on its own and ignores this block.
+<IfModule mod_filter.c>
+  <IfModule mod_brotli.c>
+    <IfModule mod_deflate.c>
+      AddOutputFilterByType BROTLI_COMPRESS;DEFLATE text/html text/plain text/css text/xml text/javascript application/javascript application/json application/ld+json application/manifest+json application/xml application/rss+xml image/svg+xml image/x-icon font/ttf font/otf
+    </IfModule>
+    <IfModule !mod_deflate.c>
+      AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml text/javascript application/javascript application/json application/ld+json application/manifest+json application/xml application/rss+xml image/svg+xml image/x-icon font/ttf font/otf
+    </IfModule>
+  </IfModule>
+  <IfModule !mod_brotli.c>
+    <IfModule mod_deflate.c>
+      AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml text/javascript application/javascript application/json application/ld+json application/manifest+json application/xml application/rss+xml image/svg+xml image/x-icon font/ttf font/otf
+    </IfModule>
+  </IfModule>
+</IfModule>
+
+# ── Security headers ─────────────────────────────────────────────────────────
+# HSTS: browsers remember "https only" for one year. No includeSubDomains (so a
+# subdomain without SSL keeps working) and no preload. See HANDOVER.md.
+#
+# Content-Security-Policy: scripts, styles, images and fonts come from this site,
+# plus Google Analytics 4 and the Meta Pixel (they load only after a visitor
+# accepts cookies) and Web3Forms (the backup booking service). 'unsafe-inline' is
+# needed for the small inline scripts and styles Astro writes into every page;
+# everything else (plugins, framing by other sites, posting forms elsewhere,
+# <base> tricks) stays locked. Adding a new outside service (a map, a video, a
+# chat widget) means adding its domain here — see docs/htaccess-tests.md.
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.web3forms.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://connect.facebook.net https://www.facebook.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'self'; upgrade-insecure-requests"
+  Header always unset X-Powered-By
+  Header unset X-Powered-By
+</IfModule>

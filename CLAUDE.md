@@ -23,7 +23,11 @@ Ids: packages `signature`, `proposal-romance`, `celebration` (+ pseudo `not-sure
 - Accessibility: WCAG 2.2 AA, tap targets ≥ 44px (`min-h-11`/`min-h-12`), visible focus, one `h1` per page, logical heading order, labelled controls, keyboard support for every interaction.
 
 ## Analytics
-Call `window.bpTrack(event, params)` or add `data-track="<event>"` (+ `data-track-*` params) to links. Events: `booking_start`, `booking_step` {step}, `booking_submit`, `click_call`, `click_text`, `click_instagram`, `package_select` {package}, `booking_cta` {location}. GA4 / Meta Pixel load only after consent.
+Call `window.bpTrack(event, params)` or add `data-track="<event>"` (+ `data-track-*` params) to links. Events: `booking_start`, `booking_step` {step}, `booking_submit`, `click_call`, `click_text`, `click_instagram`, `click_tiktok`, `package_select` {package}, `booking_cta` {location}, `link_click` {link} (/links page). GA4 / Meta Pixel load only after consent.
+
+## Copy tokens
+Never type prices, deposits or the phone number into copy. In occasion Markdown/frontmatter, `faqs.yaml` and `src/content/pages/*.md` use tokens from `src/lib/tokens.ts`: `{price:signature}`, `{guests:celebration}`, `{hours:proposal-romance}`, `{extraGuest:signature}`, `{deposit}`, `{depositPercent}`, `{securityDeposit}`, `{phone}`, `{text}`, `{email}`, `{instagram}`, `{tiktok}`… `getOccasions()`/`getFaqs()` return filled data; occasion bodies are filled in `[occasion].astro`. The build warns about typed `$` amounts.
 
 ## Commands
-`npm run build` (set `OUT_DIR=dist-xyz CACHE_DIR=node_modules/.astro-xyz` to build in parallel without clobbering), `npm run check`, `npm run placeholders`, `npm run photos`.
+`npm run build` (set `OUT_DIR=dist-xyz CACHE_DIR=node_modules/.astro-xyz` to build in parallel without clobbering), `npm run check`, `npm run test:api` (PHP handler, every occasion), `npm run test:e2e` (Playwright booking flow), `npm test`, `npm run brand` (logo/icons/OG image), `npm run placeholders`, `npm run photos -- <folder>`, `./deploy.sh` (see docs/deployment.md). Docs: README.md (developers), HANDOVER.md (owner), SEO.md.
+- `public/.htaccess` owns redirects, caching and the CSP — a new third-party service needs its domains added there. Don't name files in `public/` like `name.abcdefgh.ext` (they'd get immutable caching).

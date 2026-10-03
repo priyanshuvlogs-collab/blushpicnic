@@ -49,12 +49,11 @@
       label: "Backup date"
       type: date
       half: true
-      help: "Optional, but it helps if your first date is taken."
+      help: "It helps if your first date is taken."
     - id: start_time
       label: "Preferred start time"
       type: time
       required: true
-      half: true
     - id: guests_adults
       label: "Adults"
       type: number
@@ -171,11 +170,6 @@
       type: text
       maxLength: 120
       placeholder: "e.g. peonies, white roses"
-    - id: sign_wording
-      label: "Sign wording"
-      type: text
-      maxLength: 60
-      placeholder: "e.g. Marry Me? or Be My Girlfriend?"
     - id: romance_extras
       label: "Extras you’re considering"
       type: checkboxes
@@ -186,6 +180,19 @@
         - "Photographer"
         - "Family or friends join after"
       help: "No commitment — we’ll include these in your quote."
+
+- id: sign
+  title: "Your sign"
+  step: 3
+  appliesTo: ["romance", "anniversary", "couple"]
+  order: 1.5
+  fields:
+    - id: sign_wording
+      label: "Sign wording"
+      type: text
+      maxLength: 60
+      placeholder: "e.g. Marry Me?, Happy 10 Years, or Just Married"
+      help: "Included with the Proposal & Romance package. Leave blank if you’re not sure yet."
 
 - id: couple
   title: "About the two of you"
@@ -210,18 +217,12 @@
   appliesTo: ["family"]
   order: 1
   fields:
-    - id: kids_count
-      label: "Number of kids"
-      type: number
-      min: 0
-      max: 50
-      half: true
     - id: kids_ages
       label: "Kids’ ages"
       type: text
       maxLength: 80
-      half: true
       placeholder: "e.g. 3, 6 and 9"
+      help: "Add the number of kids in step 2."
     - id: kids_activities
       label: "Activities the kids would love"
       type: text

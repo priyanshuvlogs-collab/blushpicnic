@@ -6,21 +6,21 @@
 # ─────────────────────────────────────────────────────────────
 - id: how-to-book
   question: "How do I book a picnic?"
-  answer: "Send us a booking request through our [booking form](/book) — it takes about three minutes — or text us at (647) 878-0539. We reply within 24 hours to confirm your date and your quote. A deposit then holds your date."
+  answer: "Send us a booking request through our [booking form](/book) — it takes about three minutes — or text us at {phone}. We reply within 24 hours to confirm your date and your quote. A deposit then holds your date."
   category: booking
   order: 1
   showOnHome: true
 
 - id: deposit
   question: "How much is the deposit?"
-  answer: "A **$100 booking deposit** (or **50%** for larger events) holds your date. It's non-refundable. There's also a **$100 refundable security deposit**, returned within 24–48 hours after your event once all rental items are collected and checked. The balance is due before your event."
+  answer: "A **{deposit} booking deposit** (or **{depositPercent}** for larger events) holds your date. It's non-refundable. There's also a **{securityDeposit} refundable security deposit**, returned within 24–48 hours after your event once all rental items are collected and checked. The balance is due before your event."
   category: booking
   order: 2
   showOnHome: true
 
 - id: how-far-ahead
   question: "How far in advance should I book?"
-  answer: "Send your request as soon as you know your date. If your date is coming up soon, text us at (647) 878-0539 and we'll tell you quickly whether we can make it work."
+  answer: "Send your request as soon as you know your date. If your date is coming up soon, text us at {phone} and we'll tell you quickly whether we can make it work."
   category: booking
   order: 3
 
@@ -33,7 +33,7 @@
 
 - id: cost
   question: "How much does a luxury picnic cost?"
-  answer: "Our **Signature Picnic** starts at $375 for 2 guests (+$35 per extra guest), **Proposal & Romance** starts at $495 for 2 guests, and **Celebration** starts at $1,200 for 6–8 guests. All prices are starting prices, before HST, and vary by location. See [all packages](/packages)."
+  answer: "Our **Signature Picnic** starts at {price:signature} for {guests:signature} (+{extraGuest:signature} per extra guest), **Proposal & Romance** starts at {price:proposal-romance} for {guests:proposal-romance}, and **Celebration** starts at {price:celebration} for {guests:celebration}. All prices are starting prices, before HST, and vary by location. See [all packages](/packages)."
   category: pricing
   order: 1
   showOnHome: true
@@ -52,7 +52,7 @@
 
 - id: extra-guests
   question: "Can I add more guests?"
-  answer: "Yes. The Signature Picnic is $35 per extra guest. The Celebration package covers 6–8 guests, and we'll quote larger groups. For the Proposal & Romance package, tell us who's joining and we'll include them in your quote."
+  answer: "Yes. The Signature Picnic is {extraGuest:signature} per extra guest. The Celebration package covers {guests:celebration}, and we'll quote larger groups. For the Proposal & Romance package, tell us who's joining and we'll include them in your quote."
   category: pricing
   order: 4
 
@@ -77,7 +77,7 @@
 
 - id: duration
   question: "How long is a picnic?"
-  answer: "The Signature Picnic is 2 hours, Proposal & Romance is 2.5 hours, and Celebration is 3 hours. Extra time is subject to availability, must be requested before your booking ends, and has an additional charge."
+  answer: "The Signature Picnic is {hours:signature}, Proposal & Romance is {hours:proposal-romance}, and Celebration is {hours:celebration}. Extra time is subject to availability, must be requested before your booking ends, and has an additional charge."
   category: the-day
   order: 4
 
@@ -89,7 +89,7 @@
 
 - id: late
   question: "What if we're running late?"
-  answer: "Your booking includes a 30–45 minute grace period. If you arrive more than 45 minutes late without letting us know, your booking may be rescheduled based on availability — so text us at (647) 878-0539 if you're held up."
+  answer: "Your booking includes a 30–45 minute grace period. If you arrive more than 45 minutes late without letting us know, your booking may be rescheduled based on availability — so text us at {phone} if you're held up."
   category: the-day
   order: 5
 
@@ -126,6 +126,6 @@
 
 - id: damage
   question: "What if something gets damaged?"
-  answer: "You're responsible for the rental items during your booking. Lost, damaged, broken, heavily stained or unreturned items may be deducted from your $100 security deposit, and any cost above it is charged separately. See our [damage policy](/policies#damage)."
+  answer: "You're responsible for the rental items during your booking. Lost, damaged, broken, heavily stained or unreturned items may be deducted from your {securityDeposit} security deposit, and any cost above it is charged separately. See our [damage policy](/policies#damage)."
   category: policies
   order: 3

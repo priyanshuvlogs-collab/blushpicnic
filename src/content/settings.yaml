@@ -32,6 +32,8 @@ site:
     - "Pickering"
     - "Ajax"
   replyTime: "within 24 hours"
+  # Describe the home page hero photo (src/assets/photos/hero.jpg) for screen readers and Google.
+  heroAlt: "Placeholder photo for a styled luxury picnic setup in Toronto (real photo coming soon)"
   tagline: "Luxury picnic setups in Toronto & the GTA"
   description: "Styled luxury picnic setups for proposals, birthdays, dates and celebrations across Toronto and the GTA. We deliver, set up, style and clean up."
   deposit:

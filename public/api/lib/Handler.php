@@ -235,7 +235,7 @@ final class Handler
     {
         $this->corsHeaders();
         if (!$json) {
-            Response::redirect('/thank-you');
+            Response::redirect('/thank-you?ref=' . rawurlencode($ref));
             return;
         }
         $reply = $this->business['replyTime'] ?? 'soon';
@@ -251,7 +251,7 @@ final class Handler
     {
         $this->corsHeaders();
         if (!$json && $status !== 405) {
-            Response::redirect('/book?error=1', $headers);
+            Response::redirect('/book?error=1#booking-error', $headers);
             return;
         }
         $body = ['ok' => false, 'message' => $message];

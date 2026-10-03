@@ -6,7 +6,7 @@ order: 12
 formGroup: "baby"
 recommendedPackage: "celebration"
 metaTitle: "Gender Reveal Picnic Toronto | Styled Reveals | Blush Picnic"
-metaDescription: "A gender reveal picnic in Toronto or the GTA with a themed backdrop, custom signage and a reveal that suits your spot. Starting at $1,200 before HST."
+metaDescription: "A gender reveal picnic in Toronto or the GTA with a themed backdrop, custom signage and a reveal that suits your spot. Starting at {price:celebration} before HST."
 h1: "A gender reveal picnic built around the big moment"
 lede: "Balloon pop, cake cut or something else entirely: you choose how to reveal, and we style the backdrop, signage and setting around it, anywhere in Toronto and the GTA."
 heroImage: "../../assets/photos/occasion-gender-reveal.jpg"
@@ -28,7 +28,7 @@ faqs:
   - q: "Can the result stay secret, even from the parents?"
     a: "Yes. Turn on the surprise section and tell us who's being surprised and who else knows, so we're clear on exactly who's in on it."
   - q: "How many guests does the Celebration package cover?"
-    a: "Celebration covers 6–8 guests for 3 hours, with a full themed setup, a backdrop, a balloon garland or flower arch, custom signage and games. It starts at $1,200, before HST, and varies by location. Inviting a bigger crowd? We'll quote your group."
+    a: "Celebration covers {guests:celebration} for {hours:celebration}, with a full themed setup, a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration}, before HST, and varies by location. Inviting a bigger crowd? We'll quote your group."
   - q: "Could we add a custom cake or a photographer?"
     a: "Both are available as add-ons, along with a neon sign. Tick the ones you'd like in the booking form and we'll include them in your quote. Note any allergies while you're there."
 related: ["baby-shower", "announcement", "new-baby"]
@@ -50,12 +50,12 @@ If even you don't know the result yet, turn on the surprise section and tell us 
 
 ## The setup behind the moment
 
-We recommend our Celebration package for a reveal. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games for the wait, starting at $1,200 for 6–8 guests for 3 hours, before HST. Inviting more people than that? We'll quote your group. Prices vary by location across the GTA, and we confirm your exact quote by message.
+We recommend our Celebration package for a reveal. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games for the wait, starting at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST. Inviting more people than that? We'll quote your group. Prices vary by location across the GTA, and we confirm your exact quote by message.
 
 Want both a balloon garland and a flower arch? Add whichever one isn't in your setup. A custom cake, a neon sign and a photographer are optional too. Tick them in the form and we'll include them in your quote.
 
 ## Countdown to the reveal
 
 1. **Tell us the plan.** The parents' names, due date or month, your reveal of choice, a date, a backup date and the area.
-2. **Hear from us within 24 hours.** We confirm availability and your quote, and suggest a park-friendly reveal if your spot needs one. A $100 deposit, or 50% for larger events, holds the date.
+2. **Hear from us within 24 hours.** We confirm availability and your quote, and suggest a park-friendly reveal if your spot needs one. A {deposit} deposit, or {depositPercent} for larger events, holds the date.
 3. **Three, two, one.** Everything is styled when your guests arrive, and we take care of the clean-up afterwards.

@@ -6,7 +6,7 @@ order: 15
 formGroup: "bridal"
 recommendedPackage: "celebration"
 metaTitle: "Bridal Shower Picnic Toronto | For the Bride-to-Be | Blush Picnic"
-metaDescription: "A bridal shower picnic in Toronto or the GTA with her name on custom signage and a flower arch or balloon backdrop. Starting at $1,200 before HST."
+metaDescription: "A bridal shower picnic in Toronto or the GTA with her name on custom signage and a flower arch or balloon backdrop. Starting at {price:celebration} before HST."
 h1: "The bridal shower picnic that makes you look effortless"
 lede: "For the maid of honour, the bridesmaids or the mother of the bride: a bridal shower picnic in Toronto or across the GTA with her name on the signage, a backdrop made for photos, and nothing for you to haul home afterwards."
 heroImage: "../../assets/photos/occasion-bridal-shower.jpg"
@@ -22,9 +22,9 @@ highlights:
     text: "One person sends the details, we reply with one quote, and you share it with everyone chipping in."
 faqs:
   - q: "What will the shower setup look like?"
-    a: "We recommend our Celebration package: a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games. It starts at $1,200 for 6–8 guests for 3 hours, before HST, and the price varies by location."
+    a: "We recommend our Celebration package: a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST, and the price varies by location."
   - q: "With bridesmaids, mothers and aunts, we're more than 8. What happens then?"
-    a: "We quote your group. Celebration covers 6–8 guests, so enter the number of adults (and any kids) in the booking form and we'll price the shower as a whole. For larger events the deposit is 50%, with the balance due before the shower."
+    a: "We quote your group. Celebration covers {guests:celebration}, so enter the number of adults (and any kids) in the booking form and we'll price the shower as a whole. For larger events the deposit is {depositPercent}, with the balance due before the shower."
   - q: "Can we surprise the bride?"
     a: "Yes. Switch on the surprise section, tell us who else is in on it and how she'll arrive, and choose whether our team waits out of sight or leaves before she gets there."
   - q: "Can the setup match the wedding colours?"
@@ -46,12 +46,12 @@ The booking form asks for the bride's name and the wedding date, then for the co
 
 If it's a surprise, switch on the surprise section and tell us who else is in on it and how she'll arrive. You decide whether our team stays out of sight nearby or leaves before she walks up.
 
-Our Celebration package is made for a gathering like this. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games, starting at $1,200 for 6–8 guests for 3 hours, before HST. Bridal parties have a way of growing, and when yours does, we'll quote the larger group. Prices vary by location across the GTA.
+Our Celebration package is made for a gathering like this. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games, starting at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST. Bridal parties have a way of growing, and when yours does, we'll quote the larger group. Prices vary by location across the GTA.
 
 Food isn't part of the packages, so bring a spread, or add a custom cake or a grazing board to your request. A photographer, a neon sign or a rose bouquet for the bride can be added the same way, each one priced into your quote.
 
 ## The maid of honour's checklist
 
 1. **Collect the details.** The bride's name, the wedding date, the colours, a shower date and a backup date.
-2. **Share the quote.** We reply within 24 hours with availability and a quote to pass around the bridal party. A $100 deposit, or 50% for larger events, holds the date.
+2. **Share the quote.** We reply within 24 hours with availability and a quote to pass around the bridal party. A {deposit} deposit, or {depositPercent} for larger events, holds the date.
 3. **Celebrate her.** Everything is styled when the guests arrive, and the pack-up is ours.

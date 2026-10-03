@@ -27,7 +27,7 @@
 - id: flower-arch
   name: "Flower arch"
   order: 4
-  description: "A floral arch to frame the moment — our most-photographed backdrop."
+  description: "A floral arch to frame the moment."
   price: null
   priceSuffix: ""
 

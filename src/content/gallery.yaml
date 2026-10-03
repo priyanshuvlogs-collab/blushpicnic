@@ -24,7 +24,7 @@
 
 - id: anniversary-1
   image: "../assets/photos/gallery-anniversary-1.jpg"
-  alt: "Placeholder image for a anniversary picnic setup in Toronto (real photo coming soon)"
+  alt: "Placeholder image for an anniversary picnic setup in Toronto (real photo coming soon)"
   occasions: ["anniversary"]
   order: 3
   showOnHome: true
@@ -48,7 +48,7 @@
 
 - id: just-engaged-1
   image: "../assets/photos/gallery-just-engaged-1.jpg"
-  alt: "Placeholder image for a engagement celebration picnic setup in Toronto (real photo coming soon)"
+  alt: "Placeholder image for an engagement celebration picnic setup in Toronto (real photo coming soon)"
   occasions: ["just-engaged"]
   order: 6
   showOnHome: false
@@ -72,7 +72,7 @@
 
 - id: appreciation-1
   image: "../assets/photos/gallery-appreciation-1.jpg"
-  alt: "Placeholder image for a appreciation picnic setup in Toronto (real photo coming soon)"
+  alt: "Placeholder image for an appreciation picnic setup in Toronto (real photo coming soon)"
   occasions: ["appreciation"]
   order: 9
   showOnHome: false
@@ -152,7 +152,7 @@
 
 - id: anniversary-2
   image: "../assets/photos/gallery-anniversary-2.jpg"
-  alt: "Placeholder image for a anniversary picnic setup in Toronto (real photo coming soon)"
+  alt: "Placeholder image for an anniversary picnic setup in Toronto (real photo coming soon)"
   occasions: ["anniversary"]
   order: 19
   showOnHome: false
@@ -176,7 +176,7 @@
 
 - id: just-engaged-2
   image: "../assets/photos/gallery-just-engaged-2.jpg"
-  alt: "Placeholder image for a engagement celebration picnic setup in Toronto (real photo coming soon)"
+  alt: "Placeholder image for an engagement celebration picnic setup in Toronto (real photo coming soon)"
   occasions: ["just-engaged"]
   order: 22
   showOnHome: false
@@ -200,7 +200,7 @@
 
 - id: appreciation-2
   image: "../assets/photos/gallery-appreciation-2.jpg"
-  alt: "Placeholder image for a appreciation picnic setup in Toronto (real photo coming soon)"
+  alt: "Placeholder image for an appreciation picnic setup in Toronto (real photo coming soon)"
   occasions: ["appreciation"]
   order: 25
   showOnHome: false

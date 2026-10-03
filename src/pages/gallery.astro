@@ -61,6 +61,9 @@ const description = `Browse luxury picnic setups across ${s.serviceArea} by occa
         <p class="measure mt-4 text-plum-soft">
           Follow {s.instagramHandle} for new looks, styling details and ideas for your own picnic. Saw something there you love? Send us a DM, or describe it in your booking request.
         </p>
+        <p class="mt-3 text-plum-soft">
+          We're on TikTok too: <a href={s.tiktokUrl} rel="noopener" class="tiktok-link">{s.tiktokHandle}</a>
+        </p>
       </div>
       <div class="flex flex-col gap-3 sm:flex-row lg:col-span-5 lg:justify-end">
         <a href={s.instagramUrl} rel="noopener" class="btn btn-primary" data-track="click_instagram" data-track-location="gallery">
@@ -77,3 +80,17 @@ const description = `Browse luxury picnic setups across ${s.serviceArea} by occa
 
   <Lightbox />
 </BaseLayout>
+
+<style>
+  .tiktok-link {
+    display: inline-block;
+    padding-block: 0.65rem;
+    font-weight: 600;
+    color: var(--color-plum);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+  .tiktok-link:hover { text-decoration-color: var(--color-plum); }
+</style>

@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Checks every change: type-check, build, PHP syntax, shell scripts, the booking API
+#  tests and the .htaccess rules on a real Apache. Nothing is deployed from here
+#  (deploys are manual: .github/workflows/deploy.yml).
+#
+#  Browser tests (Playwright) run as a separate job on pull requests and when started
+#  by hand (Actions → CI → Run workflow), because they need a browser download and take
+#  longer. Make them required in Settings → Branches once you work with pull requests.
+# ─────────────────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Check, build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # Hostinger runs PHP 8.1+; test the booking handler on 8.2.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring
+          coverage: none
+          tools: none
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Type-check (astro check)
+        run: npx astro check
+
+      - name: Build
+        run: npm run build
+
+      - name: PHP syntax (php -l)
+        run: |
+          find . -name '*.php' -not -path './node_modules/*' -not -path './.git/*' -print0 \
+            | xargs -0 -n1 php -l
+
+      - name: Shell scripts (bash -n, shellcheck)
+        run: |
+          bash -n deploy.sh
+          bash -n docs/htaccess-test.sh
+          if command -v shellcheck >/dev/null; then shellcheck deploy.sh docs/htaccess-test.sh; fi
+
+      - name: Booking API tests
+        if: ${{ hashFiles('tests/api-test.mjs') != '' }}
+        env:
+          API_TEST_DIST: dist
+          API_TEST_SKIP_BUILD: '1'
+        run: npm run test:api
+
+      - name: Server rules (.htaccess) on Apache 2.4
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends apache2 >/dev/null
+          bash docs/htaccess-test.sh dist
+
+  e2e:
+    name: Browser tests (Playwright)
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring
+          coverage: none
+          tools: none
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: npm run test:e2e
+
+      - name: Keep the test report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

@@ -144,7 +144,7 @@ final class FormSchema
             }
         }
         if ($out['depositSummary'] === '') {
-            $out['depositSummary'] = $this->depositSentence() . ' The balance is due before your event. Deposits are non-refundable.';
+            $out['depositSummary'] = $this->depositSentence() . ' The booking deposit is non-refundable, and the balance is due before your event.';
         }
         return $out;
     }

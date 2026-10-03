@@ -14,7 +14,7 @@ interface Props {
 const { html: input, ruled = false, class: className = '' } = Astro.props;
 const s = await getSettings();
 const raw = input ?? (Astro.slots.has('default') ? await Astro.slots.render('default') : '');
-const html = fillTokens(raw.replace(/<!--[\s\S]*?-->/g, ''), s);
+const html = await fillTokens(raw.replace(/<!--[\s\S]*?-->/g, ''));
 ---
 <div class:list={['prose-blush page-prose', ruled && 'page-prose--ruled', className]} set:html={html} />
 
@@ -43,6 +43,6 @@ const html = fillTokens(raw.replace(/<!--[\s\S]*?-->/g, ''), s);
   }
   .page-prose :global(* + .placeholder-note) { margin-top: 1.25em; }
   .page-prose :global(.placeholder-note + *) { margin-top: 1.4em; }
-  .page-prose :global(.placeholder-note ul) { margin-top: 0.6em; }
+  .page-prose :global(.placeholder-note > * + *) { margin-top: 0.6em; }
   .page-prose :global(.placeholder-note li + li) { margin-top: 0.3em; }
 </style>

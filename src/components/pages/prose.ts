@@ -1,43 +1,8 @@
-// Fills {tokens} in rendered long-form page HTML (src/content/pages/*.md) with values from
-// settings.yaml, so prices, deposit amounts and contact details are never typed twice.
-// Unknown {words} are left exactly as written.
-import { money, mailUrl, smsUrl, telUrl, type Settings } from '../../lib/site';
+// Helpers for long-form pages (src/content/pages/*.md): {token} filling and section lists.
 
-const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-/** Token → HTML. Contact tokens render as links so they work on phones. */
-export function tokenMap(s: Settings): Record<string, string> {
-  const handle = s.instagramHandle;
-  return {
-    name: esc(s.name),
-    deposit: esc(money(s.deposit.standard)),
-    depositPercent: `${s.deposit.largeEventPercent}%`,
-    depositSummary: esc(s.deposit.summary),
-    taxNote: esc(s.taxNote),
-    locationNote: esc(s.locationNote),
-    replyTime: esc(s.replyTime),
-    serviceArea: esc(s.serviceArea),
-    phone: `<a href="${esc(telUrl(s))}" data-track="click_call">${esc(s.phoneDisplay)}</a>`,
-    text: `<a href="${esc(smsUrl(s))}" data-track="click_text">${esc(s.phoneDisplay)}</a>`,
-    email: `<a href="${esc(mailUrl(s))}" class="break-all">${esc(s.email)}</a>`,
-    instagram: `<a href="${esc(s.instagramUrl)}" rel="noopener" data-track="click_instagram">${esc(handle)}</a>`,
-  };
-}
-
-/** Replace {token} occurrences in an HTML string. Tokens inside attribute values are left alone. */
-export function fillTokens(html: string, s: Settings): string {
-  const map = tokenMap(s);
-  // Split on tags so a token is only ever replaced in text content, never inside an attribute.
-  return html
-    .split(/(<[^>]+>)/g)
-    .map((part) => (part.startsWith('<') ? part : part.replace(/\{([a-zA-Z]+)\}/g, (m, key: string) => map[key] ?? m)))
-    .join('');
-}
-
-/** Plain-text version (for meta tags and JSON-LD). */
-export function fillTokensText(text: string, s: Settings): string {
-  return fillTokens(text, s).replace(/<[^>]+>/g, '');
-}
+// Token filling now lives in src/lib/tokens.ts (shared with occasion pages and FAQs, and it knows
+// package prices too). These re-exports keep the page components' imports short.
+export { fillTokensHtml as fillTokens, fillTokensText } from '../../lib/tokens';
 
 const decode = (t: string) =>
   t
@@ -56,7 +21,8 @@ const decode = (t: string) =>
  */
 export function h2Sections(html: string): { id: string; label: string }[] {
   const out: { id: string; label: string }[] = [];
-  for (const m of html.matchAll(/<h2\b[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/gi)) {
+  const clean = html.replace(/<!--[\s\S]*?-->/g, ''); // editing notes may mention <h2 id="…">
+  for (const m of clean.matchAll(/<h2\b[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/gi)) {
     out.push({ id: m[1], label: decode(m[2]) });
   }
   return out;

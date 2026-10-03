@@ -27,7 +27,7 @@ const verbs = [
   { word: 'Deliver', text: `Everything arrives with us — ${kit} and more.` },
   { word: 'Set up', text: 'We get there ahead of you and build the picnic in the spot you chose.' },
   { word: 'Style', text: 'Your colours, your flowers, your words on the letter board. The details are the point.' },
-  { word: 'Clean up', text: 'When your time is up, we come back, pack everything away and clean up.' },
+  { word: 'Clean up', text: 'When your time is up, we come back and pack away all the decor and equipment.' },
 ];
 
 const commitments = [
@@ -37,7 +37,7 @@ const commitments = [
   },
   {
     title: 'You arrive. We handle the rest.',
-    text: 'Nothing to carry, nothing to set up, nothing to clean. Your only job is to show up, with the ring, the cake or the people you love.',
+    text: 'Nothing to carry, nothing to set up, no decor to pack away. Your only job is to show up, with the ring, the cake or the people you love.',
   },
   {
     title: `Clear starting prices, ${s.taxNote}`,
@@ -65,8 +65,10 @@ const jsonLd = [
     about: { '@id': businessId(s) },
   },
 ];
+const metaDescription = await fillTokensText(d.metaDescription);
+const lede = d.lede ? await fillTokensText(d.lede) : undefined;
 ---
-<BaseLayout title={d.metaTitle} description={fillTokensText(d.metaDescription, s)} {jsonLd}>
+<BaseLayout title={d.metaTitle} description={metaDescription} {jsonLd}>
   <section aria-labelledby="page-title">
     <div class="container-x pt-3 md:pt-5">
       <Breadcrumbs crumbs={crumbs} />
@@ -74,7 +76,7 @@ const jsonLd = [
     <div class="container-x grid items-center gap-x-14 gap-y-12 pb-16 pt-4 md:pb-20 md:pt-6 lg:grid-cols-12 lg:pb-24">
       <div class="hero-enter lg:col-span-7">
         <h1 id="page-title" class="max-w-[15ch]">{d.title}</h1>
-        {d.lede && <p class="mt-6 max-w-[38rem] text-lg text-plum-soft md:mt-8 md:text-[1.25rem] md:leading-relaxed">{fillTokensText(d.lede, s)}</p>}
+        {lede && <p class="mt-6 max-w-[38rem] text-lg text-plum-soft md:mt-8 md:text-[1.25rem] md:leading-relaxed">{lede}</p>}
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6 md:mt-10">
           <a href="/book" class="btn btn-primary btn-lg" data-track="booking_cta" data-track-location="about_hero">Book your picnic</a>
           <a href="#story" class="link-arrow self-start sm:self-auto">Read our story<Icon name="arrow-right" size={18} class="rotate-90" /></a>
@@ -148,15 +150,15 @@ const jsonLd = [
             <p class="mt-4 text-plum-soft">Parks, beaches, backyards, homes and indoor venues, anywhere in {s.serviceArea}.</p>
             <p class="mt-4 text-plum-soft">{s.locationNote}</p>
             <a href="/book" class="link-arrow mt-4" data-track="booking_cta" data-track-location="about_where">
-              Not sure where yet? We'll suggest a spot<Icon name="arrow-right" size={18} />
+              Need a spot? We'll suggest one<Icon name="arrow-right" size={18} />
             </a>
           </div>
           <div class="lg:col-span-7">
             <h3 class="heading-sm text-sage-ink">Areas we serve</h3>
-            <ul class="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+            <ul class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 sm:gap-x-6">
               {s.serviceAreaList.map((city) => (
-                <li class="flex items-center gap-2.5 font-display text-[1.25rem] leading-snug md:text-[1.4rem]">
-                  <Icon name="map-pin" size={16} class="shrink-0 text-sage-ink" />{city}
+                <li class="flex items-center gap-2 font-display text-[1.1rem] leading-snug sm:text-[1.25rem] md:text-[1.4rem]">
+                  <Icon name="map-pin" size={16} class="shrink-0 text-sage-ink" /><span class="min-w-0">{city}</span>
                 </li>
               ))}
             </ul>

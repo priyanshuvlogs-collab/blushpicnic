@@ -95,19 +95,27 @@ export function breadcrumbs(s: Settings, crumbs: { name: string; path: string }[
   };
 }
 
-export function occasionService(s: Settings, o: Occasion, pkg: Package): Thing {
+export function occasionService(s: Settings, o: Occasion, pkg: Package, opts: { image?: string } = {}): Thing {
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
     name: `${o.data.name} picnic setup in Toronto`,
     serviceType: 'Luxury picnic setup',
     description: o.data.metaDescription,
+    image: opts.image,
     provider: { '@id': businessId(s) },
     areaServed: { '@type': 'AdministrativeArea', name: 'Greater Toronto Area' },
     offers: {
       '@type': 'Offer',
       priceCurrency: 'CAD',
       price: pkg.data.priceFrom,
+      priceSpecification: {
+        '@type': 'PriceSpecification',
+        price: pkg.data.priceFrom,
+        priceCurrency: 'CAD',
+        minPrice: pkg.data.priceFrom,
+        valueAddedTaxIncluded: false,
+      },
       description: `${pkg.data.name} starting at $${pkg.data.priceFrom} ${pkg.data.guestsLabel}, ${s.taxNote}.`,
       url: `${s.url}/book?occasion=${o.id}&package=${pkg.id}`,
     },

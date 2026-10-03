@@ -6,7 +6,7 @@ order: 3
 formGroup: "anniversary"
 recommendedPackage: "proposal-romance"
 metaTitle: "Anniversary Picnic Toronto | Romantic Setups | Blush Picnic"
-metaDescription: "A romantic anniversary picnic in Toronto or the GTA: candles, rose petals, fresh flowers and your words on the sign. Starting at $495 before HST."
+metaDescription: "A romantic anniversary picnic in Toronto or the GTA: candles, rose petals, fresh flowers and your words on the sign. Starting at {price:proposal-romance} before HST."
 h1: "An anniversary picnic that remembers where you started"
 lede: "Rose petals, candlelight, fresh flowers and a sign in your own words, set out in Toronto or anywhere in the GTA. Maybe even in the place where it all began."
 heroImage: "../../assets/photos/occasion-anniversary.jpg"
@@ -22,11 +22,11 @@ highlights:
     text: "Rose petals, candles and a fresh flower arrangement on top of the full Signature setup of rugs, cushions, tableware and florals."
 faqs:
   - q: "Which package do you recommend for an anniversary?"
-    a: "We recommend Proposal & Romance: everything in the Signature Picnic plus a custom sign, rose petals, candles and a fresh flower arrangement. It starts at $495 for 2 guests for 2.5 hours, before HST, and the price varies by location."
+    a: "We recommend Proposal & Romance: everything in the Signature Picnic plus a custom sign, rose petals, candles and a fresh flower arrangement. It starts at {price:proposal-romance} for {guests:proposal-romance} for {hours:proposal-romance}, before HST, and the price varies by location."
   - q: "Can you include printed photos of us?"
     a: "Yes. Answer “Yes please” to printed photos in the booking form and send us the photos after booking. Choose “Maybe — tell me more” if you'd like to talk it through first."
   - q: "Is there a simpler option?"
-    a: "Yes. The Signature Picnic starts at $375 for 2 guests for 2 hours, before HST, with a letter board for your anniversary message instead of a custom sign, rose petals and candles."
+    a: "Yes. The Signature Picnic starts at {price:signature} for {guests:signature} for {hours:signature}, before HST, with a letter board for your anniversary message instead of a custom sign, rose petals and candles."
   - q: "Can I plan it without my partner finding out?"
     a: "Absolutely. Mark it as a surprise in the booking form, tell us who else knows and how your partner will arrive, and choose whether our team stays hidden nearby or leaves before you get there."
   - q: "Can we add a photographer or a bouquet?"
@@ -38,7 +38,7 @@ related: ["picnic-date", "newly-married", "proposal"]
 
 Anniversaries have a way of sneaking up on you. The restaurant gets booked out of habit; the gift gets decided the week before. If this year you'd like to do something that feels like the two of you, an anniversary picnic in Toronto is a lovely way to slow down and look back on how far you've come.
 
-We set the scene before you arrive: a low table dressed with rugs, cushions, tableware, glassware and fresh florals, plus the romantic details of our Proposal & Romance package — rose petals, candles, a fresh flower arrangement and a custom sign. Two and a half hours later, we come back and clear it all away. It starts at $495 for 2 guests, before HST, and prices vary by location across the GTA.
+We set the scene before you arrive: a low table dressed with rugs, cushions, tableware, glassware and fresh florals, plus the romantic details of our Proposal & Romance package — rose petals, candles, a fresh flower arrangement and a custom sign. Two and a half hours later, we come back and clear it all away. It starts at {price:proposal-romance} for {guests:proposal-romance}, before HST, and prices vary by location across the GTA.
 
 ## The details that make it yours
 
@@ -51,5 +51,5 @@ Want more? Add a photographer, so you finally have pictures of the two of you to
 ## Three steps to your anniversary
 
 1. **Tell us the year and the place.** Choose a date and a backup, and share the little details that matter to you both.
-2. **Hear back within 24 hours.** We confirm availability and your quote, and a $100 deposit holds the date.
+2. **Hear back within 24 hours.** We confirm availability and your quote, and a {deposit} deposit holds the date.
 3. **Arrive together.** Everything is waiting when you get there, and we pack it all up afterwards.

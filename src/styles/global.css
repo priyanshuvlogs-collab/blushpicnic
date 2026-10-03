@@ -212,7 +212,13 @@
     background: var(--color-sage);
   }
   .prose-blush ol { padding-left: 1.3em; list-style: decimal; }
-  .prose-blush a { font-weight: 600; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; }
+  .prose-blush a {
+    font-weight: 600;
+    text-decoration-line: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+  }
+  .prose-blush a:hover { text-decoration-color: var(--color-plum); }
   .prose-blush strong { font-weight: 650; }
 
   /* Clearly marked owner-content placeholder */

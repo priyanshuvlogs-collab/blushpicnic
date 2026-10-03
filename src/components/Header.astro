@@ -1,7 +1,12 @@
 ---
 import Wordmark from './Wordmark.astro';
 import Icon from './Icon.astro';
-import { getSettings, telUrl, smsUrl } from '../lib/site';
+import { getSettings, telUrl, smsUrl, bookUrl } from '../lib/site';
+
+interface Props {
+  book?: { occasion?: string; package?: string };
+}
+const bookHref = bookUrl(Astro.props.book);
 
 const s = await getSettings();
 const nav = [
@@ -45,7 +50,7 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
       <a href={smsUrl(s)} class="inline-flex size-12 items-center justify-center rounded-full md:hidden" data-track="click_text">
         <Icon name="message" size={22} label="Text us" />
       </a>
-      <a href="/book" class="btn btn-primary hidden !min-h-11 !px-5 sm:inline-flex" data-track="booking_cta" data-track-location="header">Book your picnic</a>
+      <a href={bookHref} class="btn btn-primary hidden !min-h-11 !px-5 sm:inline-flex" data-track="booking_cta" data-track-location="header">Book your picnic</a>
       <button
         type="button"
         class="inline-flex size-12 items-center justify-center rounded-full lg:hidden"
@@ -74,7 +79,7 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
         ))}
       </ul>
       <div class="mt-6 grid gap-3 pb-2">
-        <a href="/book" class="btn btn-primary btn-lg w-full" data-track="booking_cta" data-track-location="menu">Book your picnic</a>
+        <a href={bookHref} class="btn btn-primary btn-lg w-full" data-track="booking_cta" data-track-location="menu">Book your picnic</a>
         <div class="grid grid-cols-3 gap-2 text-sm">
           <a href={telUrl(s)} class="btn btn-secondary !px-2" data-track="click_call"><Icon name="phone" size={18} />Call</a>
           <a href={smsUrl(s)} class="btn btn-secondary !px-2" data-track="click_text"><Icon name="message" size={18} />Text</a>

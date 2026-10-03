@@ -1,6 +1,7 @@
 // Typed helpers over the content collections. Components import from here rather than
 // calling getCollection directly, so sorting and lookups stay consistent site-wide.
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { getTokenMaps, fillDeep, fillText, literalPrices } from './tokens';
 
 export type Settings = CollectionEntry<'settings'>['data'];
 export type Package = CollectionEntry<'packages'>;
@@ -21,8 +22,38 @@ export async function getSettings(): Promise<Settings> {
 
 export const getPackages = async () => (await getCollection('packages')).sort(byOrder);
 export const getAddons = async () => (await getCollection('addons')).sort(byOrder);
-export const getOccasions = async () => (await getCollection('occasions')).sort(byOrder);
-export const getFaqs = async () => (await getCollection('faqs')).sort(byOrder);
+
+// Occasion frontmatter and FAQ answers may contain {tokens} (see src/lib/tokens.ts); they are
+// filled here so every page gets real values. The occasion body is filled where it's rendered.
+const warned = new Set<string>();
+function warnLiteralPrices(where: string, text: string) {
+  const found = literalPrices(text);
+  if (found.length && !warned.has(where)) {
+    warned.add(where);
+    console.warn(`[content] ${where} contains a typed price (${found.join(', ')}). Use a token like {price:signature} or {deposit} so it updates with packages.yaml/settings.yaml.`);
+  }
+}
+
+export async function getOccasions() {
+  const maps = await getTokenMaps();
+  return (await getCollection('occasions')).sort(byOrder).map((o) => {
+    warnLiteralPrices(`src/content/occasions/${o.id}.md`, JSON.stringify({ ...o.data, heroImage: undefined }) + (o.body ?? ''));
+    const data = fillDeep(o.data, maps);
+    if (data.metaDescription.length > 160 && !warned.has(o.id + ':meta')) {
+      warned.add(o.id + ':meta');
+      console.warn(`[content] src/content/occasions/${o.id}.md: metaDescription is ${data.metaDescription.length} characters once filled in — keep it under 160.`);
+    }
+    return { ...o, data };
+  });
+}
+
+export async function getFaqs() {
+  const maps = await getTokenMaps();
+  return (await getCollection('faqs')).sort(byOrder).map((f) => {
+    warnLiteralPrices(`src/content/faqs.yaml (${f.id})`, f.data.answer + f.data.question);
+    return { ...f, data: { ...f.data, question: fillText(f.data.question, maps), answer: fillText(f.data.answer, maps) } };
+  });
+}
 export const getGallery = async () => (await getCollection('gallery')).sort(byOrder);
 export const getReviews = async () => await getCollection('reviews');
 export const getFormGroups = async () =>
@@ -35,7 +66,7 @@ export async function getPackage(id: string) {
 }
 
 export async function getOccasion(id: string) {
-  return getEntry('occasions', id);
+  return (await getOccasions()).find((o) => o.id === id);
 }
 
 /** "$1,200" — whole dollars, Canadian formatting. */

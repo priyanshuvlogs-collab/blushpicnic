@@ -59,7 +59,9 @@ import Icon from '../Icon.astro';
     overscroll-behavior: contain;
   }
   .lightbox::backdrop {
-    background: rgb(33 10 26 / 0.94);
+    background: rgb(33 10 26 / 0.96);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
   @media (prefers-reduced-motion: no-preference) {
     .lightbox[open] { animation: lb-in 0.25s var(--ease-out-soft); }

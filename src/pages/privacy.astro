@@ -20,14 +20,16 @@ const sections = h2Sections(html);
 
 const crumbs = [{ name: 'Privacy', path: '/privacy' }];
 const jsonLd = [breadcrumbs(s, crumbs)];
+const metaDescription = await fillTokensText(d.metaDescription);
+const lede = d.lede ? await fillTokensText(d.lede) : undefined;
 ---
-<BaseLayout title={d.metaTitle} description={fillTokensText(d.metaDescription, s)} {jsonLd}>
+<BaseLayout title={d.metaTitle} description={metaDescription} {jsonLd}>
   <section aria-labelledby="page-title" class="container-x pt-3 md:pt-5">
     <Breadcrumbs crumbs={crumbs} />
     <div class="hero-enter mt-6 grid gap-x-16 gap-y-6 pb-12 md:mt-10 md:pb-16 lg:grid-cols-12 lg:items-end">
       <div class="lg:col-span-6">
         <h1 id="page-title">{d.title}</h1>
-        {d.lede && <p class="mt-6 max-w-[34rem] text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">{fillTokensText(d.lede, s)}</p>}
+        {lede && <p class="mt-6 max-w-[34rem] text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">{lede}</p>}
       </div>
       <div class="lg:col-span-6 lg:pb-1">
         {d.hasPlaceholders && (

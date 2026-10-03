@@ -24,6 +24,7 @@ const settings = defineCollection({
     serviceArea: z.string(),
     serviceAreaList: z.array(z.string()),
     replyTime: z.string(),
+    heroAlt: z.string().min(10),
     tagline: z.string(),
     description: z.string(),
     deposit: z.object({
@@ -112,7 +113,7 @@ const occasions = defineCollection({
       ]),
       recommendedPackage: z.enum(['signature', 'proposal-romance', 'celebration']),
       metaTitle: z.string().max(65),
-      metaDescription: z.string().min(70).max(160),
+      metaDescription: z.string().min(70).max(220), // ≤160 after {tokens} are filled (checked at build)
       h1: z.string(),
       lede: z.string(),
       heroImage: image(),
@@ -166,7 +167,7 @@ const pages = defineCollection({
   schema: z.object({
     title: z.string(),
     metaTitle: z.string().max(65),
-    metaDescription: z.string().min(70).max(160),
+    metaDescription: z.string().min(70).max(220), // ≤160 after {tokens} are filled (checked at build)
     lede: z.string().optional(),
     hasPlaceholders: z.boolean().default(false),
   }),

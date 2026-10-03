@@ -59,6 +59,20 @@ export interface FormSchema {
   securityDeposit: { amount: number; returnedWithin: string; summary: string };
   letterBoardMaxWords: number;
   taxNote: string;
+  /** Business facts for the PHP emails and error messages (from settings.yaml). */
+  business: {
+    name: string;
+    url: string;
+    phoneDisplay: string;
+    phoneE164: string;
+    email: string;
+    instagramHandle: string;
+    instagramUrl: string;
+    replyTime: string;
+    depositSummary: string;
+    locationNote: string;
+    taxNote: string;
+  };
 }
 
 export async function buildFormSchema(): Promise<FormSchema> {
@@ -126,6 +140,19 @@ export async function buildFormSchema(): Promise<FormSchema> {
     securityDeposit: s.securityDeposit,
     letterBoardMaxWords: s.booking.letterBoardMaxWords,
     taxNote: s.taxNote,
+    business: {
+      name: s.name,
+      url: s.url,
+      phoneDisplay: s.phoneDisplay,
+      phoneE164: s.phoneE164,
+      email: s.email,
+      instagramHandle: s.instagramHandle,
+      instagramUrl: s.instagramUrl,
+      replyTime: s.replyTime,
+      depositSummary: `${s.deposit.summary} ${s.securityDeposit.summary}`,
+      locationNote: s.locationNote,
+      taxNote: s.taxNote,
+    },
   };
 }
 

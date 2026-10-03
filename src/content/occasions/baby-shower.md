@@ -6,7 +6,7 @@ order: 13
 formGroup: "baby"
 recommendedPackage: "celebration"
 metaTitle: "Baby Shower Picnic Toronto | Themed Shower Setups | Blush Picnic"
-metaDescription: "A baby shower picnic in Toronto or the GTA, themed in your colours with a backdrop and custom signage, all cleared away after. Starting at $1,200 before HST."
+metaDescription: "A baby shower picnic in Toronto or the GTA, themed in your colours with a backdrop and custom signage, all cleared away after. Starting at {price:celebration} before HST."
 h1: "A baby shower picnic the host gets to enjoy, too"
 lede: "You're throwing a baby shower in Toronto for someone you love. We take care of the styling, the backdrop and the pack-up, so you can spend the afternoon with the parent-to-be instead of your to-do list."
 heroImage: "../../assets/photos/occasion-baby-shower.jpg"
@@ -22,9 +22,9 @@ highlights:
     text: "Throwing it as a surprise? Tell us who's in on it and how the guest of honour will arrive, and we'll plan around it."
 faqs:
   - q: "Why do you recommend Celebration for a baby shower?"
-    a: "Showers are usually group affairs, and Celebration is our full themed setup for groups: a backdrop, a balloon garland or flower arch, custom signage and games. It starts at $1,200 for 6–8 guests for 3 hours, before HST, and varies by location."
+    a: "Showers are usually group affairs, and Celebration is our full themed setup for groups: a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST, and varies by location."
   - q: "Our guest list is longer than 8. Can you still do it?"
-    a: "Yes. Celebration covers 6–8 guests, and larger groups get their own quote. Enter the number of adults and kids in the booking form. For larger events the deposit is 50% rather than $100, with the balance due before the shower."
+    a: "Yes. Celebration covers {guests:celebration}, and larger groups get their own quote. Enter the number of adults and kids in the booking form. For larger events the deposit is {depositPercent} rather than {deposit}, with the balance due before the shower."
   - q: "Can the shower be a surprise for the mom-to-be?"
     a: "Of course. Switch on the surprise section, tell us who else knows and how she'll arrive, and choose whether our team stays out of sight nearby or heads off before she gets there."
   - q: "Do you supply food for the shower?"
@@ -48,12 +48,12 @@ Planning it as a surprise? Switch on the surprise section and tell us who else k
 
 ## The Celebration setup
 
-We recommend our Celebration package for showers. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games for between the gifts, and it starts at $1,200 for 6–8 guests for 3 hours, before HST. Showers often grow beyond that, and when yours does, we'll quote the larger group. Prices vary by location across the GTA, and we confirm your exact quote by message.
+We recommend our Celebration package for showers. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games for between the gifts, and it starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST. Showers often grow beyond that, and when yours does, we'll quote the larger group. Prices vary by location across the GTA, and we confirm your exact quote by message.
 
 Food isn't part of the packages, so bring your own spread or add a grazing board and a custom cake to your request. A photographer, a neon sign or a flower arch alongside the balloons can be added the same way, each one priced into your quote.
 
 ## From group chat to shower
 
 1. **Fill in the shower basics.** The parents' names, due date or month, colours, a date and a backup date.
-2. **Hold the date.** Within 24 hours we send availability and a quote. A $100 deposit, or 50% for larger events, secures it, and the balance is due before the shower.
+2. **Hold the date.** Within 24 hours we send availability and a quote. A {deposit} deposit, or {depositPercent} for larger events, secures it, and the balance is due before the shower.
 3. **Welcome your guests.** The setup is styled before anyone arrives, and we clear it all away when the shower wraps up.

@@ -1,7 +1,7 @@
 ---
 // One landing page per occasion, generated from src/content/occasions/*.md.
 // URL comes from the frontmatter urlSlug, e.g. /proposal-picnic-toronto.
-import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaBand from '../components/CtaBand.astro';
 import ReviewsSection from '../components/ReviewsSection.astro';
@@ -12,10 +12,10 @@ import OccasionPackage from '../components/occasion/OccasionPackage.astro';
 import OccasionPhotos from '../components/occasion/OccasionPhotos.astro';
 import OccasionFaqs from '../components/occasion/OccasionFaqs.astro';
 import RelatedOccasions from '../components/occasion/RelatedOccasions.astro';
-import BookContext from '../components/occasion/BookContext.astro';
 import { picnicPhrase, picnicPhrasePlural, capitalize } from '../components/occasion/text';
 import { getSettings, getOccasions, getPackage, occasionUrl, type Occasion } from '../lib/site';
 import { occasionService, breadcrumbs, faqPage } from '../lib/schema';
+import { fillTokensHtml } from '../lib/tokens';
 
 export async function getStaticPaths() {
   const occasions = await getOccasions();
@@ -29,20 +29,22 @@ const { entry } = Astro.props;
 const d = entry.data;
 const s = await getSettings();
 const pkg = await getPackage(d.recommendedPackage);
-const { Content } = await render(entry);
+// Body copy may contain {tokens} (prices, deposit…) — filled from the data files at build time.
+const storyHtml = await fillTokensHtml(entry.rendered?.html ?? '');
+const heroOg = await getImage({ src: d.heroImage, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 
 const crumbs = [
   { name: 'Occasions', path: '/occasions' },
   { name: capitalize(picnicPhrasePlural(entry)), path: occasionUrl(entry) },
 ];
-const jsonLd = [occasionService(s, entry, pkg), breadcrumbs(s, crumbs), faqPage(d.faqs)];
+const jsonLd = [occasionService(s, entry, pkg, { image: new URL(heroOg.src, s.url).href }), breadcrumbs(s, crumbs), faqPage(d.faqs)];
 const phrase = picnicPhrase(entry);
 ---
-<BaseLayout title={d.metaTitle} description={d.metaDescription} image={d.heroImage} imageAlt={d.heroAlt} {jsonLd}>
+<BaseLayout title={d.metaTitle} description={d.metaDescription} image={d.heroImage} imageAlt={d.heroAlt} {jsonLd} book={{ occasion: entry.id, package: pkg.id }}>
   <OccasionHero {entry} {pkg} {crumbs} />
   <OccasionHighlights {entry} />
   <OccasionStory>
-    <Content />
+    <Fragment set:html={storyHtml} />
   </OccasionStory>
   <OccasionPackage {entry} {pkg} />
   <OccasionPhotos {entry} {pkg} />
@@ -55,5 +57,4 @@ const phrase = picnicPhrase(entry);
     package={pkg.id}
     buttonLabel={`Plan your ${phrase}`}
   />
-  <BookContext occasion={entry.id} package={pkg.id} />
 </BaseLayout>

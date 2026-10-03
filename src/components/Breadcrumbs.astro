@@ -10,8 +10,7 @@ const all = [{ name: 'Home', path: '/' }, ...crumbs];
 <nav aria-label="Breadcrumb" class={`text-sm text-plum-soft ${className}`}>
   <ol class="flex flex-wrap items-center gap-x-2">
     {all.map((c, i) => (
-      <li class="flex items-center gap-2">
-        {i > 0 && <span aria-hidden="true" class="text-gold-ink">/</span>}
+      <li class="crumb flex items-center gap-2">
         {i === all.length - 1
           ? <span aria-current="page">{c.name}</span>
           : <a href={c.path} class="inline-flex min-h-11 items-center underline-offset-4 hover:underline">{c.name}</a>}
@@ -19,3 +18,12 @@ const all = [{ name: 'Home', path: '/' }, ...crumbs];
     ))}
   </ol>
 </nav>
+
+<style>
+  /* Separator belongs to the crumb it precedes, so a wrapped line never starts with a lone "/". */
+  .crumb + .crumb::before {
+    content: "/";
+    color: var(--color-gold-ink);
+    margin-right: 0.1rem;
+  }
+</style>

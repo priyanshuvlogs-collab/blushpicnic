@@ -6,7 +6,7 @@ order: 10
 formGroup: "honour"
 recommendedPackage: "celebration"
 metaTitle: "Retirement Picnic Toronto | Send-Off Celebrations | Blush Picnic"
-metaDescription: "Plan a retirement picnic in Toronto or the GTA, with custom signage for their years of service, a themed backdrop and games. Starting at $1,200 before HST."
+metaDescription: "Plan a retirement picnic in Toronto or the GTA, with custom signage for their years of service, a themed backdrop and games. Starting at {price:celebration} before HST."
 h1: "A send-off as generous as the career behind it"
 lede: "Whether you're the colleague who volunteered or the family planning it quietly, a retirement picnic in Toronto or anywhere in the GTA gives years of hard work a proper farewell, styled, set up and cleared away for you."
 heroImage: "../../assets/photos/occasion-retirement.jpg"
@@ -22,11 +22,11 @@ highlights:
     text: "Colleagues, partners and grandchildren can all come along. Add the adults and kids to your guest count and we'll quote the group."
 faqs:
   - q: "What's in a retirement picnic?"
-    a: "We recommend our Celebration package: a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games. It starts at $1,200 for 6–8 guests for 3 hours, before HST, and the price varies by location."
+    a: "We recommend our Celebration package: a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST, and the price varies by location."
   - q: "Half the office wants to come. Can you go beyond 8 guests?"
-    a: "Yes. Celebration covers 6–8 guests, and we quote larger groups. Enter the number of adults and kids in the booking form and we'll price the whole send-off."
+    a: "Yes. Celebration covers {guests:celebration}, and we quote larger groups. Enter the number of adults and kids in the booking form and we'll price the whole send-off."
   - q: "Can we book it through the company?"
-    a: "You can. The booking form asks for a company name and whether you need an invoice, so answer both there. For larger events the deposit is 50% rather than $100, with the balance due before the picnic. Deposits are non-refundable."
+    a: "You can. The booking form asks for a company name and whether you need an invoice, so answer both there. For larger events the deposit is {depositPercent} rather than {deposit}, with the balance due before the picnic. Deposits are non-refundable."
   - q: "How do we keep it from the retiree?"
     a: "Turn on the surprise section of the booking form. Tell us who else knows and how they'll arrive (a made-up “last meeting” in their calendar, perhaps), then choose whether our team stays out of sight nearby or leaves before they get there."
   - q: "Can we add a cake or a photographer?"
@@ -46,12 +46,12 @@ A retirement picnic in Toronto gives the day a setting of its own. Pick a park n
 
 **If you're family**, leave the company name blank and tell us about the person instead: their favourite colours, the nickname only the family uses, the grandchildren who'll be there. Turn on the surprise section if they don't know it's coming.
 
-Our Celebration package suits a send-off like this. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games, and it starts at $1,200 for 6–8 guests for 3 hours, before HST. Larger groups get their own quote, and prices vary by location across the GTA.
+Our Celebration package suits a send-off like this. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games, and it starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST. Larger groups get their own quote, and prices vary by location across the GTA.
 
 To round it off, add a custom cake, a grazing board to share, a neon sign, or a photographer to catch the speeches and the hugs. Tick them in the form and we'll price them into your quote.
 
 ## Planning the send-off
 
 1. **Start with the guest of honour.** Their name, the message you'd like to mark, a date and a backup date.
-2. **We come back with a quote.** Within 24 hours you'll have availability and pricing. A $100 deposit, or 50% for larger events, holds the date.
+2. **We come back with a quote.** Within 24 hours you'll have availability and pricing. A {deposit} deposit, or {depositPercent} for larger events, holds the date.
 3. **Make the speech.** Everything is in place when they arrive, and the clean-up is ours.

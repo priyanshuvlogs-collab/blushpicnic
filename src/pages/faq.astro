@@ -36,7 +36,7 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
 <BaseLayout {title} {description} {jsonLd}>
   <section aria-labelledby="page-title" class="container-x pt-3 md:pt-5">
     <Breadcrumbs crumbs={crumbs} />
-    <div class="mt-6 grid gap-x-16 gap-y-10 pb-12 md:mt-10 md:pb-16 lg:grid-cols-12 lg:items-end">
+    <div class="mt-6 grid gap-x-16 gap-y-10 pb-12 md:mt-10 md:pb-16 lg:grid-cols-12 lg:items-center">
       <div class="hero-enter lg:col-span-6">
         <h1 id="page-title" class="max-w-[11ch]">Picnic questions, answered</h1>
         <p class="mt-6 max-w-[34rem] text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">
@@ -47,23 +47,32 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
       <div class="hero-enter-delay lg:col-span-6">
         <div class="rounded-[var(--radius-card)] bg-cream px-6 py-6 sm:px-8 sm:py-7">
           <h2 class="heading-sm text-plum-soft">At a glance</h2>
-          <ul class="mt-3 divide-y divide-line">
+          <ul class="mt-2 divide-y divide-line">
             {pkgs.map((p) => (
-              <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-3">
-                <span class="font-semibold">{p.data.name}</span>
-                <span class="text-plum-soft">
-                  Starting at <span class="font-display text-[1.3rem] leading-none text-plum">{money(p.data.priceFrom)}</span>
-                  <span class="whitespace-nowrap">· {p.data.guestsLabel.replace(/^for\s+/i, '')}</span>
-                  <span class="whitespace-nowrap">· {hours(p.data.durationHours)}</span>
+              <li class="glance-row">
+                <span>
+                  <span class="block font-semibold">{p.data.name}</span>
+                  <span class="block text-[0.95rem] text-plum-soft">{p.data.guestsLabel.replace(/^for\s+/i, '')} · {hours(p.data.durationHours)}</span>
+                </span>
+                <span class="text-right">
+                  <span class="block text-[0.85rem] leading-tight text-plum-soft">Starting at</span>
+                  <span class="block font-display text-[1.5rem] leading-none">{money(p.data.priceFrom)}</span>
                 </span>
               </li>
             ))}
-            <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-3">
-              <span class="font-semibold">Deposit</span>
-              <span class="text-plum-soft">
-                <span class="font-display text-[1.3rem] leading-none text-plum">{money(s.deposit.standard)}</span>
-                <span class="whitespace-nowrap">· or {s.deposit.largeEventPercent}% for larger events</span>
+            <li class="glance-row">
+              <span>
+                <span class="block font-semibold">Booking deposit</span>
+                <span class="block text-[0.95rem] text-plum-soft">Holds your date, or {s.deposit.largeEventPercent}% for larger events</span>
               </span>
+              <span class="block text-right font-display text-[1.5rem] leading-none">{money(s.deposit.standard)}</span>
+            </li>
+            <li class="glance-row">
+              <span>
+                <span class="block font-semibold">Security deposit</span>
+                <span class="block text-[0.95rem] text-plum-soft">Refundable, returned within {s.securityDeposit.returnedWithin}</span>
+              </span>
+              <span class="block text-right font-display text-[1.5rem] leading-none">{money(s.securityDeposit.amount)}</span>
             </li>
           </ul>
           <p class="mt-3 text-[0.92rem] leading-relaxed text-plum-soft">
@@ -100,3 +109,13 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
 
   <CtaBand />
 </BaseLayout>
+
+<style>
+  .glance-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 1rem;
+    padding-block: 0.8rem;
+  }
+</style>
