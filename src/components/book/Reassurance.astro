@@ -1,0 +1,46 @@
+---
+// Short "good to know" column beside (desktop) or below (mobile) the booking form.
+// Every line comes from settings.yaml: reply time, deposit summary, phone.
+import Icon from '../Icon.astro';
+import { getSettings, smsUrl, telUrl } from '../../lib/site';
+
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+const s = await getSettings();
+---
+<section class:list={['bk-reassure', className]} aria-labelledby="bk-reassure-title">
+  <h2 id="bk-reassure-title" class="sr-only">Good to know before you send</h2>
+  <ul class="bk-reassure-list">
+    <li>
+      <Icon name="clock" size={20} class="bk-reassure-icon" />
+      <div>
+        <p class="bk-reassure-title">We reply {s.replyTime}</p>
+        <p>By text or email, with availability and your quote.</p>
+      </div>
+    </li>
+    <li>
+      <Icon name="calendar" size={20} class="bk-reassure-icon" />
+      <div>
+        <p class="bk-reassure-title">Holding your date</p>
+        <p>{s.deposit.summary}</p>
+      </div>
+    </li>
+    <li>
+      <Icon name="message" size={20} class="bk-reassure-icon" />
+      <div>
+        <p class="bk-reassure-title">Prefer to text?</p>
+        <p>
+          <a href={smsUrl(s)} class="bk-link" data-track="click_text">Text {s.phoneDisplay}</a>
+          <span class="whitespace-nowrap">or <a href={telUrl(s)} class="bk-link" data-track="click_call">call</a>.</span>
+        </p>
+      </div>
+    </li>
+  </ul>
+  <p class="bk-reassure-foot">
+    <a href="/policies" class="bk-link">Booking policies</a>
+    <span aria-hidden="true">·</span>
+    <a href="/privacy" class="bk-link">Privacy</a>
+  </p>
+</section>

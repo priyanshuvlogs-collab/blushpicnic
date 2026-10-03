@@ -1,0 +1,60 @@
+---
+// "At a glance" price card for the top of /packages, styled like a printed menu with an arched
+// top (the page's one use of the arch motif). Each line jumps to that package's section.
+import { getSettings, getPackages, money, hours } from '../../lib/site';
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+const s = await getSettings();
+const pkgs = await getPackages();
+---
+<div class={`menu-wrap ${className}`}>
+<aside aria-labelledby="menu-title" class="price-menu relative bg-cream px-6 pb-7 pt-[clamp(4.5rem,18vw,6.5rem)] sm:px-10 sm:pb-9">
+  <h2 id="menu-title" class="text-center text-[1.6rem] md:text-[1.9rem]">At a glance</h2>
+  <p class="mt-1 text-center text-[0.95rem] text-plum-soft">Starting prices, {s.taxNote}</p>
+  <ul class="mt-6">
+    {pkgs.map((p) => {
+      const d = p.data;
+      return (
+        <li class="border-t border-line first:border-t-0">
+          <a href={`#${p.id}`} class="group block py-4 no-underline">
+            <span class="flex items-end gap-3">
+              <span class="font-display text-[1.3rem] leading-tight group-hover:underline group-hover:decoration-gold group-hover:decoration-2 group-hover:underline-offset-4 sm:text-[1.45rem]">{d.name}</span>
+              <span aria-hidden="true" class="mb-[0.45rem] h-0 min-w-4 flex-1 border-b border-dotted border-plum/35"></span>
+              <span class="shrink-0 text-right">
+                <span class="block text-[0.8rem] leading-tight text-plum-soft">Starting at</span>
+                <span class="block font-display text-[1.6rem] leading-none sm:text-[1.8rem]">{money(d.priceFrom)}</span>
+              </span>
+            </span>
+            <span class="mt-1.5 block text-[0.92rem] text-plum-soft">
+              {d.guestsLabel} · {hours(d.durationHours)}{d.extraGuestPrice !== null && <> · +{money(d.extraGuestPrice)} per extra guest</>}
+            </span>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+  <p class="mt-3 border-t border-line pt-4 text-center text-[0.88rem] leading-relaxed text-plum-soft">{s.locationNote}</p>
+</aside>
+</div>
+
+<style>
+  /* Container units give an exact semicircle on top without shrinking the bottom corners
+     (999px radii would scale every corner down proportionally). */
+  .menu-wrap { container-type: inline-size; }
+  .price-menu {
+    border-radius: 50cqi 50cqi var(--radius-card) var(--radius-card);
+    box-shadow: var(--shadow-soft);
+  }
+  /* Fine gold inner rule following the arch — like a printed menu card. */
+  .price-menu::before {
+    content: "";
+    position: absolute;
+    inset: 0.6rem;
+    border: 1px solid var(--color-gold);
+    border-radius: calc(50cqi - 0.6rem) calc(50cqi - 0.6rem) calc(var(--radius-card) - 0.4rem) calc(var(--radius-card) - 0.4rem);
+    pointer-events: none;
+    opacity: 0.7;
+  }
+</style>

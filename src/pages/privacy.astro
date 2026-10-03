@@ -1,0 +1,70 @@
+---
+// /privacy — plain-language privacy policy from src/content/pages/privacy.md (a DRAFT until the
+// owner reviews it: while hasPlaceholders is true, a "please review" note shows at the top).
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Prose from '../components/pages/Prose.astro';
+import PageToc from '../components/pages/PageToc.astro';
+import ContactStrip from '../components/pages/ContactStrip.astro';
+import { fillTokensText, h2Sections } from '../components/pages/prose';
+import { getSettings, mailUrl } from '../lib/site';
+import { breadcrumbs } from '../lib/schema';
+
+const s = await getSettings();
+const entry = await getEntry('pages', 'privacy');
+if (!entry) throw new Error('src/content/pages/privacy.md is missing');
+const d = entry.data;
+const html = entry.rendered?.html ?? '';
+const sections = h2Sections(html);
+
+const crumbs = [{ name: 'Privacy', path: '/privacy' }];
+const jsonLd = [breadcrumbs(s, crumbs)];
+---
+<BaseLayout title={d.metaTitle} description={fillTokensText(d.metaDescription, s)} {jsonLd}>
+  <section aria-labelledby="page-title" class="container-x pt-3 md:pt-5">
+    <Breadcrumbs crumbs={crumbs} />
+    <div class="hero-enter mt-6 grid gap-x-16 gap-y-6 pb-12 md:mt-10 md:pb-16 lg:grid-cols-12 lg:items-end">
+      <div class="lg:col-span-6">
+        <h1 id="page-title">{d.title}</h1>
+        {d.lede && <p class="mt-6 max-w-[34rem] text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">{fillTokensText(d.lede, s)}</p>}
+      </div>
+      <div class="lg:col-span-6 lg:pb-1">
+        {d.hasPlaceholders && (
+          <p class="placeholder-note max-w-[34rem]">
+            <strong>Placeholder — please review before publishing.</strong> This privacy policy is a plain-language draft. Have it checked, fill in the marked gaps, and then this note will be removed.
+          </p>
+        )}
+        <p class:list={['max-w-[34rem] text-plum-soft', d.hasPlaceholders && 'mt-5']}>
+          Questions about your information? Email <a href={mailUrl(s)} class="privacy-mail break-all">{s.email}</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-t border-line">
+    <div class="container-x grid gap-x-16 gap-y-10 py-12 md:py-16 lg:grid-cols-12 lg:py-20">
+      <aside class="lg:col-span-3">
+        <PageToc items={sections} class="lg:sticky lg:top-28" />
+      </aside>
+      <div class="lg:col-span-8 lg:col-start-5">
+        <Prose {html} ruled />
+      </div>
+    </div>
+  </div>
+
+  <ContactStrip title="Questions about your information?" text={`Email is best for privacy requests. For anything else, text us — we reply ${s.replyTime}.`} location="privacy" />
+</BaseLayout>
+
+<style>
+  .privacy-mail {
+    display: inline-block;
+    padding-block: 0.6rem;
+    font-weight: 600;
+    color: var(--color-plum);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+// This occasion's FAQs (frontmatter `faqs`), with a quick route to a human for anything else.
+import FaqList from '../FaqList.astro';
+import Icon from '../Icon.astro';
+import { getSettings, smsUrl, type Occasion } from '../../lib/site';
+import { picnicPhrasePlural } from './text';
+
+interface Props {
+  entry: Occasion;
+}
+const { entry } = Astro.props;
+const s = await getSettings();
+---
+<section aria-labelledby="faq-title" class="section-y border-t border-line">
+  <div class="container-x grid gap-x-16 gap-y-10 lg:grid-cols-12">
+    <div class="lg:col-span-4">
+      <h2 id="faq-title" class="max-w-[14ch] lg:text-[2.6rem]">Questions about {picnicPhrasePlural(entry)}</h2>
+      <p class="mt-5 max-w-[32ch] text-plum-soft">
+        Can't see yours? Text us and we'll reply {s.replyTime}.
+      </p>
+      <div class="mt-4 flex flex-col items-start">
+        <a href={smsUrl(s)} class="link-arrow" data-track="click_text" data-track-location="occasion_faq"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
+        <a href="/faq" class="link-arrow">All questions<Icon name="arrow-right" size={18} /></a>
+      </div>
+    </div>
+    <FaqList items={entry.data.faqs} class="lg:col-span-8" />
+  </div>
+</section>

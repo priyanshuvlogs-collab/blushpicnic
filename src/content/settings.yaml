@@ -14,6 +14,8 @@ site:
   smsBody: "Hi Blush Picnic! I'd love to book a picnic. My date is: "
   instagramHandle: "@blush.picnic"
   instagramUrl: "https://instagram.com/blush.picnic"
+  tiktokHandle: "@blush.picnic"
+  tiktokUrl: "https://www.tiktok.com/@blush.picnic"
   serviceArea: "Toronto and the GTA"
   serviceAreaList:
     - "Toronto"
@@ -35,7 +37,12 @@ site:
   deposit:
     standard: 100
     largeEventPercent: 50
-    summary: "A $100 deposit (or 50% for larger events) holds your date. The balance is due before your event. Deposits are non-refundable."
+    summary: "A $100 booking deposit (or 50% for larger events) holds your date. It's non-refundable. The balance is due before your event."
+  # Refundable security deposit for the rented decor and equipment
+  securityDeposit:
+    amount: 100
+    returnedWithin: "24–48 hours"
+    summary: "A $100 refundable security deposit is required for every booking. It's returned within 24–48 hours after the event, once all rental items are collected and checked."
   taxNote: "before HST"
   locationNote: "Prices vary by location across the GTA. We confirm your exact quote by message."
 

@@ -1,0 +1,100 @@
+---
+// Home packages preview. Not three identical cards: the featured package (packages.yaml
+// `featured: true`) is a large photo block; the others are quiet editorial rows.
+// Everything — names, prices, guests, time, inclusions — comes from packages.yaml.
+import { Picture } from 'astro:assets';
+import Icon from '../Icon.astro';
+import PriceTag from '../PriceTag.astro';
+import { getSettings, getPackages, bookUrl } from '../../lib/site';
+
+const s = await getSettings();
+const pkgs = await getPackages();
+const featuredId = (pkgs.find((p) => p.data.featured) ?? pkgs[Math.min(1, pkgs.length - 1)]).id;
+// "Book the Signature Picnic" / "Book the Celebration package"; the featured button stays short.
+const bookLabel = (name: string) => `Book the ${name}${/picnic$/i.test(name) ? '' : ' package'}`;
+---
+<section aria-labelledby="packages-title" class="section-y">
+  <div class="container-x">
+    <div class="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-10">
+      <h2 id="packages-title" class="max-w-[16ch] lg:col-span-6">Three ways to picnic, priced in plain sight</h2>
+      <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
+        Every package is delivered, set up, styled and cleared away by us. Guests and time are included in the price you see — all starting prices, {s.taxNote}.
+      </p>
+    </div>
+
+    <div class="mt-10 md:mt-14">
+      {pkgs.map((p) => {
+        const d = p.data;
+        const key = d.includes.slice(0, 4);
+        if (p.id === featuredId) {
+          return (
+            <article aria-labelledby={`home-pkg-${p.id}`} class="my-6 grid overflow-hidden rounded-[var(--radius-card)] bg-cream md:my-8 lg:grid-cols-12">
+              <div class="relative lg:col-span-6">
+                <Picture
+                  src={d.image}
+                  alt={d.imageAlt}
+                  widths={[400, 640, 800, 1100]}
+                  sizes="(min-width: 1280px) 608px, (min-width: 1024px) 48vw, 100vw"
+                  formats={['avif', 'webp']}
+                  fallbackFormat="jpg"
+                  loading="lazy"
+                  class="aspect-[4/3] h-full w-full object-cover lg:absolute lg:inset-0 lg:aspect-auto"
+                />
+              </div>
+              <div class="px-6 py-8 sm:px-10 sm:py-10 lg:col-span-6 lg:px-14 lg:py-14">
+                <h3 id={`home-pkg-${p.id}`} class="text-[2.1rem] md:text-[2.6rem]">{d.name}</h3>
+                <p class="mt-2 text-plum-soft">{d.tagline}</p>
+                <PriceTag pkg={p} size="md" class="mt-6" />
+                {d.includesFrom && <p class="mt-7 font-semibold">{d.includesFrom}</p>}
+                <ul class:list={['grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-1', d.includesFrom ? 'mt-3' : 'mt-7']}>
+                  {key.map((item) => (
+                    <li class="flex gap-2.5">
+                      <Icon name="check" size={20} class="mt-[0.2em] shrink-0 self-start text-sage-ink" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <a href={bookUrl({ package: p.id })} class="btn btn-primary btn-lg" data-track="package_select" data-track-package={p.id}>Book {d.name}</a>
+                  <a href={`/packages#${p.id}`} class="link-arrow">Full details<span class="sr-only"> of the {d.name} package</span></a>
+                </div>
+              </div>
+            </article>
+          );
+        }
+        return (
+          <article aria-labelledby={`home-pkg-${p.id}`} class="pkg-row grid gap-x-8 gap-y-5 border-t border-line py-9 md:grid-cols-12 md:py-11">
+            <div class="md:col-span-7 lg:col-span-5">
+              <h3 id={`home-pkg-${p.id}`} class="text-[1.9rem] md:text-[2.2rem]">{d.name}</h3>
+              <p class="mt-1.5 text-plum-soft">{d.tagline}</p>
+            </div>
+            <PriceTag pkg={p} size="md" class="md:col-span-5 md:row-span-2 lg:col-span-3" />
+            <ul class="grid gap-1.5 text-[0.98rem] md:col-span-7 lg:col-span-4 lg:col-start-9 lg:row-span-2 lg:row-start-1">
+              {key.map((item) => (
+                <li class="flex gap-2.5">
+                  <Icon name="check" size={18} class="mt-[0.22em] shrink-0 self-start text-sage-ink" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div class="md:col-span-12 lg:col-span-5 lg:col-start-1 lg:row-start-2 lg:self-end">
+              <a href={bookUrl({ package: p.id })} class="link-arrow" data-track="package_select" data-track-package={p.id}>
+                {bookLabel(d.name)}<Icon name="arrow-right" size={18} />
+              </a>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    <div class="mt-8 flex flex-col gap-2 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+      <p class="max-w-[42rem] text-[0.95rem] text-plum-soft">{s.locationNote}</p>
+      <a href="/packages" class="link-arrow shrink-0">Compare packages &amp; add-ons<Icon name="arrow-right" size={18} /></a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The row right after the featured block doesn't need a top rule: the block already separates them. */
+  article:not(.pkg-row) + .pkg-row { border-top-color: transparent; }
+</style>

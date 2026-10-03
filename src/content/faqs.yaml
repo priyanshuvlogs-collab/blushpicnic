@@ -13,7 +13,7 @@
 
 - id: deposit
   question: "How much is the deposit?"
-  answer: "A **$100 deposit** holds your date, or **50%** for larger events. The balance is due before your event. Deposits are non-refundable."
+  answer: "A **$100 booking deposit** (or **50%** for larger events) holds your date. It's non-refundable. There's also a **$100 refundable security deposit**, returned within 24–48 hours after your event once all rental items are collected and checked. The balance is due before your event."
   category: booking
   order: 2
   showOnHome: true
@@ -61,7 +61,6 @@
   answer: "We deliver, set up, style and clean up. The Signature Picnic includes a low table, rugs, cushions, tableware, glassware, florals, a letter board message, a Bluetooth speaker and games. The other packages build on it — see [packages](/packages)."
   category: the-day
   order: 1
-  showOnHome: true
 
 - id: food
   question: "Is food included?"
@@ -72,15 +71,27 @@
 
 - id: clean-up
   question: "Do we need to clean up afterwards?"
-  answer: "No. When your time is up, we come back, pack everything away and clean up."
+  answer: "No — when your time is up, we come back and pack away all the decor and equipment. We just ask that you take your own food, drinks and rubbish with you so the space is left clean."
   category: the-day
   order: 3
 
 - id: duration
   question: "How long is a picnic?"
-  answer: "The Signature Picnic is 2 hours, Proposal & Romance is 2.5 hours, and Celebration is 3 hours. If you'd like more time, mention it in your booking request."
+  answer: "The Signature Picnic is 2 hours, Proposal & Romance is 2.5 hours, and Celebration is 3 hours. Extra time is subject to availability, must be requested before your booking ends, and has an additional charge."
   category: the-day
   order: 4
+
+- id: balance
+  question: "When is the balance due?"
+  answer: "Full payment is due before your event begins — we start setting up once payment is complete."
+  category: booking
+  order: 5
+
+- id: late
+  question: "What if we're running late?"
+  answer: "Your booking includes a 30–45 minute grace period. If you arrive more than 45 minutes late without letting us know, your booking may be rescheduled based on availability — so text us at (647) 878-0539 if you're held up."
+  category: the-day
+  order: 5
 
 - id: where
   question: "Where can you set up?"
@@ -89,25 +100,32 @@
   order: 1
 
 - id: permits
-  question: "Do I need a park permit or can we bring alcohol?"
-  answer: "Rules differ between parks and cities across the GTA. Read our [park permits and alcohol notes](/policies#permits) and tell us your spot in the booking form."
+  question: "Do I need a park permit?"
+  answer: "If your chosen park or venue requires a permit, you're responsible for getting it. Rules differ between parks and cities across the GTA — see our [permit notes](/policies#permits)."
   category: locations
   order: 2
 
+- id: confetti
+  question: "Can we use confetti or party poppers?"
+  answer: "Not in public parks — party poppers, confetti, glitter and similar items aren't permitted there. If they're used, you're responsible for cleaning the area completely before you leave. Planning a reveal? Tell us and we'll suggest a park-friendly option."
+  category: locations
+  order: 3
+
 - id: weather
   question: "What happens if it rains?"
-  answer: "Please see our [weather policy](/policies#weather)."
+  answer: "If unsafe weather — like heavy rain, thunderstorms or high winds — stops your picnic going ahead, we'll gladly reschedule to another available date. Your booking deposit is non-refundable but is applied to the rescheduled picnic. Refunds aren't provided for weather-related cancellations. Read the [weather policy](/policies#weather)."
   category: policies
   order: 1
+  showOnHome: true
 
 - id: refund
-  question: "Is the deposit refundable?"
-  answer: "Deposits are non-refundable. See our [policies](/policies) for details on cancellations and rescheduling."
+  question: "What if I need to cancel?"
+  answer: "Booking deposits are non-refundable. Cancellations made within 48 hours of the event aren't eligible for a refund of payments made. See our [cancellation policy](/policies#cancellation)."
   category: policies
   order: 2
 
 - id: damage
   question: "What if something gets damaged?"
-  answer: "Please see our [policy on rented decor](/policies#damage)."
+  answer: "You're responsible for the rental items during your booking. Lost, damaged, broken, heavily stained or unreturned items may be deducted from your $100 security deposit, and any cost above it is charged separately. See our [damage policy](/policies#damage)."
   category: policies
   order: 3

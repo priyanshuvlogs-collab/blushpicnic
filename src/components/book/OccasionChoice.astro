@@ -1,0 +1,31 @@
+---
+// "What are we celebrating?" as tappable chips (native radios), from schema.occasions incl. "Something else".
+// The visual chip is a sibling of the (invisible, full-size) radio, so checked/focus styles need no :has().
+import type { ResolvedField } from '../../lib/form';
+
+interface Props {
+  field: ResolvedField;
+}
+const { field: f } = Astro.props;
+const id = `f-${f.id}`;
+const helpId = f.help ? `${id}-help` : undefined;
+---
+<fieldset class="bk-field is-radio is-occasion" data-field={f.id} data-type={f.type} aria-describedby={helpId}>
+  <legend class="bk-label bk-label-lg">{f.label}{!f.required && <span class="bk-optional"> (optional)</span>}</legend>
+  {f.help && <p id={helpId} class="bk-help">{f.help}</p>}
+  <p id={`${id}-error`} class="bk-error" data-field-error hidden>
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
+    <span data-error-text></span>
+  </p>
+  <div class="bk-chips">
+    {(f.options ?? []).map((o, i) => (
+      <label class="bk-chip" for={`${id}-${i}`}>
+        <input id={`${id}-${i}`} type="radio" name={f.id} value={o.value} required={f.required} class="bk-chip-input" />
+        <span class="bk-chip-face">
+          <svg class="bk-chip-tick" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+          <span>{o.label}</span>
+        </span>
+      </label>
+    ))}
+  </div>
+</fieldset>

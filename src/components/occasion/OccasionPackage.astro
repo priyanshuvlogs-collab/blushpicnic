@@ -1,0 +1,156 @@
+---
+// The package we recommend for this occasion, with every number from packages.yaml, followed by
+// the other packages (what each one changes) and the optional add-ons. All booking links carry
+// the occasion and package so the form opens pre-filled.
+import { Picture } from 'astro:assets';
+import Icon from '../Icon.astro';
+import PriceTag from '../PriceTag.astro';
+import { getSettings, getPackages, getAddons, money, hours, bookUrl, type Occasion, type Package } from '../../lib/site';
+import { picnicPhrase, bookPackageLabel } from './text';
+
+interface Props {
+  entry: Occasion;
+  pkg: Package;
+}
+const { entry, pkg } = Astro.props;
+const s = await getSettings();
+const d = pkg.data;
+// Other packages, those suggested for this occasion (packages.yaml bestFor) first.
+const fits = (p: Package) => (p.data.bestFor.includes(entry.id) ? 0 : 1);
+const others = (await getPackages()).filter((p) => p.id !== pkg.id).sort((a, b) => fits(a) - fits(b) || a.data.order - b.data.order);
+const addons = await getAddons();
+const phrase = picnicPhrase(entry);
+const pkgLabel = /picnic$/i.test(d.name) ? d.name : `${d.name} package`;
+// Skip a priceNote that only repeats the extra-guest price PriceTag already shows.
+const showNote = d.priceNote && !(d.extraGuestPrice !== null && d.priceNote.includes(money(d.extraGuestPrice)));
+const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
+---
+<section id="package" aria-labelledby="package-title" class="section-y scroll-mt-16 bg-cream">
+  <div class="container-x">
+    <div class="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
+      <h2 id="package-title" class="lg:col-span-6">The package we'd suggest</h2>
+      <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
+        For a {phrase}, start with the {pkgLabel}. Want to change something? Tell us in your request and we'll include it in your quote.
+      </p>
+    </div>
+
+    <article aria-labelledby="pkg-name" class="mt-10 grid overflow-hidden rounded-[var(--radius-card)] border border-line bg-petal/45 md:mt-14 lg:grid-cols-12">
+      <div class="relative lg:col-span-5">
+        <Picture
+          src={d.image}
+          alt={d.imageAlt}
+          widths={widths}
+          sizes="(min-width: 1280px) 500px, (min-width: 1024px) 40vw, 100vw"
+          formats={['avif', 'webp']}
+          fallbackFormat="jpg"
+          loading="lazy"
+          class="aspect-[4/3] h-full w-full bg-petal-deep object-cover lg:absolute lg:inset-0 lg:aspect-auto"
+        />
+      </div>
+
+      <div class="p-6 sm:p-9 lg:col-span-7 lg:p-12">
+        <h3 id="pkg-name" class="text-[2rem] md:text-[2.4rem]">{d.name}</h3>
+        <p class="mt-2 text-lg text-plum-soft">{d.tagline}</p>
+
+        <div class="mt-6 flex flex-wrap items-end gap-x-10 gap-y-4 border-y border-line py-5">
+          <PriceTag pkg={pkg} size="lg" />
+        </div>
+
+        <h4 class="heading-sm mt-7 text-[1.0625rem]">What's included</h4>
+        {d.includesFrom && <p class="mt-1.5 text-plum-soft">{d.includesFrom}</p>}
+        <ul class="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+          {d.includes.map((item) => (
+            <li class="flex gap-2.5">
+              <Icon name="check" size={20} class="mt-[0.2em] shrink-0 self-start text-sage-ink" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+
+        <ul class="mt-6 grid gap-1.5 text-[0.95rem] text-plum-soft">
+          {showNote && <li class="flex gap-2.5"><Icon name="users" size={18} class="mt-[0.2em] shrink-0 text-sage-ink" />{d.priceNote}</li>}
+          <li class="flex gap-2.5"><Icon name="map-pin" size={18} class="mt-[0.2em] shrink-0 text-sage-ink" />{s.locationNote}</li>
+        </ul>
+
+        <div class="mt-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-7">
+          <a
+            href={bookUrl({ occasion: entry.id, package: pkg.id })}
+            class="btn btn-primary btn-lg text-center"
+            data-track="package_select"
+            data-track-package={pkg.id}
+            data-track-occasion={entry.id}
+            data-track-location="occasion_package"
+          >{bookPackageLabel(pkg)}</a>
+          <a href="/packages#compare" class="link-arrow self-start sm:self-auto">Compare all packages<Icon name="arrow-right" size={18} /></a>
+        </div>
+      </div>
+    </article>
+
+    {others.length > 0 && (
+      <div class="mt-14 grid gap-x-16 gap-y-8 md:mt-16 lg:grid-cols-12">
+        <div class="lg:col-span-4">
+          <h3 class="text-[1.5rem] md:text-[1.75rem]">Other ways to do it</h3>
+          <p class="mt-2 max-w-[34ch] text-plum-soft">Every package is delivered, styled and cleared away by us. Here's what changes.</p>
+        </div>
+        <ul class="divide-y divide-line border-y border-line lg:col-span-8" role="list">
+          {others.map((o) => (
+            <li class="grid gap-x-8 gap-y-3 py-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div>
+                <h4 class="font-display text-[1.35rem] leading-tight">{o.data.name}</h4>
+                <p class="mt-1 text-[0.98rem] text-plum-soft">{o.data.summary}</p>
+                <p class="mt-2 text-[0.95rem]">
+                  <span class="font-semibold">Starting at {money(o.data.priceFrom)}</span>
+                  <span class="text-plum-soft">{o.data.guestsLabel} · {hours(o.data.durationHours)} · {s.taxNote}</span>
+                </p>
+              </div>
+              <a
+                href={bookUrl({ occasion: entry.id, package: o.id })}
+                class="link-arrow self-start whitespace-nowrap sm:self-center"
+                data-track="package_select"
+                data-track-package={o.id}
+                data-track-occasion={entry.id}
+                data-track-location="occasion_other_packages"
+              >Choose this instead<span class="sr-only">: {o.data.name}</span><Icon name="arrow-right" size={18} /></a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {addons.length > 0 && (
+      <div class="mt-12 grid gap-x-16 gap-y-5 lg:grid-cols-12">
+        <h3 class="text-[1.5rem] md:text-[1.75rem] lg:col-span-4">Optional add-ons</h3>
+        <div class="lg:col-span-8">
+          <ul class="addons flex flex-wrap gap-x-6 gap-y-1.5 font-display text-[1.25rem] leading-snug md:gap-x-7 md:text-[1.4rem]" role="list">
+            {addons.map((a) => (
+              <li>
+                {a.data.name}
+                {a.data.price !== null && <span class="font-sans text-[0.95rem] text-plum-soft"> (starting at {money(a.data.price)}{a.data.priceSuffix})</span>}
+              </li>
+            ))}
+          </ul>
+          <p class="mt-3 max-w-[60ch] text-[0.95rem] text-plum-soft">
+            {addons.every((a) => a.data.price === null)
+              ? 'Each add-on is priced on request.'
+              : `Add-on prices are starting prices, ${s.taxNote}; others are priced on request.`}
+            {' '}Tick the ones you'd like in the booking form and we'll include them in your quote.
+            <a href="/packages#add-ons" class="font-semibold text-plum underline decoration-gold decoration-2 underline-offset-4 hover:decoration-plum">About the add-ons</a>
+          </p>
+        </div>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .addons > li::before {
+    content: "";
+    display: inline-block;
+    width: 0.32rem;
+    height: 0.42rem;
+    margin: 0 0.6rem 0.18rem 0;
+    border-radius: 999px 999px 0 0;
+    background: var(--color-gold);
+    vertical-align: middle;
+  }
+</style>

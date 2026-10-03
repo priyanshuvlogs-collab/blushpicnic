@@ -1,0 +1,108 @@
+---
+// 404 — built to /404.html (served by .htaccess / tests/router.php for unknown URLs). Not indexed.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { getSettings, getPackages, money, smsUrl, telUrl } from '../lib/site';
+
+const s = await getSettings();
+const pkgs = await getPackages();
+const entry = pkgs.reduce((a, b) => (b.data.priceFrom < a.data.priceFrom ? b : a));
+
+const links = [
+  { href: '/packages', title: 'Packages & prices', text: `Starting at ${money(entry.data.priceFrom)} ${entry.data.guestsLabel}, ${s.taxNote}` },
+  { href: '/occasions', title: 'Occasions', text: 'Proposals, birthdays, showers, dates and more' },
+  { href: '/gallery', title: 'Gallery', text: 'Find a look you love' },
+  { href: '/', title: 'Home', text: 'Start from the beginning' },
+];
+---
+<BaseLayout
+  title="Page Not Found | Blush Picnic"
+  description={`This page has moved or no longer exists. Find luxury picnic packages, occasions and booking for ${s.serviceArea}.`}
+  noindex
+>
+  <section aria-labelledby="page-title" class="container-x pb-20 pt-10 md:pb-28 md:pt-16">
+    <div class="grid items-center gap-x-16 gap-y-12 lg:grid-cols-12">
+      <div class="hero-enter order-2 lg:order-1 lg:col-span-7">
+        <h1 id="page-title" class="max-w-[14ch]">This spot is empty<span class="sr-only">: page not found (error 404)</span></h1>
+        <p class="mt-6 max-w-[34rem] text-lg text-plum-soft md:text-[1.25rem] md:leading-relaxed">
+          The page you were looking for has moved or never existed. The picnics are all still here, though — let's get you somewhere lovely.
+        </p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <a href="/book" class="btn btn-primary btn-lg" data-track="booking_cta" data-track-location="404">Book your picnic</a>
+          <a href={smsUrl(s)} class="btn btn-secondary btn-lg" data-track="click_text" data-track-location="404"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
+        </div>
+        <p class="mt-4 text-[0.95rem] text-plum-soft">
+          Or call us on <a href={telUrl(s)} class="nf-link" data-track="click_call" data-track-location="404">{s.phoneDisplay}</a>.
+        </p>
+      </div>
+
+      <div class="hero-enter-delay order-1 lg:order-2 lg:col-span-5" aria-hidden="true">
+        <div class="nf-arch mx-auto">
+          <svg viewBox="0 0 200 260" fill="none" class="h-full w-full">
+            <path d="M14 258V108a86 86 0 0 1 172 0v150" stroke="currentColor" stroke-width="1.2" class="text-gold" />
+            <path d="M32 258V112a68 68 0 0 1 136 0v146" fill="currentColor" class="text-cream" />
+            <path d="M58 258h84" stroke="currentColor" stroke-width="1" class="text-line" />
+          </svg>
+          <span class="nf-num font-display">404</span>
+        </div>
+      </div>
+    </div>
+
+    <nav aria-label="Popular pages" class="mt-16 md:mt-24">
+      <ul class="grid border-t border-line sm:grid-cols-2 lg:grid-cols-4">
+        {links.map((l) => (
+          <li class="border-b border-line sm:odd:border-r lg:border-r lg:last:border-r-0">
+            <a href={l.href} class="nf-card group">
+              <span class="flex items-center justify-between gap-3">
+                <span class="font-display text-[1.5rem] leading-tight">{l.title}</span>
+                <Icon name="arrow-right" size={20} class="shrink-0 text-plum-soft transition-transform group-hover:translate-x-1" />
+              </span>
+              <span class="mt-1.5 block text-[0.95rem] text-plum-soft">{l.text}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf-arch {
+    position: relative;
+    width: min(62vw, 17rem);
+    aspect-ratio: 200 / 260;
+  }
+  @media (min-width: 1024px) {
+    .nf-arch { width: min(100%, 21rem); margin-right: 0.75rem; }
+  }
+  .nf-num {
+    position: absolute;
+    inset: 38% 0 auto;
+    text-align: center;
+    font-size: clamp(3.25rem, 2.4rem + 4vw, 5.5rem);
+    line-height: 1;
+    color: var(--color-plum);
+    letter-spacing: -0.02em;
+  }
+  .nf-card {
+    display: block;
+    height: 100%;
+    padding: 1.5rem 0.25rem 1.6rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+  @media (min-width: 640px) {
+    .nf-card { padding-inline: 1.5rem; }
+  }
+  .nf-card:hover { background: rgb(255 253 252 / 0.55); }
+  .nf-link {
+    display: inline-block;
+    padding-block: 0.65rem;
+    font-weight: 600;
+    color: var(--color-plum);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+</style>

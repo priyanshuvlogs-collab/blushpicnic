@@ -1,0 +1,163 @@
+---
+// One booking-form question, rendered from its definition in booking-form.yaml (via buildFormSchema).
+// Native controls only, so it works without JS; booking.ts layers validation and conditions on top.
+//   - Optional questions say "(optional)"; required ones carry the native `required` attribute
+//     (conditional questions get it from JS only when they apply, so they never block a no-JS submit).
+//   - Help text and notes are linked with aria-describedby; errors are added to it when shown.
+import type { ResolvedField } from '../../lib/form';
+
+interface Props {
+  field: ResolvedField;
+  /** Question depends on the occasion or another answer (JS decides when it applies). */
+  conditional?: boolean;
+  /** Word limit for the live counter (letter board). */
+  maxWords?: number;
+}
+const { field: f, conditional = false, maxWords } = Astro.props;
+
+const id = `f-${f.id}`;
+const helpId = f.help ? `${id}-help` : undefined;
+const noteId = f.note ? `${id}-note` : undefined;
+const countId = maxWords ? `${id}-count` : undefined;
+const errId = `${id}-error`;
+const describedBy = [helpId, countId, noteId].filter(Boolean).join(' ') || undefined;
+const nativeRequired = f.required && !conditional;
+const optional = !f.required && f.type !== 'toggle';
+const isGroup = f.type === 'radio' || f.type === 'checkboxes';
+const stepper = f.type === 'number' && f.id.startsWith('guests_');
+type InputType = 'text' | 'email' | 'tel' | 'number' | 'date' | 'time' | 'month';
+const inputTypes: InputType[] = ['text', 'email', 'tel', 'number', 'date', 'time', 'month'];
+const inputType: InputType = inputTypes.find((t) => t === f.type) ?? 'text';
+const autocomplete = f.autocomplete ?? (f.type === 'email' ? 'email' : f.type === 'tel' ? 'tel' : undefined);
+const noSpell = ['email', 'tel'].includes(f.type) || /instagram|handle/i.test(f.id);
+const lcLabel = f.label.charAt(0).toLowerCase() + f.label.slice(1);
+const options = f.options ?? [];
+// Short option lists sit side by side; long ones stack.
+const longest = Math.max(0, ...options.map((o) => o.label.length));
+const choiceLayout = options.length <= 3 && longest <= 16 ? 'is-row' : longest <= 22 ? 'is-grid' : 'is-stack';
+const Wrap = isGroup ? 'fieldset' : 'div';
+---
+<Wrap
+  class:list={['bk-field', f.half && 'is-half', `is-${f.type}`]}
+  data-field={f.id}
+  data-type={f.type}
+  aria-describedby={isGroup ? describedBy : undefined}
+>
+  {isGroup ? (
+    <legend class="bk-label">{f.label}{optional && <span class="bk-optional"> (optional)</span>}</legend>
+  ) : f.type !== 'toggle' && (
+    <label for={id} class="bk-label">{f.label}{optional && <span class="bk-optional"> (optional)</span>}</label>
+  )}
+
+  {f.help && f.type !== 'toggle' && <p id={helpId} class="bk-help">{f.help}</p>}
+
+  <p id={errId} class="bk-error" data-field-error hidden>
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
+    <span data-error-text></span>
+  </p>
+
+  {(f.type === 'text' || f.type === 'email' || f.type === 'tel' || f.type === 'date' || f.type === 'time' || f.type === 'month') && (
+    <input
+      id={id}
+      name={f.id}
+      type={inputType}
+      class="bk-input"
+      required={nativeRequired}
+      maxlength={f.maxLength}
+      placeholder={f.placeholder}
+      autocomplete={autocomplete}
+      spellcheck={noSpell ? 'false' : undefined}
+      autocapitalize={f.type === 'email' || noSpell ? 'off' : f.id === 'name' ? 'words' : undefined}
+      aria-describedby={describedBy}
+    />
+  )}
+
+  {f.type === 'number' && (
+    <div class:list={['bk-number', stepper && 'has-stepper']}>
+      {stepper && (
+        <button type="button" class="bk-stepper" data-stepper="-1" aria-controls={id} aria-label={`Fewer ${lcLabel}`} tabindex="-1" data-js-only hidden>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 12h12" /></svg>
+        </button>
+      )}
+      <input
+        id={id}
+        name={f.id}
+        type="number"
+        inputmode="numeric"
+        class="bk-input"
+        required={nativeRequired}
+        min={f.min}
+        max={f.max}
+        step="1"
+        placeholder={f.placeholder}
+        autocomplete={f.autocomplete ?? 'off'}
+        aria-describedby={describedBy}
+      />
+      {stepper && (
+        <button type="button" class="bk-stepper" data-stepper="1" aria-controls={id} aria-label={`More ${lcLabel}`} tabindex="-1" data-js-only hidden>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 12h12M12 6v12" /></svg>
+        </button>
+      )}
+    </div>
+  )}
+
+  {f.type === 'textarea' && (
+    <textarea
+      id={id}
+      name={f.id}
+      class="bk-input bk-textarea"
+      rows="4"
+      required={nativeRequired}
+      maxlength={f.maxLength}
+      placeholder={f.placeholder}
+      autocomplete={f.autocomplete}
+      aria-describedby={describedBy}
+    />
+  )}
+
+  {f.type === 'select' && (
+    <select id={id} name={f.id} class="bk-input bk-select" required={nativeRequired} autocomplete={f.autocomplete ?? 'off'} aria-describedby={describedBy}>
+      <option value="">Choose…</option>
+      {options.map((o) => <option value={o.value}>{o.label}</option>)}
+    </select>
+  )}
+
+  {f.type === 'radio' && (
+    <div class:list={['bk-choices', choiceLayout]}>
+      {options.map((o, i) => (
+        <label class="bk-choice" for={`${id}-${i}`}>
+          <input id={`${id}-${i}`} type="radio" name={f.id} value={o.value} class="bk-radio" required={nativeRequired} />
+          <span>{o.label}</span>
+        </label>
+      ))}
+    </div>
+  )}
+
+  {f.type === 'checkboxes' && (
+    <div class:list={['bk-choices', choiceLayout]}>
+      {options.map((o, i) => (
+        <label class="bk-choice" for={`${id}-${i}`}>
+          <input id={`${id}-${i}`} type="checkbox" name={`${f.id}[]`} value={o.value} class="bk-check" />
+          <span>{o.label}</span>
+        </label>
+      ))}
+    </div>
+  )}
+
+  {f.type === 'toggle' && (
+    <label class="bk-switch" for={id}>
+      <input id={id} type="checkbox" role="switch" name={f.id} value="yes" aria-describedby={describedBy} />
+      <span class="bk-switch-text">{f.label}</span>
+    </label>
+  )}
+  {f.type === 'toggle' && f.help && <p id={helpId} class="bk-help">{f.help}</p>}
+
+  {maxWords && (
+    <>
+      <p id={countId} class="bk-count" data-word-count={f.id} hidden>0 of {maxWords} words</p>
+      <span class="sr-only" aria-live="polite" data-word-count-live={f.id}></span>
+    </>
+  )}
+
+  {f.note && <p id={noteId} class="bk-note">{f.note}</p>}
+</Wrap>

@@ -1,0 +1,19 @@
+---
+// "How it works" on a cream band, followed by a CTA so the reader can act right after the steps.
+import HowItWorks from '../HowItWorks.astro';
+import Icon from '../Icon.astro';
+import { getSettings } from '../../lib/site';
+const s = await getSettings();
+---
+<div class="bg-cream">
+  <HowItWorks title="Three steps, then you just show up" class="!pb-0" />
+  <div class="container-x pb-[var(--section-y)]">
+    <div class="mt-12 flex flex-col gap-4 border-t border-line pt-8 sm:flex-row sm:items-center sm:gap-8 md:mt-16">
+      <a href="/book" class="btn btn-primary btn-lg" data-track="booking_cta" data-track-location="home_how">Start your booking request</a>
+      <p class="text-[0.95rem] text-plum-soft">
+        We reply {s.replyTime}.
+        <a href="/policies" class="inline-flex min-h-11 items-center gap-1 font-semibold text-plum underline decoration-gold decoration-2 underline-offset-4 hover:decoration-plum">Read our booking policies<Icon name="arrow-right" size={16} /></a>
+      </p>
+    </div>
+  </div>
+</div>

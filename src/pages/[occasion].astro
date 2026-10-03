@@ -1,0 +1,59 @@
+---
+// One landing page per occasion, generated from src/content/occasions/*.md.
+// URL comes from the frontmatter urlSlug, e.g. /proposal-picnic-toronto.
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CtaBand from '../components/CtaBand.astro';
+import ReviewsSection from '../components/ReviewsSection.astro';
+import OccasionHero from '../components/occasion/OccasionHero.astro';
+import OccasionHighlights from '../components/occasion/OccasionHighlights.astro';
+import OccasionStory from '../components/occasion/OccasionStory.astro';
+import OccasionPackage from '../components/occasion/OccasionPackage.astro';
+import OccasionPhotos from '../components/occasion/OccasionPhotos.astro';
+import OccasionFaqs from '../components/occasion/OccasionFaqs.astro';
+import RelatedOccasions from '../components/occasion/RelatedOccasions.astro';
+import BookContext from '../components/occasion/BookContext.astro';
+import { picnicPhrase, picnicPhrasePlural, capitalize } from '../components/occasion/text';
+import { getSettings, getOccasions, getPackage, occasionUrl, type Occasion } from '../lib/site';
+import { occasionService, breadcrumbs, faqPage } from '../lib/schema';
+
+export async function getStaticPaths() {
+  const occasions = await getOccasions();
+  return occasions.map((entry) => ({ params: { occasion: entry.data.urlSlug }, props: { entry } }));
+}
+
+interface Props {
+  entry: Occasion;
+}
+const { entry } = Astro.props;
+const d = entry.data;
+const s = await getSettings();
+const pkg = await getPackage(d.recommendedPackage);
+const { Content } = await render(entry);
+
+const crumbs = [
+  { name: 'Occasions', path: '/occasions' },
+  { name: capitalize(picnicPhrasePlural(entry)), path: occasionUrl(entry) },
+];
+const jsonLd = [occasionService(s, entry, pkg), breadcrumbs(s, crumbs), faqPage(d.faqs)];
+const phrase = picnicPhrase(entry);
+---
+<BaseLayout title={d.metaTitle} description={d.metaDescription} image={d.heroImage} imageAlt={d.heroAlt} {jsonLd}>
+  <OccasionHero {entry} {pkg} {crumbs} />
+  <OccasionHighlights {entry} />
+  <OccasionStory>
+    <Content />
+  </OccasionStory>
+  <OccasionPackage {entry} {pkg} />
+  <OccasionPhotos {entry} {pkg} />
+  <ReviewsSection occasion={d.name} />
+  <OccasionFaqs {entry} />
+  <RelatedOccasions {entry} />
+  <CtaBand
+    title={capitalize(`your ${phrase}, styled and waiting`)}
+    occasion={entry.id}
+    package={pkg.id}
+    buttonLabel={`Plan your ${phrase}`}
+  />
+  <BookContext occasion={entry.id} package={pkg.id} />
+</BaseLayout>

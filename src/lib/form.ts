@@ -55,7 +55,8 @@ export interface FormSchema {
     durationHours: number | null;
   }[];
   addons: { id: string; name: string; price: number | null }[];
-  deposit: { standard: number; largeEventPercent: number };
+  deposit: { standard: number; largeEventPercent: number; summary: string };
+  securityDeposit: { amount: number; returnedWithin: string; summary: string };
   letterBoardMaxWords: number;
   taxNote: string;
 }
@@ -121,7 +122,8 @@ export async function buildFormSchema(): Promise<FormSchema> {
     occasions: occ,
     packages: pkgs,
     addons: adds,
-    deposit: { standard: s.deposit.standard, largeEventPercent: s.deposit.largeEventPercent },
+    deposit: { standard: s.deposit.standard, largeEventPercent: s.deposit.largeEventPercent, summary: s.deposit.summary },
+    securityDeposit: s.securityDeposit,
     letterBoardMaxWords: s.booking.letterBoardMaxWords,
     taxNote: s.taxNote,
   };

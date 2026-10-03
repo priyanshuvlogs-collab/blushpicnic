@@ -1,0 +1,67 @@
+---
+// "Still have a question?" — text, call, Instagram DM (and email) in one calm band.
+// Used on FAQ, Policies, Privacy and About. All contact details come from settings.yaml.
+import Icon from '../Icon.astro';
+import { getSettings, smsUrl, telUrl, mailUrl, igDmUrl } from '../../lib/site';
+
+interface Props {
+  title?: string;
+  text?: string;
+  /** where on the site this strip sits, for analytics */
+  location?: string;
+  id?: string;
+  class?: string;
+}
+const s = await getSettings();
+const {
+  title = 'Still have a question?',
+  text = `Text is quickest — we reply ${s.replyTime}. Or call, or send us a DM on Instagram.`,
+  location = 'contact_strip',
+  id = 'contact-title',
+  class: className = '',
+} = Astro.props;
+---
+<section aria-labelledby={id} class:list={['border-y border-line bg-cream', className]}>
+  <div class="container-x grid gap-8 py-12 md:py-16 lg:grid-cols-12 lg:items-center lg:gap-12">
+    <div class="lg:col-span-5">
+      <h2 {id} class="text-[1.9rem] md:text-[2.3rem]">{title}</h2>
+      <p class="mt-3 max-w-md text-plum-soft">{text}</p>
+    </div>
+    <div class="lg:col-span-7">
+      <ul class="grid gap-3 sm:grid-cols-3">
+        <li>
+          <a href={smsUrl(s)} class="btn btn-primary w-full" data-track="click_text" data-track-location={location}>
+            <Icon name="message" size={18} />Text us
+          </a>
+        </li>
+        <li>
+          <a href={telUrl(s)} class="btn btn-secondary w-full" data-track="click_call" data-track-location={location}>
+            <Icon name="phone" size={18} />Call <span class="whitespace-nowrap">{s.phoneDisplay}</span>
+          </a>
+        </li>
+        <li>
+          <a href={igDmUrl(s)} rel="noopener" class="btn btn-secondary w-full" data-track="click_instagram" data-track-location={location}>
+            <Icon name="instagram" size={18} />DM on Instagram
+          </a>
+        </li>
+      </ul>
+      <p class="mt-4 text-[0.95rem] text-plum-soft">
+        Prefer email? <a href={mailUrl(s)} class="contact-mail break-all">{s.email}</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact-mail {
+    display: inline-block;
+    padding-block: 0.65rem;
+    font-weight: 600;
+    color: var(--color-plum);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+  .contact-mail:hover { text-decoration-color: var(--color-plum); }
+</style>

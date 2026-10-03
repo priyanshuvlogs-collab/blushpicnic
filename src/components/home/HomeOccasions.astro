@@ -1,0 +1,13 @@
+---
+// Occasions strip under the hero: one quiet line of links into every occasion page.
+import OccasionChips from '../OccasionChips.astro';
+---
+<section aria-labelledby="occasions-title" class="border-y border-line">
+  <div class="container-x grid grid-cols-1 gap-5 py-9 md:py-11 lg:grid-cols-12 lg:items-start lg:gap-10">
+    <div class="lg:col-span-3">
+      <h2 id="occasions-title" class="text-[1.65rem] md:text-[2rem]">What are we celebrating?</h2>
+      <p class="mt-1 text-plum-soft">Every setup is styled around your occasion.</p>
+    </div>
+    <OccasionChips label="Picnic occasions" class="min-w-0 lg:col-span-9 lg:pt-1" />
+  </div>
+</section>

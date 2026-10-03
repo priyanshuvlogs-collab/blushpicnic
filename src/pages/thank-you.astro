@@ -1,0 +1,177 @@
+---
+// /thank-you — shown after a booking request is sent. Not indexed (and excluded from the sitemap).
+// Personalised from sessionStorage "bp-booking-done" ({ firstName, occasion, ref }) when present;
+// reads fine without JS. A ?ref=BP-… query (e.g. from a no-JS redirect) also shows the reference.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArchImage from '../components/ArchImage.astro';
+import Icon from '../components/Icon.astro';
+import { getSettings, getOccasions, money, smsUrl, telUrl, mailUrl } from '../lib/site';
+import { picnicPhrase } from '../components/occasion/text';
+import hero from '../assets/photos/hero.jpg';
+
+const s = await getSettings();
+const phrases = Object.fromEntries((await getOccasions()).map((o) => [o.id, picnicPhrase(o)]));
+const phrasesJson = JSON.stringify(phrases).replace(/</g, '\\u003c');
+
+const next = [
+  {
+    title: `We reply ${s.replyTime}`,
+    text: 'By text or email, with availability for your date and your quote. If you don’t see it, check your spam folder or text us.',
+  },
+  {
+    title: 'A deposit holds your date',
+    text: `Once you’re happy with your quote, a ${money(s.deposit.standard)} deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date. Deposits are non-refundable.`,
+  },
+  {
+    title: 'We style it, you arrive',
+    text: 'The balance is due before your event. On the day we deliver, set up, style and clean up — you just arrive.',
+  },
+];
+---
+<BaseLayout
+  title="Thank You | Blush Picnic"
+  description={`Your Blush Picnic booking request is on its way. We reply ${s.replyTime} by text or email with availability and your quote.`}
+  noindex
+  hideStickyBar
+>
+  <section class="container-x grid items-center gap-x-16 gap-y-12 pb-16 pt-10 md:pt-16 lg:grid-cols-12 lg:pb-24" aria-labelledby="thanks-title">
+    <div class="hero-enter lg:col-span-7">
+      <p class="ty-sent"><Icon name="check" size={18} />Request sent</p>
+      <h1 id="thanks-title" class="mt-5 max-w-[14ch]">Thank you<span data-thanks-name></span>.</h1>
+      <p class="mt-5 max-w-[36rem] text-lg text-plum-soft md:text-xl md:leading-relaxed">
+        Your booking request is with us<span data-thanks-occasion hidden></span>. Here’s what happens next.
+      </p>
+      <p class="ty-ref" data-thanks-ref hidden>
+        Your reference: <strong data-thanks-ref-value></strong>
+      </p>
+
+      <ol class="ty-steps mt-10">
+        {next.map((step, i) => (
+          <li>
+            <span class="ty-num" aria-hidden="true">{i + 1}</span>
+            <div>
+              <h2 class="ty-step-title">{step.title}</h2>
+              <p class="mt-1.5 text-plum-soft">{step.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <div class="hero-enter-delay hidden lg:col-span-5 lg:block">
+      <ArchImage
+        src={hero}
+        alt="Placeholder photo: a styled luxury picnic with a low table, cushions and florals"
+        sizes="(min-width: 1280px) 420px, 34vw"
+        outline
+        class="ml-auto mr-3 max-w-[26rem]"
+      />
+    </div>
+  </section>
+
+  <section class="ty-band" aria-labelledby="ty-contact-title">
+    <div class="container-x grid gap-12 py-14 md:grid-cols-2 md:gap-16 md:py-20">
+      <div>
+        <h2 id="ty-contact-title" class="text-[1.9rem] md:text-[2.3rem]">Questions in the meantime?</h2>
+        <p class="mt-4 max-w-md text-plum-soft">Add a detail, change your date or ask anything — text is quickest.</p>
+        <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <a href={smsUrl(s)} class="btn btn-primary" data-track="click_text"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
+          <a href={telUrl(s)} class="btn btn-secondary" data-track="click_call"><Icon name="phone" size={18} />Call</a>
+        </div>
+        <p class="mt-5 text-[0.98rem] text-plum-soft">
+          Or email <a href={mailUrl(s)} class="ty-link break-all">{s.email}</a>
+        </p>
+      </div>
+
+      <div class="md:border-l md:border-line md:pl-16">
+        <h2 class="text-[1.9rem] md:text-[2.3rem]">While you wait</h2>
+        <p class="mt-4 max-w-md text-plum-soft">See recent setups and ideas on Instagram, or take another look at what each package includes.</p>
+        <ul class="mt-6 grid gap-1">
+          <li>
+            <a href={s.instagramUrl} rel="noopener" class="link-arrow" data-track="click_instagram">
+              <Icon name="instagram" size={20} />Follow {s.instagramHandle}
+            </a>
+          </li>
+          <li><a href="/gallery" class="link-arrow">Browse the gallery<Icon name="arrow-right" size={18} /></a></li>
+          <li><a href="/packages" class="link-arrow">Packages &amp; prices<Icon name="arrow-right" size={18} /></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <span hidden data-thanks-phrases={phrasesJson}></span>
+</BaseLayout>
+
+<script>
+  import { loadDone } from '../scripts/booking/storage';
+
+  const done = loadDone();
+  const refParam = new URLSearchParams(location.search).get('ref');
+  const validRef = (r: unknown): r is string => typeof r === 'string' && /^BP-[A-Z0-9-]{3,24}$/i.test(r);
+
+  const nameEl = document.querySelector<HTMLElement>('[data-thanks-name]');
+  const first = done?.firstName?.trim().slice(0, 40);
+  if (nameEl && first) nameEl.textContent = `, ${first}`;
+
+  const occEl = document.querySelector<HTMLElement>('[data-thanks-occasion]');
+  const phrasesRaw = document.querySelector<HTMLElement>('[data-thanks-phrases]')?.dataset.thanksPhrases;
+  let phrases: Record<string, string> = {};
+  try {
+    phrases = phrasesRaw ? JSON.parse(phrasesRaw) : {};
+  } catch {
+    /* ignore */
+  }
+  const phrase = done?.occasion ? phrases[done.occasion] : undefined;
+  if (occEl && phrase) {
+    occEl.textContent = ` — we can’t wait to start planning your ${phrase}`;
+    occEl.hidden = false;
+  }
+
+  const doneRef = done?.ref;
+  const ref = validRef(doneRef) ? doneRef : validRef(refParam) ? refParam : undefined;
+  const refBox = document.querySelector<HTMLElement>('[data-thanks-ref]');
+  const refVal = document.querySelector<HTMLElement>('[data-thanks-ref-value]');
+  if (ref && refBox && refVal) {
+    refVal.textContent = ref.toUpperCase();
+    refBox.hidden = false;
+  }
+</script>
+
+<style>
+  .ty-sent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.85rem 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: var(--color-sage-wash);
+    color: var(--color-sage-ink);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .ty-ref {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.7rem 1rem;
+    border: 1px dashed var(--color-gold);
+    border-radius: 12px;
+    background: var(--color-cream);
+    font-size: 1rem;
+  }
+  .ty-ref strong { font-weight: 700; letter-spacing: 0.03em; }
+  .ty-steps { display: grid; gap: 1.75rem; max-width: 38rem; }
+  .ty-steps li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 1rem; }
+  .ty-num { font-family: var(--font-display); font-size: 2.4rem; line-height: 1; color: var(--color-gold-ink); }
+  .ty-step-title { font-size: clamp(1.3rem, 1.2rem + 0.5vw, 1.55rem); line-height: 1.2; }
+  .ty-band { background: var(--color-cream); border-top: 1px solid var(--color-line); }
+  .ty-link {
+    font-weight: 600;
+    color: var(--color-plum);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+    display: inline-block;
+    padding-block: 0.6rem;
+  }
+</style>

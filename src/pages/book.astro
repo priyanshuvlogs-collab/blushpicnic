@@ -1,0 +1,125 @@
+---
+// /book — the booking request form. Deep links pre-fill it: /book?occasion=proposal&package=proposal-romance
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import BookingForm from '../components/book/BookingForm.astro';
+import { getSettings, smsUrl } from '../lib/site';
+import { breadcrumbs } from '../lib/schema';
+
+const s = await getSettings();
+const crumbs = [{ name: 'Book', path: '/book' }];
+const title = 'Book a Luxury Picnic in Toronto | Blush Picnic';
+const description = `Request a luxury picnic in Toronto or the GTA. Choose your occasion, package, date and spot, and we reply ${s.replyTime} with availability and a quote.`;
+---
+<BaseLayout {title} {description} jsonLd={[breadcrumbs(s, crumbs)]} hideStickyBar>
+  <Fragment slot="head">
+    {/* Lets the page show step 1 only while the booking script loads; falls back to the full form if it never does. */}
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('bp-js');
+        setTimeout(function () { if (!d.classList.contains('bp-ready')) d.classList.remove('bp-js'); }, 6000);
+      })();
+    </script>
+  </Fragment>
+
+  <div class="container-x pb-20 md:pb-28">
+    <div class="pt-3 md:pt-5">
+      <Breadcrumbs crumbs={crumbs} />
+    </div>
+
+    <header class="book-hero">
+      <div class="book-hero-arch" aria-hidden="true"></div>
+      <h1 class="hero-enter book-hero-title">Let’s plan your picnic</h1>
+      <p class="hero-enter-delay book-hero-lede">
+        Tell us the occasion, the date and the spot. We reply {s.replyTime} with availability and your quote — no payment is taken here.
+      </p>
+      <p class="hero-enter-delay book-hero-text">
+        Rather text? <a href={smsUrl(s)} data-track="click_text">Text {s.phoneDisplay}</a>
+      </p>
+    </header>
+
+    <div id="booking-error" class="book-error" tabindex="-1" data-booking-error>
+      <p class="book-error-title">Your request didn’t go through</p>
+      <p>
+        Sorry — something went wrong while sending it. Please try again below, or
+        <a href={smsUrl(s)} data-track="click_text">text {s.phoneDisplay}</a> and we’ll take it from there.
+      </p>
+    </div>
+
+    <BookingForm />
+  </div>
+</BaseLayout>
+
+<script>
+  // The booking handler sends no-JS visitors back to /book?error=1 when sending fails.
+  if (new URLSearchParams(location.search).has('error')) {
+    document.querySelector<HTMLElement>('[data-booking-error]')?.classList.add('is-shown');
+  }
+</script>
+
+<style>
+  .book-hero {
+    position: relative;
+    max-width: 44rem;
+    margin: 1.25rem auto 2.25rem;
+    padding: 4.25rem 1rem 0;
+    text-align: center;
+  }
+  /* The signature arch, drawn as a fine gold line that fades out — a doorway into the form. */
+  .book-hero-arch {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: -1.5rem;
+    width: min(36rem, 100%);
+    transform: translateX(-50%);
+    border: 1px solid var(--color-gold);
+    border-bottom: 0;
+    border-radius: var(--radius-arch);
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 92%);
+    mask-image: linear-gradient(to bottom, #000 40%, transparent 92%);
+  }
+  .book-hero-title {
+    position: relative;
+    font-size: clamp(2.35rem, 1.7rem + 2.6vw, 3.75rem);
+    max-width: 11ch;
+    margin-inline: auto;
+  }
+  .book-hero-lede {
+    position: relative;
+    max-width: 29rem;
+    margin: 1.1rem auto 0;
+    color: var(--color-plum-soft);
+    font-size: 1.0625rem;
+  }
+  .book-hero-text {
+    position: relative;
+    margin-top: 0.6rem;
+    font-size: 0.98rem;
+    color: var(--color-plum-soft);
+  }
+  .book-hero-text a {
+    display: inline-block;
+    padding-block: 0.65rem;
+    font-weight: 600;
+    color: var(--color-plum);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+    white-space: nowrap;
+  }
+  .book-hero-text a:hover { text-decoration-color: var(--color-plum); }
+
+  .book-error { display: none; max-width: 44rem; margin: 0 auto 2rem; padding: 1.1rem 1.25rem; border: 2px solid var(--color-error); border-radius: 16px; background: var(--color-cream); }
+  .book-error:target, .book-error.is-shown { display: block; }
+  .book-error-title { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.2; }
+  .book-error p + p { margin-top: 0.4rem; }
+  .book-error a { font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 0.2em; white-space: nowrap; }
+  @media (min-width: 768px) {
+    .book-hero { margin: 1rem auto 3rem; padding-top: 5.25rem; }
+    .book-hero-lede { font-size: 1.15rem; }
+  }
+</style>

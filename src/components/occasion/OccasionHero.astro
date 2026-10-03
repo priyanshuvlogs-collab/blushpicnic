@@ -1,0 +1,108 @@
+---
+// Occasion landing-page hero: what we do, where, for this moment — with the recommended package's
+// starting price, guests and time spelled out. On phones the copy and primary CTA come first.
+import ArchImage from '../ArchImage.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import Icon from '../Icon.astro';
+import { getSettings, money, hours, bookUrl, smsUrl, type Occasion, type Package } from '../../lib/site';
+import { picnicPhrase, guestsShort } from './text';
+
+interface Props {
+  entry: Occasion;
+  pkg: Package;
+  crumbs: { name: string; path: string }[];
+}
+const { entry, pkg, crumbs } = Astro.props;
+const s = await getSettings();
+const d = entry.data;
+const p = pkg.data;
+const phrase = picnicPhrase(entry);
+const pkgLabel = /picnic$/i.test(p.name) ? p.name : `${p.name} package`;
+---
+<section aria-labelledby="occasion-title" class="relative">
+  <div class="container-x pt-3 md:pt-5">
+    <Breadcrumbs crumbs={crumbs} />
+  </div>
+  <div class="container-x grid items-center gap-x-12 gap-y-12 pb-16 pt-4 md:pb-20 md:pt-6 lg:grid-cols-12 lg:pb-24">
+    <div class="hero-enter lg:col-span-7">
+      <h1 id="occasion-title" class="max-w-[16ch]">{d.h1}</h1>
+      <p class="mt-5 max-w-[38rem] text-lg text-plum-soft md:mt-7 md:text-[1.25rem] md:leading-relaxed">{d.lede}</p>
+
+      <div class="mt-7 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-7 md:mt-9">
+        <a
+          href={bookUrl({ occasion: entry.id, package: pkg.id })}
+          class="btn btn-primary btn-lg shrink-0 text-center"
+          data-track="booking_cta"
+          data-track-location="occasion_hero"
+          data-track-occasion={entry.id}
+          data-track-package={pkg.id}
+        >Plan your {phrase}</a>
+        <a href="#package" class="link-arrow self-start sm:self-auto">
+          See what's included<Icon name="arrow-right" size={18} class="rotate-90" />
+        </a>
+      </div>
+
+      <p class="mt-6 flex max-w-[38rem] items-start gap-2.5 text-plum-soft md:mt-7">
+        <Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />
+        <span>We deliver, set up, style and clean up, anywhere in {s.serviceArea}. You just arrive.</span>
+      </p>
+
+      <dl class="hero-facts mt-7 grid max-w-[38rem] grid-cols-3 border-y border-line md:mt-8">
+        <div class="py-4 pr-3">
+          <dt class="text-sm text-plum-soft">Starting at</dt>
+          <dd class="mt-1">
+            <span class="font-display text-[1.75rem] leading-none md:text-[2.1rem]">{money(p.priceFrom)}</span>
+            <span class="mt-1.5 block text-sm text-plum-soft">{s.taxNote}</span>
+          </dd>
+        </div>
+        <div class="border-l border-line px-3 py-4 sm:px-5">
+          <dt class="text-sm text-plum-soft">Guests</dt>
+          <dd class="mt-1">
+            <span class="font-display text-[1.75rem] leading-none md:text-[2.1rem]">{guestsShort(pkg).replace(/\s*guests?$/i, '')}</span>
+            <span class="mt-1.5 block text-sm text-plum-soft">
+              {p.extraGuestPrice !== null ? `+${money(p.extraGuestPrice)} per extra guest` : 'guests included'}
+            </span>
+          </dd>
+        </div>
+        <div class="border-l border-line py-4 pl-3 sm:pl-5">
+          <dt class="text-sm text-plum-soft">Picnic time</dt>
+          <dd class="mt-1">
+            <span class="font-display text-[1.75rem] leading-none md:text-[2.1rem]">{p.durationHours}</span>
+            <span class="mt-1.5 block text-sm text-plum-soft">{hours(p.durationHours).replace(/^[\d.]+\s*/, '')}</span>
+          </dd>
+        </div>
+      </dl>
+      <p class="mt-4 max-w-[38rem] text-[0.95rem] leading-relaxed text-plum-soft">
+        Shown for the {pkgLabel}. {s.locationNote}
+        <span class="whitespace-nowrap">Questions first?</span>
+        <a href={smsUrl(s)} class="hero-text-link" data-track="click_text">Text {s.phoneDisplay}</a>
+      </p>
+    </div>
+
+    <div class="hero-enter-delay lg:col-span-5">
+      <ArchImage
+        src={d.heroImage}
+        alt={d.heroAlt}
+        sizes="(min-width: 1280px) 440px, (min-width: 1024px) 36vw, (min-width: 640px) 26rem, 82vw"
+        priority
+        outline
+        class="mx-auto w-[82%] max-w-[26rem] sm:w-full lg:ml-auto lg:mr-3 lg:max-w-[28rem]"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-text-link {
+    font-weight: 600;
+    color: var(--color-plum);
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+    /* comfortable tap target without changing the line height */
+    padding-block: 0.7rem;
+  }
+  .hero-text-link:hover { text-decoration-color: var(--color-plum); }
+</style>

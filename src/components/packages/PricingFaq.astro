@@ -1,0 +1,23 @@
+---
+// Pricing questions (faqs.yaml, category "pricing").
+import FaqList from '../FaqList.astro';
+import Icon from '../Icon.astro';
+import { getFaqs, getSettings, smsUrl } from '../../lib/site';
+const s = await getSettings();
+const items = (await getFaqs()).filter((f) => f.data.category === 'pricing').map((f) => ({ q: f.data.question, a: f.data.answer }));
+---
+{items.length > 0 && (
+  <section id="pricing-questions" aria-labelledby="pricing-faq-title" class="section-y scroll-mt-20 !pb-0">
+    <div class="container-x grid gap-10 lg:grid-cols-12 lg:gap-12">
+      <div class="lg:col-span-4">
+        <h2 id="pricing-faq-title">Pricing questions</h2>
+        <p class="mt-4 max-w-sm text-plum-soft">Straight answers about totals, HST and guests.</p>
+        <div class="mt-6 flex flex-col items-start">
+          <a href="/faq" class="link-arrow">All questions<Icon name="arrow-right" size={18} /></a>
+          <a href={smsUrl(s)} class="link-arrow" data-track="click_text"><Icon name="message" size={18} />Text us a question</a>
+        </div>
+      </div>
+      <FaqList items={items} class="lg:col-span-8" />
+    </div>
+  </section>
+)}

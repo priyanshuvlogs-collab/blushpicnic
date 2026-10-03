@@ -1,0 +1,11 @@
+# Blush Picnic — the booking handler's private code (PHPMailer + helpers).
+# Nothing in this folder is ever served to the web; api/book.php includes it from disk.
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

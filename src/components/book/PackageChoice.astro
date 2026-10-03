@@ -1,0 +1,65 @@
+---
+// "Which package feels right?" as rich radio rows: name, starting price, guests and time, plus
+// "Help me choose". Prices come from packages.yaml; every one says "Starting at" and "before HST".
+// The visual card is a sibling of the (invisible, full-size) radio, so states need no :has().
+import { Picture } from 'astro:assets';
+import type { ResolvedField } from '../../lib/form';
+import { getPackages, getSettings, money, hours } from '../../lib/site';
+
+interface Props {
+  field: ResolvedField;
+}
+const { field: f } = Astro.props;
+const s = await getSettings();
+const pkgs = new Map((await getPackages()).map((p) => [p.id, p]));
+const id = `f-${f.id}`;
+const helpId = f.help ? `${id}-help` : undefined;
+---
+<fieldset class="bk-field is-radio is-package" data-field={f.id} data-type={f.type} aria-describedby={helpId}>
+  <legend class="bk-label bk-label-lg">{f.label}{!f.required && <span class="bk-optional"> (optional)</span>}</legend>
+  {f.help && <p id={helpId} class="bk-help">{f.help}</p>}
+  <p id={`${id}-error`} class="bk-error" data-field-error hidden>
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
+    <span data-error-text></span>
+  </p>
+  <div class="bk-pkgs">
+    {(f.options ?? []).map((o, i) => {
+      const d = pkgs.get(o.value)?.data;
+      return (
+        <label class:list={['bk-pkg', !d && 'is-help']} for={`${id}-${i}`}>
+          <input id={`${id}-${i}`} type="radio" name={f.id} value={o.value} required={f.required} class="bk-pkg-input" />
+          <span class="bk-pkg-face">
+            <span class="bk-pkg-dot" aria-hidden="true"></span>
+            {d && (
+              <span class="bk-pkg-thumb" aria-hidden="true">
+                <Picture src={d.image} alt="" widths={[88, 176]} sizes="88px" formats={['avif', 'webp']} fallbackFormat="jpg" loading="lazy" decoding="async" />
+              </span>
+            )}
+            <span class="bk-pkg-body">
+              <span class="bk-pkg-name">{o.label}</span>
+              {d ? (
+                <span class="bk-pkg-meta">
+                  {d.guestsLabel} · {hours(d.durationHours)}
+                  {d.extraGuestPrice !== null && <span class="bk-pkg-extra">+{money(d.extraGuestPrice)} per extra guest</span>}
+                </span>
+              ) : (
+                <span class="bk-pkg-meta">Tell us your idea and we’ll recommend the right package in your quote.</span>
+              )}
+              <span class="bk-pkg-suggest" data-suggested-for={o.value} hidden>Suggested for your occasion</span>
+            </span>
+            {d && (
+              <span class="bk-pkg-price">
+                <span class="bk-pkg-from">Starting at</span>
+                <span class="bk-pkg-amount">{money(d.priceFrom)}</span>
+                <span class="bk-pkg-tax">{s.taxNote}</span>
+              </span>
+            )}
+          </span>
+        </label>
+      );
+    })}
+  </div>
+  <p class="bk-pkg-compare">
+    <a href="/packages" class="bk-link">Compare what’s included in each package</a>
+  </p>
+</fieldset>

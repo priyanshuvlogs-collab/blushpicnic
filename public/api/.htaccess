@@ -1,0 +1,51 @@
+# Blush Picnic — /api access rules (Hostinger: Apache / LiteSpeed).
+#   Public:  book.php (the booking handler) and form-schema.json (the questions it validates).
+#   Private: lib/ (PHPMailer + helpers, also locked by lib/.htaccess), any other .php,
+#            dotfiles, and stray text/log/mail files.
+# No mod_rewrite here on purpose: a RewriteEngine line in this folder would switch off the
+# site-wide rewrite rules (https / clean URLs) from the root .htaccess for /api.
+
+Options -Indexes
+DirectoryIndex disabled
+
+# Every .php except book.php, plus dotfiles, docs and anything a handler could leave behind.
+<FilesMatch "(\.(php[0-9]?|phtml|phar|inc|md|txt|log|eml|lock|dist|bak|sw[op])$)|(^\.)|(^(LICENSE|VERSION|composer\.(json|lock))$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Later sections win: re-open the handler itself.
+<Files "book.php">
+  <IfModule mod_authz_core.c>
+    Require all granted
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+  </IfModule>
+</Files>
+
+# The validator's question list — public by design (the booking form already shows it).
+<Files "form-schema.json">
+  <IfModule mod_authz_core.c>
+    Require all granted
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+  </IfModule>
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=300"
+  </IfModule>
+</Files>
+
+# book.php sets these itself on every response; this covers form-schema.json and error pages.
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>

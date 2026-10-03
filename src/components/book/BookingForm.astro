@@ -1,0 +1,587 @@
+---
+// The booking experience: one <form> rendered entirely from buildFormSchema() (booking-form.yaml).
+//   • No JS: every step and question shows as one long form that POSTs to settings.booking.endpoint.
+//   • With JS (src/scripts/booking/booking.ts): one step at a time, conditional questions, inline
+//     validation, live estimate, saved progress, deep links and a fetch() submit with a text-us fallback.
+import Icon from '../Icon.astro';
+import BookField from './BookField.astro';
+import OccasionChoice from './OccasionChoice.astro';
+import PackageChoice from './PackageChoice.astro';
+import Reassurance from './Reassurance.astro';
+import { buildFormSchema, type ResolvedField, type ResolvedGroup } from '../../lib/form';
+import { getSettings, getPackages, money } from '../../lib/site';
+import type { BookingConfig } from '../../scripts/booking/config';
+
+const schema = await buildFormSchema();
+const s = await getSettings();
+const pkgs = await getPackages();
+
+const minPrice = Math.min(...pkgs.map((p) => p.data.priceFrom));
+const estimateNote = `Estimate only — starting price ${s.taxNote}. ${s.locationNote}`;
+const depositLine = `${money(s.deposit.standard)} deposit holds your date (${s.deposit.largeEventPercent}% for larger events)`;
+
+const config: BookingConfig = {
+  schema,
+  endpoint: s.booking.endpoint,
+  provider: s.booking.provider,
+  web3formsAccessKey: s.booking.provider === 'web3forms' ? s.booking.web3formsAccessKey : '',
+  businessName: s.name,
+  phoneE164: s.phoneE164,
+  phoneDisplay: s.phoneDisplay,
+  smsBody: s.smsBody,
+  email: s.email,
+  estimateNote,
+  depositLine,
+  taxNote: s.taxNote,
+  guestsLabels: Object.fromEntries(pkgs.map((p) => [p.id, p.data.guestsLabel])),
+  thankYouUrl: '/thank-you',
+};
+// Safe to inline: escape "<" so no value can close the script tag.
+const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
+
+const stepCount = schema.steps.length;
+const groupsFor = (step: number) => schema.groups.filter((g) => g.step === step);
+const conditional = (g: ResolvedGroup, f: ResolvedField) => !g.appliesTo.includes('*') || !!f.onlyFor || !!f.showIf;
+const onlyForNames = (g: ResolvedGroup) => schema.occasions.filter((o) => g.appliesTo.includes(o.formGroup)).map((o) => o.name);
+const wordLimit = (f: ResolvedField) => (f.maxWords ? (f.id === 'letter_board' ? schema.letterBoardMaxWords : f.maxWords) : undefined);
+const progressItems = [...schema.steps, 'Review'];
+---
+<div class="bk" data-booking>
+  <script type="application/json" data-booking-config set:html={configJson} />
+
+  <div class="bk-layout">
+    <div class="bk-card" data-booking-card>
+      <nav class="bk-progress" aria-label="Booking steps" data-progress data-js-only hidden>
+        <ol>
+          {progressItems.map((label, i) => (
+            <li data-progress-item={i + 1} data-state="upcoming">
+              <button type="button" data-goto={i + 1} disabled>
+                <span class="bk-progress-num" aria-hidden="true">
+                  <span class="bk-progress-n">{i + 1}</span>
+                  <svg class="bk-progress-tick" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+                </span>
+                <span class="bk-progress-label">{i < stepCount ? <span class="sr-only">Step {i + 1}: </span> : null}{label}</span>
+                <span class="sr-only" data-progress-status></span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <form
+        class="bk-form"
+        method="post"
+        action={s.booking.endpoint}
+        accept-charset="UTF-8"
+        data-booking-form
+        aria-label="Booking request"
+      >
+        {schema.steps.map((title, i) => {
+          const step = i + 1;
+          return (
+            <section class="bk-step" data-step={step} aria-labelledby={`bk-step-${step}-title`}>
+              <h2 id={`bk-step-${step}-title`} class="bk-step-title" tabindex="-1" data-step-heading>
+                <span class="bk-step-count">Step {step} of {stepCount}</span>
+                <span class="sr-only"> — </span>
+                <span class="bk-step-name">{title}</span>
+              </h2>
+              {step === 1 && <p class="bk-step-intro">Questions marked “(optional)” can be skipped. It takes about three minutes.</p>}
+              <div class="bk-summary" data-error-summary hidden></div>
+
+              {groupsFor(step).map((g) => (
+                <div class="bk-group" data-group={g.id}>
+                  {g.title !== title && <h3 class="bk-group-title">{g.title}</h3>}
+                  {!g.appliesTo.includes('*') && (
+                    <p class="bk-only-for nojs-only">Only if you’re booking for: {onlyForNames(g).join(', ')}.</p>
+                  )}
+                  {g.intro && <p class="bk-group-intro">{g.intro}</p>}
+                  <div class="bk-fields">
+                    {g.fields.map((f) =>
+                      f.id === 'occasion' ? (
+                        <OccasionChoice field={f} />
+                      ) : f.id === 'package' ? (
+                        <PackageChoice field={f} />
+                      ) : (
+                        <BookField field={f} conditional={conditional(g, f)} maxWords={wordLimit(f)} />
+                      ),
+                    )}
+                  </div>
+                </div>
+              ))}
+            </section>
+          );
+        })}
+
+        <section class="bk-step" data-step={stepCount + 1} data-review hidden aria-labelledby="bk-step-review-title">
+          <h2 id="bk-step-review-title" class="bk-step-title" tabindex="-1" data-step-heading>
+            <span class="bk-step-count">Last step</span>
+            <span class="sr-only"> — </span>
+            <span class="bk-step-name">Review &amp; send</span>
+          </h2>
+          <p class="bk-step-intro">Check everything looks right — you can edit any section before you send.</p>
+          <div class="bk-summary" data-error-summary hidden></div>
+          <div class="bk-review" data-review-list></div>
+          <div class="bk-before-send">
+            <Icon name="sparkle" size={20} class="bk-before-send-icon" />
+            <p>
+              This is a request, not a payment. We reply {s.replyTime} with availability and your quote, and a {money(s.deposit.standard)} deposit
+              (or {s.deposit.largeEventPercent}% for larger events) holds your date once you’re happy.
+            </p>
+          </div>
+          <div class="bk-status" data-submit-status hidden></div>
+        </section>
+
+        <input type="hidden" name="_ts" value="" />
+        <input type="hidden" name="_page" value="/book" />
+        <div class="bk-hp" aria-hidden="true">
+          <label for="company_website">Company website</label>
+          <input type="text" id="company_website" name="company_website" tabindex="-1" autocomplete="off" value="" />
+        </div>
+
+        <div class="bk-nav" data-nav>
+          <div class="bk-estbar" data-js-only hidden>
+            <button type="button" class="bk-estbar-toggle" aria-expanded="false" aria-controls="bk-est-sheet" data-estimate-toggle>
+              <span class="bk-estbar-label">Estimate</span>
+              <span class="bk-estbar-total" data-estimate-total>Choose a package</span>
+              <Icon name="chevron-down" size={18} class="bk-estbar-chev" />
+            </button>
+            <div id="bk-est-sheet" class="bk-est-sheet" data-estimate hidden></div>
+          </div>
+          <div class="bk-nav-row">
+            <button type="button" class="btn btn-secondary bk-back" data-back hidden>
+              <Icon name="arrow-left" size={18} /><span class="bk-back-text">Back</span>
+            </button>
+            <button type="submit" class="btn btn-primary btn-lg bk-primary" data-primary>
+              <span class="bk-spinner" aria-hidden="true"></span>
+              <span data-primary-label>Send booking request</span>
+            </button>
+          </div>
+          <p class="bk-nojs-note nojs-only">We reply {s.replyTime} with availability and your quote. Starting prices are {s.taxNote}; {s.locationNote}</p>
+        </div>
+      </form>
+    </div>
+
+    <aside class="bk-aside" aria-label="Your estimate and booking info">
+      <section class="bk-est-panel" aria-labelledby="bk-est-title">
+        <h2 id="bk-est-title" class="bk-est-heading">Your estimate</h2>
+        <div data-estimate>
+          <p class="bk-est-sub">Packages start at {money(minPrice)}, {s.taxNote}.</p>
+          <p class="bk-est-note">{estimateNote}</p>
+          <p class="bk-est-deposit">{depositLine}</p>
+        </div>
+      </section>
+      <Reassurance />
+    </aside>
+  </div>
+
+  <p class="sr-only" aria-live="polite" data-live-status></p>
+  <p class="sr-only" aria-live="polite" data-estimate-live></p>
+</div>
+
+<script>
+  import { initBooking } from '../../scripts/booking/booking';
+  const root = document.querySelector<HTMLElement>('[data-booking]');
+  if (root) initBooking(root);
+</script>
+
+<style is:global>
+  /* ───────── Booking form. Scoped under .bk; tokens from global.css only. ───────── */
+  .bk {
+    --bk-border: color-mix(in srgb, var(--color-plum) 55%, var(--color-cream)); /* ≥ 3:1 on cream (control edges) */
+    --bk-border-soft: color-mix(in srgb, var(--color-plum) 20%, var(--color-cream));
+    --bk-selected: color-mix(in srgb, var(--color-petal) 55%, var(--color-cream));
+    --bk-pad: var(--gutter);
+  }
+  @media (min-width: 640px) { .bk { --bk-pad: 2.25rem; } }
+  @media (min-width: 1024px) { .bk { --bk-pad: 3rem; } }
+
+  /* Until the script takes over, show only step 1 (no flash of the long no-JS form). */
+  .bp-js:not(.bp-ready) .bk-step:not([data-step="1"]) { display: none; }
+  .bp-js .nojs-only { display: none; }
+
+  .bk-layout { display: grid; gap: 2.5rem; }
+  @media (min-width: 1024px) {
+    .bk-layout { grid-template-columns: minmax(0, 1fr) 20rem; gap: 3rem; align-items: start; }
+  }
+  @media (min-width: 1280px) {
+    .bk-layout { grid-template-columns: minmax(0, 1fr) 22rem; gap: 4.5rem; }
+  }
+
+  .bk-card {
+    background: var(--color-cream);
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 1.25rem var(--bk-pad) 0;
+    border-block: 1px solid var(--color-line);
+    min-width: 0;
+  }
+  @media (min-width: 640px) {
+    .bk-card { margin-inline: 0; border: 1px solid var(--color-line); border-radius: var(--radius-card); padding-top: 2rem; }
+  }
+  @media (min-width: 1024px) { .bk-card { padding-top: 2.5rem; } }
+
+  /* Progress: thin segments on phones, numbered steps from 768px */
+  .bk-progress ol { display: flex; gap: 0.375rem; list-style: none; margin: 0; padding: 0; }
+  .bk-progress li { flex: 1; position: relative; }
+  .bk-progress button {
+    display: block; width: 100%; min-height: 1.5rem; padding: 0.6rem 0; border: 0; background: none;
+    color: var(--color-plum); font: inherit; cursor: pointer; border-radius: 6px;
+  }
+  .bk-progress button:disabled { cursor: default; }
+  .bk-progress button::before {
+    content: ""; display: block; height: 4px; border-radius: 99px; background: var(--color-line);
+    transition: background-color 0.3s;
+  }
+  .bk-progress [data-state="done"] button::before,
+  .bk-progress [data-state="current"] button::before { background: var(--color-plum); }
+  .bk-progress-num, .bk-progress-label {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .bk-progress-tick { display: none; }
+  @media (min-width: 768px) {
+    .bk-progress ol { gap: 0; }
+    .bk-progress li + li::after {
+      content: ""; position: absolute; top: 1.1rem; height: 1px; background: var(--color-line);
+      left: calc(-50% + 1.65rem); right: calc(50% + 1.65rem);
+    }
+    .bk-progress li[data-state="done"] + li::after,
+    .bk-progress li[data-state="done"] + li[data-state="current"]::after { background: var(--color-plum); }
+    .bk-progress button { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; padding: 0 0.25rem; min-height: 0; }
+    .bk-progress button::before { display: none; }
+    .bk-progress-num, .bk-progress-label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+    .bk-progress-num {
+      display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+      border: 1.5px solid var(--bk-border); color: var(--color-plum-soft); font-size: 0.9rem; font-weight: 600;
+      background: var(--color-cream); transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .bk-progress-label { font-size: 0.875rem; line-height: 1.3; text-align: center; color: var(--color-plum-soft); text-wrap: balance; }
+    .bk-progress [data-state="current"] .bk-progress-num { background: var(--color-plum); border-color: var(--color-plum); color: var(--color-cream); }
+    .bk-progress [data-state="current"] .bk-progress-label { color: var(--color-plum); font-weight: 600; }
+    .bk-progress [data-state="done"] .bk-progress-num { border-color: var(--color-plum); color: var(--color-plum); }
+    .bk-progress [data-state="done"] .bk-progress-n { display: none; }
+    .bk-progress [data-state="done"] .bk-progress-tick { display: block; }
+    .bk-progress [data-state="done"] .bk-progress-label { color: var(--color-plum); }
+    .bk-progress button:not(:disabled):hover .bk-progress-label { text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 0.3em; }
+  }
+
+  /* Steps */
+  .bk-step { padding-top: 1.5rem; }
+  .bk-progress[hidden] + .bk-form .bk-step:first-child { padding-top: 0.5rem; }
+  .bk-step + .bk-step { margin-top: 3.5rem; } /* no-JS long form */
+  .bp-ready .bk-step + .bk-step { margin-top: 0; }
+  @media (min-width: 768px) { .bk-step { padding-top: 2.5rem; } }
+  .bk-step-title { display: flex; flex-direction: column; gap: 0.4rem; scroll-margin-top: 6rem; }
+  .bk-step-title:focus { outline: none; }
+  .bk-step-title:focus-visible { outline: 3px solid var(--color-plum); outline-offset: 6px; }
+  .bk-step-count { font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600; letter-spacing: 0; color: var(--color-sage-ink); }
+  .bk-step-name { font-size: clamp(2rem, 1.55rem + 1.6vw, 2.75rem); line-height: 1.08; }
+  .bk-step-intro { margin-top: 0.75rem; color: var(--color-plum-soft); font-size: 1rem; max-width: 60ch; }
+
+  .bk-group { margin-top: 2rem; }
+  .bk-group + .bk-group { margin-top: 2.75rem; padding-top: 2.5rem; border-top: 1px solid var(--color-line); }
+  .bk-group[hidden] + .bk-group { margin-top: 2rem; padding-top: 0; border-top: 0; }
+  .bk-group-title { font-size: clamp(1.4rem, 1.25rem + 0.6vw, 1.7rem); line-height: 1.2; }
+  .bk-group-intro, .bk-only-for { margin-top: 0.4rem; font-size: 0.95rem; color: var(--color-plum-soft); }
+  .bk-only-for { font-style: italic; }
+  .bk-fields { display: grid; gap: 1.75rem 1.25rem; margin-top: 1.25rem; }
+  .bk-group-title + .bk-fields, .bk-group-intro + .bk-fields { margin-top: 1.25rem; }
+  .bk-group:first-of-type > .bk-fields:first-child { margin-top: 0; }
+  @media (min-width: 640px) {
+    .bk-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem 1.5rem; }
+    .bk-field { grid-column: 1 / -1; }
+    .bk-field.is-half { grid-column: auto; align-self: end; } /* inputs line up even when help text differs */
+  }
+
+  /* Fields */
+  fieldset.bk-field { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .bk-field { min-width: 0; transition: padding 0.15s; }
+  .bk-field.has-error { padding-left: 1rem; border-left: 3px solid var(--color-error); }
+  .bk-label { display: block; float: none; width: 100%; padding: 0; font-weight: 600; font-size: 1.0625rem; line-height: 1.35; color: var(--color-plum); }
+  .bk-label-lg { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.6rem); line-height: 1.2; letter-spacing: -0.01em; }
+  .bk-label-lg .bk-optional { font-family: var(--font-sans); font-size: 1rem; }
+  .bk-optional { font-weight: 400; color: var(--color-plum-soft); }
+  .bk-help { margin-top: 0.3rem; font-size: 0.95rem; line-height: 1.5; color: var(--color-plum-soft); max-width: 62ch; }
+  .bk-error { display: flex; align-items: flex-start; gap: 0.4rem; margin-top: 0.45rem; font-size: 0.95rem; font-weight: 600; line-height: 1.4; color: var(--color-error); }
+  .bk-error svg { flex-shrink: 0; margin-top: 0.1em; }
+
+  .bk-input {
+    display: block; width: 100%; margin-top: 0.6rem; min-height: 3.25rem; padding: 0.8rem 1rem;
+    font: inherit; font-size: 1.0625rem; line-height: 1.4; color: var(--color-plum);
+    background-color: var(--color-cream); border: 1.5px solid var(--bk-border); border-radius: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s; -webkit-appearance: none; appearance: none;
+  }
+  .bk-input::placeholder { color: color-mix(in srgb, var(--color-plum-soft) 90%, var(--color-cream)); opacity: 1; }
+  .bk-input:hover { border-color: color-mix(in srgb, var(--color-plum) 80%, var(--color-cream)); }
+  .bk-input:focus, .bk-input:focus-visible { outline: 2px solid var(--color-plum); outline-offset: 2px; border-color: var(--color-plum); border-radius: 12px; }
+  .bk-input[aria-invalid="true"] { border-color: var(--color-error); }
+  .bk-input:disabled { opacity: 0.6; }
+  .bk-textarea { min-height: 7.5rem; resize: vertical; }
+  .bk-select {
+    padding-right: 2.75rem; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%233b1730' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.9rem center;
+  }
+  .bk-input[type="date"], .bk-input[type="time"], .bk-input[type="month"] { min-height: 3.25rem; }
+  .bk-input::-webkit-date-and-time-value { text-align: left; min-height: 1.4em; }
+
+  .bk-number:not(.has-stepper) .bk-input { max-width: 10rem; }
+  .bk-number.has-stepper { display: flex; align-items: stretch; max-width: 13rem; margin-top: 0.6rem; }
+  .bk-number.has-stepper .bk-input { margin-top: 0; }
+  .bp-ready .bk-number.has-stepper .bk-input { text-align: center; border-radius: 0; border-left-width: 0; border-right-width: 0; -moz-appearance: textfield; }
+  .bp-ready .bk-number.has-stepper .bk-input:focus { border-radius: 0; outline-offset: -2px; }
+  .bk-number.has-stepper .bk-input::-webkit-inner-spin-button,
+  .bk-number.has-stepper .bk-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .bk-stepper {
+    display: grid; place-items: center; width: 3.25rem; flex-shrink: 0; cursor: pointer;
+    color: var(--color-plum); background: var(--color-cream); border: 1.5px solid var(--bk-border); transition: background-color 0.15s;
+  }
+  .bk-stepper:first-child { border-radius: 12px 0 0 12px; }
+  .bk-stepper:last-child { border-radius: 0 12px 12px 0; }
+  .bk-stepper:hover { background: var(--bk-selected); }
+  .bk-field.has-error .bk-stepper { border-color: var(--color-error); }
+
+  /* Radio / checkbox tiles */
+  .bk-choices { display: grid; gap: 0.625rem; margin-top: 0.75rem; }
+  .bk-choices.is-row { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+  .bk-choices.is-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
+  .bk-choices.is-stack { grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .bk-choices.is-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .bk-choice {
+    display: flex; align-items: center; gap: 0.75rem; min-height: 3.25rem; padding: 0.7rem 1rem;
+    border: 1.5px solid var(--bk-border-soft); border-radius: 12px; background: var(--color-cream);
+    cursor: pointer; line-height: 1.35; transition: border-color 0.15s, background-color 0.15s;
+  }
+  .bk-choice:hover { border-color: var(--bk-border); }
+  .bk-choice:has(input:checked) { border-color: var(--color-plum); background: var(--bk-selected); }
+  .bk-choice:has(input:focus-visible) { outline: 3px solid var(--color-plum); outline-offset: 2px; }
+  @supports selector(:has(*)) { .bk-choice input:focus-visible { outline: none; } }
+  .bk-field.has-error .bk-choice { border-color: color-mix(in srgb, var(--color-error) 55%, var(--color-cream)); }
+  .bk-radio, .bk-check {
+    -webkit-appearance: none; appearance: none; margin: 0; flex-shrink: 0; width: 1.375rem; height: 1.375rem;
+    display: grid; place-content: center; border: 1.5px solid var(--bk-border); background: var(--color-cream); cursor: pointer;
+  }
+  .bk-radio { border-radius: 50%; }
+  .bk-radio::before { content: ""; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--color-plum); transform: scale(0); transition: transform 0.15s; }
+  .bk-radio:checked { border-color: var(--color-plum); }
+  .bk-radio:checked::before { transform: scale(1); }
+  .bk-check { border-radius: 6px; }
+  .bk-check::before {
+    content: ""; width: 0.8rem; height: 0.8rem; background: var(--color-cream); transform: scale(0); transition: transform 0.15s;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+  .bk-check:checked { background: var(--color-plum); border-color: var(--color-plum); }
+  .bk-check:checked::before { transform: scale(1); }
+
+  /* Occasion chips */
+  .bk-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .bk-chip { position: relative; display: inline-flex; }
+  .bk-chip-input, .bk-pkg-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+  .bk-chip-face {
+    display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.875rem; padding: 0.5rem 1.05rem;
+    border: 1px solid var(--bk-border); border-radius: 999px; background: var(--color-cream);
+    font-size: 0.98rem; font-weight: 500; line-height: 1.2; transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .bk-chip-tick { display: none; flex-shrink: 0; margin-left: -0.15rem; }
+  .bk-chip-input:hover + .bk-chip-face { border-color: var(--color-plum); background: var(--bk-selected); }
+  .bk-chip-input:checked + .bk-chip-face { background: var(--color-plum); border-color: var(--color-plum); color: var(--color-cream); }
+  .bk-chip-input:checked + .bk-chip-face .bk-chip-tick { display: block; }
+  .bk-chip-input:focus-visible + .bk-chip-face { outline: 3px solid var(--color-plum); outline-offset: 2px; }
+  .bk-field.has-error .bk-chip-face { border-color: color-mix(in srgb, var(--color-error) 55%, var(--color-cream)); }
+
+  /* Package cards */
+  .bk-pkgs { display: grid; gap: 0.75rem; margin-top: 1rem; }
+  .bk-pkg { position: relative; display: block; }
+  .bk-pkg-face {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot body" "dot price";
+    align-items: center; column-gap: 0.9rem; padding: 1rem 1.1rem; border: 1.5px solid var(--bk-border-soft);
+    border-radius: 16px; background: var(--color-cream); transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+  }
+  .bk-pkg-dot {
+    grid-area: dot; align-self: start; margin-top: 0.3rem; display: grid; place-content: center;
+    width: 1.375rem; height: 1.375rem; border-radius: 50%; border: 1.5px solid var(--bk-border); background: var(--color-cream);
+  }
+  .bk-pkg-dot::before { content: ""; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--color-plum); transform: scale(0); transition: transform 0.15s; }
+  .bk-pkg-thumb { grid-area: thumb; display: none; width: 4.75rem; height: 4.75rem; border-radius: 12px; overflow: hidden; background: var(--color-petal); }
+  .bk-pkg-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .bk-pkg-body { grid-area: body; min-width: 0; }
+  .bk-pkg-name { display: block; font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; }
+  .bk-pkg-meta { display: block; margin-top: 0.25rem; font-size: 0.95rem; line-height: 1.45; color: var(--color-plum-soft); }
+  .bk-pkg-extra { display: block; }
+  .bk-pkg-suggest {
+    display: inline-flex; margin-top: 0.5rem; padding: 0.2rem 0.6rem; border-radius: 999px;
+    font-size: 0.8125rem; font-weight: 600; color: var(--color-sage-ink); background: var(--color-sage-wash);
+  }
+  .bk-pkg-price { grid-area: price; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.35rem; margin-top: 0.55rem; }
+  .bk-pkg-from, .bk-pkg-tax { font-size: 0.875rem; color: var(--color-plum-soft); }
+  .bk-pkg-amount { font-family: var(--font-display); font-size: 1.5rem; line-height: 1; }
+  .bk-pkg.is-help .bk-pkg-face { grid-template-areas: "dot body"; border-style: dashed; }
+  .bk-pkg-input:hover + .bk-pkg-face { border-color: var(--bk-border); }
+  .bk-pkg-input:checked + .bk-pkg-face { border-color: var(--color-plum); background: var(--bk-selected); box-shadow: inset 0 0 0 1px var(--color-plum); border-style: solid; }
+  .bk-pkg-input:checked + .bk-pkg-face .bk-pkg-dot { border-color: var(--color-plum); }
+  .bk-pkg-input:checked + .bk-pkg-face .bk-pkg-dot::before { transform: scale(1); }
+  .bk-pkg-input:focus-visible + .bk-pkg-face { outline: 3px solid var(--color-plum); outline-offset: 2px; }
+  .bk-field.has-error .bk-pkg-face { border-color: color-mix(in srgb, var(--color-error) 55%, var(--color-cream)); }
+  @media (min-width: 480px) {
+    .bk-pkg-face { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "dot body price"; }
+    .bk-pkg-dot { align-self: center; margin-top: 0; }
+    .bk-pkg-price { flex-direction: column; align-items: flex-end; text-align: right; margin-top: 0; padding-left: 0.5rem; }
+    .bk-pkg-amount { font-size: 1.75rem; margin-block: 0.15rem; }
+  }
+  @media (min-width: 640px) {
+    .bk-pkg-face { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "dot thumb body price"; padding: 0.9rem 1.25rem 0.9rem 1.1rem; }
+    .bk-pkg-thumb { display: block; }
+    .bk-pkg.is-help .bk-pkg-face { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot body"; padding-block: 1.1rem; }
+  }
+  .bk-pkg-compare { margin-top: 0.9rem; font-size: 0.95rem; }
+
+  /* Switch */
+  .bk-switch { display: inline-flex; align-items: center; gap: 0.9rem; min-height: 3rem; cursor: pointer; font-weight: 600; }
+  .bk-switch input {
+    -webkit-appearance: none; appearance: none; position: relative; flex-shrink: 0; margin: 0; width: 3.25rem; height: 2rem;
+    border-radius: 999px; background: var(--bk-border); cursor: pointer; transition: background-color 0.2s;
+  }
+  .bk-switch input::before {
+    content: ""; position: absolute; top: 0.25rem; left: 0.25rem; width: 1.5rem; height: 1.5rem; border-radius: 50%;
+    background: var(--color-cream); box-shadow: 0 1px 3px rgb(59 23 48 / 0.3); transition: transform 0.2s var(--ease-out-soft);
+  }
+  .bk-switch input:checked { background: var(--color-plum); }
+  .bk-switch input:checked::before { transform: translateX(1.25rem); }
+  .bk-switch input:focus-visible { outline: 3px solid var(--color-plum); outline-offset: 3px; border-radius: 999px; }
+
+  .bk-count { margin-top: 0.4rem; font-size: 0.875rem; color: var(--color-plum-soft); text-align: right; }
+  .bk-count.is-over { color: var(--color-error); font-weight: 600; }
+  .bk-note { margin-top: 0.75rem; padding: 0.75rem 1rem; border-radius: 12px; background: var(--color-sage-wash); font-size: 0.95rem; line-height: 1.5; color: var(--color-plum); }
+
+  .bk-link { font-weight: 600; color: var(--color-plum); text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 0.25em; }
+  .bk-link:hover { text-decoration-color: var(--color-plum); }
+
+  /* Error summary */
+  .bk-summary { margin-top: 1.5rem; padding: 1rem 1.25rem; border: 2px solid var(--color-error); border-radius: 14px; background: color-mix(in srgb, var(--color-error) 5%, var(--color-cream)); }
+  .bk-summary-title { font-weight: 700; }
+  .bk-summary-list { margin-top: 0.35rem; display: grid; }
+  .bk-summary-list a { display: inline-flex; align-items: center; min-height: 2.25rem; font-weight: 600; color: var(--color-error); text-decoration: underline; text-underline-offset: 0.2em; }
+
+  /* Review */
+  .bk-review { margin-top: 1.75rem; display: grid; gap: 0.75rem; }
+  .bk-review-step { padding: 1.25rem 1.25rem 1rem; border: 1px solid var(--color-line); border-radius: 16px; background: color-mix(in srgb, var(--color-petal) 25%, var(--color-cream)); }
+  .bk-review-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .bk-review-title { font-size: 1.3rem; }
+  .bk-edit {
+    display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.9rem; margin-right: -0.5rem; border: 0; border-radius: 10px;
+    background: none; color: var(--color-plum); font: inherit; font-weight: 600; cursor: pointer;
+    text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 0.25em;
+  }
+  .bk-edit:hover { background: var(--bk-selected); }
+  .bk-review-dl { margin-top: 0.5rem; display: grid; }
+  .bk-review-row { display: grid; gap: 0.1rem; padding: 0.6rem 0; border-top: 1px solid var(--color-line); }
+  .bk-review-row:first-child { border-top: 0; }
+  .bk-review-row dt { font-size: 0.9rem; color: var(--color-plum-soft); }
+  .bk-review-row dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line; }
+  @media (min-width: 640px) {
+    .bk-review-row { grid-template-columns: 13rem minmax(0, 1fr); gap: 1.25rem; }
+    .bk-review-row dt { font-size: 0.95rem; }
+  }
+  .bk-review-empty { margin-top: 0.4rem; color: var(--color-plum-soft); font-size: 0.95rem; }
+  .bk-before-send { display: flex; align-items: flex-start; gap: 0.75rem; margin-top: 1.5rem; padding: 1rem 1.15rem; border-radius: 14px; background: var(--color-sage-wash); font-size: 0.95rem; line-height: 1.55; }
+  .bk-before-send-icon { flex-shrink: 0; margin-top: 0.15rem; color: var(--color-sage-ink); }
+
+  .bk-alert { margin-top: 1.5rem; padding: 1.25rem; border: 2px solid var(--color-error); border-radius: 16px; background: color-mix(in srgb, var(--color-error) 5%, var(--color-cream)); }
+  .bk-alert-title { font-family: var(--font-display); font-size: 1.4rem; line-height: 1.2; }
+  .bk-alert > p + p { margin-top: 0.5rem; }
+  .bk-alert-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+  .bk-alert-actions .btn { flex: 1 1 12rem; }
+  .bk-alert-alt { margin-top: 0.85rem !important; font-size: 0.95rem; color: var(--color-plum-soft); }
+  .bk-alert-alt a { color: var(--color-plum); font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 0.2em; white-space: nowrap; }
+
+  /* Honeypot: off-screen for people, still in the DOM for bots */
+  .bk-hp { position: absolute !important; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+  /* Nav bar: sticky at the bottom of the screen on phones/tablets, in flow on desktop */
+  .bk-nav {
+    position: sticky; bottom: 0; z-index: 20; margin: 2.5rem calc(var(--bk-pad) * -1) 0;
+    padding: 0.6rem var(--bk-pad) max(0.75rem, env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--color-cream) 94%, transparent); border-top: 1px solid var(--color-line);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+  @media (min-width: 640px) { .bk-nav { border-radius: 0 0 var(--radius-card) var(--radius-card); padding-bottom: 1rem; } }
+  @media (min-width: 1024px) {
+    .bk-nav { position: static; margin-top: 3rem; padding: 1.5rem var(--bk-pad) 2.5rem; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  }
+  .bk-nav-row { display: flex; align-items: center; gap: 0.75rem; }
+  .bk-primary { flex: 1 1 auto; position: relative; }
+  .bk-back { flex: 0 0 auto; padding-inline: 1.1rem; }
+  @media (max-width: 359px) {
+    .bk-back { padding-inline: 0.9rem; }
+    .bk-back-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .bk-primary.btn-lg { padding-inline: 1rem; }
+  }
+  @media (min-width: 640px) {
+    .bk-primary { flex: 0 1 auto; min-width: 15rem; margin-left: auto; }
+  }
+  .bk-continue-to { display: none; }
+  @media (min-width: 640px) { .bk-continue-to { display: inline; } }
+  .bk-primary:disabled { cursor: progress; opacity: 0.85; }
+  .bk-spinner { display: none; width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--color-cream) 35%, transparent); border-top-color: var(--color-cream); }
+  .bk-primary.is-sending .bk-spinner { display: inline-block; animation: bk-spin 0.8s linear infinite; }
+  @keyframes bk-spin { to { transform: rotate(360deg); } }
+  .bk-nojs-note { margin-top: 0.75rem; font-size: 0.9rem; color: var(--color-plum-soft); }
+
+  .bk-estbar { margin-bottom: 0.5rem; }
+  @media (min-width: 1024px) { .bk-estbar { display: none; } }
+  .bk-estbar-toggle {
+    display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.75rem; padding: 0 0.15rem; border: 0; border-radius: 8px;
+    background: none; color: var(--color-plum); font: inherit; text-align: left; cursor: pointer;
+  }
+  .bk-estbar-label { font-size: 0.95rem; color: var(--color-plum-soft); }
+  .bk-estbar-total { margin-left: auto; font-weight: 700; font-size: 1rem; }
+  .bk-estbar-chev { flex-shrink: 0; transform: rotate(180deg); transition: transform 0.2s; }
+  .bk-estbar-toggle[aria-expanded="true"] .bk-estbar-chev { transform: none; }
+  .bk-est-sheet { max-height: 45vh; overflow: auto; padding: 0.25rem 0 0.75rem; margin-bottom: 0.5rem; border-bottom: 1px solid var(--color-line); }
+  .bk-est-sheet .bk-est-kicker, .bk-est-sheet .bk-est-total:not(.is-text) { display: none; }
+  .bk-est-sheet .bk-est-lines { margin-top: 0; border-top: 0; }
+
+  /* Estimate (aside + mobile sheet) */
+  .bk-est-heading { font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600; letter-spacing: 0; color: var(--color-plum-soft); }
+  .bk-est-kicker { margin-top: 0.75rem; font-size: 0.95rem; color: var(--color-plum-soft); }
+  .bk-est-total { font-family: var(--font-display); font-size: 3.25rem; line-height: 1; margin-top: 0.2rem; }
+  .bk-est-total.is-text { font-size: 1.65rem; line-height: 1.15; margin-top: 0.6rem; }
+  .bk-est-empty { margin-top: 0.6rem; font-weight: 600; }
+  .bk-est-sub { margin-top: 0.35rem; font-size: 0.95rem; color: var(--color-plum-soft); }
+  .bk-est-lines { margin-top: 1.1rem; border-top: 1px solid var(--color-line); }
+  .bk-est-lines li { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--color-line); font-size: 0.95rem; line-height: 1.4; }
+  .bk-est-lines li.is-note { color: var(--color-gold-ink); font-weight: 600; }
+  .bk-est-amt { white-space: nowrap; font-weight: 600; }
+  .bk-est-amt.is-muted { font-weight: 400; color: var(--color-plum-soft); }
+  .bk-est-note { margin-top: 0.9rem; font-size: 0.875rem; line-height: 1.5; color: var(--color-plum-soft); }
+  .bk-est-deposit { margin-top: 0.6rem; font-size: 0.875rem; line-height: 1.5; font-weight: 600; }
+
+  .bk-aside { display: grid; gap: 1.25rem; min-width: 0; }
+  .bk-est-panel { display: none; }
+  @media (min-width: 1024px) {
+    .bk-aside { position: sticky; top: 6rem; max-height: calc(100vh - 7rem); overflow: auto; overscroll-behavior: contain; }
+    .bk-est-panel { display: block; padding: 1.6rem 1.6rem 1.5rem; border-radius: var(--radius-card); background: var(--color-cream); border: 1px solid var(--color-line); }
+  }
+
+  .bk-reassure-list { display: grid; gap: 1.1rem; }
+  .bk-reassure-list li { display: flex; gap: 0.8rem; font-size: 0.95rem; line-height: 1.5; color: var(--color-plum-soft); }
+  .bk-reassure-icon { flex-shrink: 0; margin-top: 0.15rem; color: var(--color-sage-ink); }
+  .bk-reassure-title { font-weight: 600; color: var(--color-plum); }
+  .bk-reassure-foot { display: flex; gap: 0.6rem; align-items: center; margin-top: 1rem; font-size: 0.9rem; }
+  .bk-reassure-foot a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+  @media (min-width: 1024px) { .bk-reassure { padding: 0 0.4rem; } }
+
+  /* Phones/tablets: keep focused fields clear of the sticky nav bar (WCAG 2.4.11) */
+  @media (max-width: 1023px) { html:has(.bk) { scroll-padding-bottom: 10rem; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bk *, .bk *::before { transition: none !important; }
+    .bk-primary.is-sending .bk-spinner { animation-duration: 2.4s; }
+  }
+  @media (forced-colors: active) {
+    .bk-radio::before, .bk-pkg-dot::before { background: CanvasText; }
+    .bk-check:checked { background: Highlight; }
+    .bk-check::before { background: HighlightText; }
+    .bk-switch input { border: 1px solid CanvasText; }
+    .bk-switch input::before { background: CanvasText; }
+    .bk-chip-input:checked + .bk-chip-face, .bk-pkg-input:checked + .bk-pkg-face { border-width: 3px; }
+  }
+</style>

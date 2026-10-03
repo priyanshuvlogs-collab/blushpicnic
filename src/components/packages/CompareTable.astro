@@ -1,0 +1,193 @@
+---
+// "What each package includes" — an accessible comparison table built entirely from packages.yaml.
+// A package whose includesFrom line names another package ("Everything in the Signature Picnic,
+// plus:") inherits that package's list. Rows appear in the order packages introduce them.
+import Icon from '../Icon.astro';
+import { getSettings, getPackages, money, hours, bookUrl, type Package } from '../../lib/site';
+
+const s = await getSettings();
+const pkgs = await getPackages();
+const norm = (t: string) => t.trim().toLowerCase();
+
+const effective = new Map<string, Set<string>>();
+for (const p of pkgs) {
+  const set = new Set(p.data.includes.map(norm));
+  const from = p.data.includesFrom?.toLowerCase();
+  if (from) {
+    for (const other of pkgs) {
+      if (other.id !== p.id && from.includes(other.data.name.toLowerCase())) other.data.includes.forEach((i) => set.add(norm(i)));
+    }
+  }
+  effective.set(p.id, set);
+}
+
+const rows: string[] = [];
+const seen = new Set<string>();
+for (const p of pkgs) {
+  for (const item of p.data.includes) {
+    if (!seen.has(norm(item))) {
+      seen.add(norm(item));
+      rows.push(item);
+    }
+  }
+}
+const has = (p: Package, item: string) => effective.get(p.id)!.has(norm(item));
+const anyMissing = rows.some((r) => pkgs.some((p) => !has(p, r)));
+
+const guests = (p: Package) => (p.data.guestsMax ? `${p.data.guestsIncluded}–${p.data.guestsMax}` : `${p.data.guestsIncluded}`);
+const extra = (p: Package) => (p.data.extraGuestPrice !== null ? `+${money(p.data.extraGuestPrice)} each` : 'We’ll quote');
+const featured = pkgs.find((p) => p.data.featured)?.id;
+// The featured package's column is softly highlighted.
+const HL = 'bg-petal/70';
+const colClass = (p: Package) => (p.id === featured ? HL : '');
+---
+<section id="compare" aria-labelledby="compare-title" class="section-y scroll-mt-20 bg-cream">
+  <div class="container-x">
+    <div class="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
+      <h2 id="compare-title" class="lg:col-span-6">What each package includes</h2>
+      <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
+        Side by side, so you can see exactly what you're getting. All prices are starting prices, {s.taxNote}.
+      </p>
+    </div>
+
+    <div class="compare-scroll relative mt-10 md:mt-12" data-compare>
+      <p class="mb-3 hidden items-center gap-2 text-sm text-plum-soft" data-compare-hint>
+        <Icon name="arrow-right" size={16} />Scroll sideways to see every package
+      </p>
+      <div class="overflow-x-auto" data-compare-scroller>
+        <table class="compare w-full min-w-[18rem] table-fixed border-collapse text-left text-[0.88rem] sm:text-[0.98rem]">
+          <caption class="sr-only">Comparison of {pkgs.map((p) => p.data.name).join(', ')}: price, guests, time and what's included</caption>
+          <colgroup>
+            <col class="w-[27%] sm:w-[34%]" />
+            {pkgs.map(() => <col />)}
+          </colgroup>
+          <thead>
+            <tr>
+              <td class="border-b border-plum/30"></td>
+              {pkgs.map((p) => (
+                <th scope="col" class={`border-b border-plum/30 px-1 pb-4 pt-5 text-center align-bottom font-display text-[clamp(0.7rem,3.6vw,1.05rem)] font-normal leading-tight sm:px-4 sm:text-[1.2rem] md:text-[1.35rem] ${p.id === featured ? `rounded-t-[14px] ${HL}` : ''}`}>
+                  {p.data.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Starting price <span class="whitespace-nowrap">({s.taxNote})</span></th>
+              {pkgs.map((p) => <td class={colClass(p)}><span class="font-display text-[1.15rem] sm:text-[1.45rem]">{money(p.data.priceFrom)}</span></td>)}
+            </tr>
+            <tr>
+              <th scope="row">Guests included</th>
+              {pkgs.map((p) => <td class={colClass(p)}>{guests(p)}</td>)}
+            </tr>
+            <tr>
+              <th scope="row">Extra guests</th>
+              {pkgs.map((p) => <td class={colClass(p)}>{extra(p)}</td>)}
+            </tr>
+            <tr>
+              <th scope="row">Picnic time</th>
+              {pkgs.map((p) => <td class={colClass(p)}>{hours(p.data.durationHours)}</td>)}
+            </tr>
+            <tr>
+              <th scope="row">Delivery, setup, styling &amp; clean-up</th>
+              {pkgs.map((p) => (
+                <td class={colClass(p)}><Icon name="check" size={22} class="mx-auto text-sage-ink" /><span class="sr-only">Included</span></td>
+              ))}
+            </tr>
+          </tbody>
+          <tbody>
+            <tr>
+              <th scope="rowgroup" colspan={pkgs.length + 1} class="group-head">Styling and details</th>
+            </tr>
+            {rows.map((item) => (
+              <tr>
+                <th scope="row">{item}</th>
+                {pkgs.map((p) => (
+                  <td class={colClass(p)}>
+                    {has(p, item)
+                      ? <><Icon name="check" size={22} class="mx-auto text-sage-ink" /><span class="sr-only">Included</span></>
+                      : <><span aria-hidden="true" class="text-plum-soft/70">—</span><span class="sr-only">Not listed</span></>}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td></td>
+              {pkgs.map((p) => (
+                <td class={`px-1 pb-4 pt-4 sm:px-3 ${p.id === featured ? `rounded-b-[14px] ${HL}` : ''}`}>
+                  <a
+                    href={bookUrl({ package: p.id })}
+                    class={`btn w-full !min-h-11 !px-1 text-[0.9rem] sm:!px-4 ${p.id === featured ? 'btn-primary' : 'btn-secondary'}`}
+                    data-track="package_select"
+                    data-track-package={p.id}
+                  >Book<span class="sr-only"> the {p.data.name}</span></a>
+                </td>
+              ))}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-2 text-[0.95rem] text-plum-soft md:max-w-[52rem]">
+      {anyMissing && <p>— means it isn't part of that package as listed. Want it anyway? Mention it in your booking request and we'll include it in your quote.</p>}
+      <p>{s.locationNote}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .compare :global(th[scope='row']) {
+    padding: 0.8rem 0.5rem 0.8rem 0;
+    font-weight: 500;
+    line-height: 1.35;
+    vertical-align: middle;
+  }
+  .compare :global(tbody td) {
+    padding: 0.8rem 0.25rem;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 1.3;
+  }
+  .compare :global(tbody tr) { border-bottom: 1px solid var(--color-line); }
+  .compare :global(.group-head) {
+    padding: 2rem 0 0.6rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--color-plum);
+    border-bottom-color: rgb(59 23 48 / 0.3);
+  }
+  .compare :global(tbody tr:has(.group-head)) { border-bottom: 0; }
+  @media (min-width: 640px) {
+    .compare :global(th[scope='row']) { padding-right: 1.5rem; }
+    .compare :global(tbody td) { padding-inline: 1rem; }
+  }
+</style>
+
+<script>
+  // Only when the table is wider than the screen: show the hint and make the region keyboard-scrollable.
+  for (const wrap of document.querySelectorAll<HTMLElement>('[data-compare]')) {
+    const scroller = wrap.querySelector<HTMLElement>('[data-compare-scroller]');
+    const hint = wrap.querySelector<HTMLElement>('[data-compare-hint]');
+    if (!scroller || !hint) continue;
+    const update = () => {
+      const scrollable = scroller.scrollWidth > scroller.clientWidth + 1;
+      hint.classList.toggle('hidden', !scrollable);
+      hint.classList.toggle('flex', scrollable);
+      if (scrollable) {
+        scroller.tabIndex = 0;
+        scroller.setAttribute('role', 'region');
+        scroller.setAttribute('aria-label', 'Package comparison table (scrolls sideways)');
+      } else {
+        scroller.removeAttribute('tabindex');
+        scroller.removeAttribute('role');
+        scroller.removeAttribute('aria-label');
+      }
+    };
+    update();
+    new ResizeObserver(update).observe(scroller);
+  }
+</script>

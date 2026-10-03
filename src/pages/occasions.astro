@@ -1,0 +1,162 @@
+---
+// /occasions — editorial index of every occasion page, grouped by mood.
+// Groups list occasion ids (filenames in src/content/occasions/). Ids without a page are skipped;
+// any occasion not listed in a group appears in a final "More occasions" group automatically.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { Picture } from 'astro:assets';
+import CtaBand from '../components/CtaBand.astro';
+import ArchImage from '../components/ArchImage.astro';
+import Icon from '../components/Icon.astro';
+import OccasionGroup from '../components/occasion/OccasionGroup.astro';
+import { capitalize, picnicPhrasePlural, startingLine } from '../components/occasion/text';
+import { getSettings, getOccasions, getPackages, money, occasionUrl, type Occasion } from '../lib/site';
+import { OTHER_OCCASION } from '../lib/form';
+import { breadcrumbs } from '../lib/schema';
+
+type Layout = 'stagger' | 'feature' | 'rows';
+const GROUPS: { id: string; title: string; intro: string; ids: string[]; layout: Layout }[] = [
+  {
+    id: 'romance',
+    title: 'Romance',
+    intro: 'First dates, big questions and the milestones that follow. Tell us about your person, and we style the picnic around them.',
+    ids: ['picnic-date', 'be-my-girlfriend', 'proposal', 'anniversary', 'just-engaged', 'newly-married'],
+    layout: 'stagger',
+  },
+  {
+    id: 'celebrations',
+    title: 'Celebrations',
+    intro: 'Birthdays, showers, send-offs and thank-yous, for one guest of honour or the whole group.',
+    ids: ['birthday', 'bridal-shower', 'retirement', 'appreciation', 'corporate'],
+    layout: 'feature',
+  },
+  {
+    id: 'family-and-baby',
+    title: 'Family & baby',
+    intro: 'Slow afternoons together, and the happy news worth gathering for.',
+    ids: ['family', 'new-baby', 'gender-reveal', 'baby-shower', 'announcement'],
+    layout: 'rows',
+  },
+];
+
+const s = await getSettings();
+const occasions = await getOccasions();
+const pkgs = await getPackages();
+const packages = new Map(pkgs.map((p) => [p.id, p]));
+const lowest = pkgs.reduce((a, b) => (b.data.priceFrom < a.data.priceFrom ? b : a));
+
+const byId = new Map(occasions.map((o) => [o.id, o]));
+const grouped = new Set(GROUPS.flatMap((g) => g.ids));
+const groups = [
+  ...GROUPS.map((g) => ({ ...g, items: g.ids.map((id) => byId.get(id)).filter((o): o is Occasion => Boolean(o)) })),
+  {
+    id: 'more',
+    title: 'More occasions',
+    intro: 'Every picnic is styled around its moment. Tell us yours in the booking form.',
+    ids: [],
+    layout: 'rows' as Layout,
+    items: occasions.filter((o) => !grouped.has(o.id)),
+  },
+].filter((g) => g.items.length > 0);
+
+const ordered = groups.flatMap((g) => g.items);
+// Hero pictures: the first occasion of the first two groups.
+const lead = groups[0]?.items[0];
+const inset = groups[1]?.items[0] ?? groups[0]?.items[1];
+const crumbs = [{ name: 'Occasions', path: '/occasions' }];
+const title = 'Picnic Ideas for Every Occasion in Toronto | Blush Picnic';
+const description = `Luxury picnic setups across Toronto & the GTA for proposals, birthdays, showers, dates and more. Styled for your occasion, starting at ${money(lowest.data.priceFrom)}, ${s.taxNote}.`;
+const jsonLd = [
+  breadcrumbs(s, crumbs),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Picnic occasions',
+    numberOfItems: ordered.length,
+    itemListElement: ordered.map((o, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: capitalize(picnicPhrasePlural(o)),
+      url: `${s.url}${occasionUrl(o)}`,
+    })),
+  },
+];
+---
+<BaseLayout {title} {description} {jsonLd}>
+  <section aria-labelledby="page-title">
+    <div class="container-x pb-12 pt-3 md:pb-16 md:pt-5 lg:pb-20">
+      <Breadcrumbs crumbs={crumbs} />
+      <div class="mt-6 grid items-center gap-x-14 gap-y-8 md:mt-10 lg:grid-cols-12">
+        <div class="hero-enter lg:col-span-7">
+          <h1 id="page-title" class="max-w-[11ch]">Picnics for every occasion</h1>
+          <p class="mt-6 max-w-[36rem] text-lg text-plum-soft md:mt-8 md:text-[1.25rem] md:leading-relaxed">
+            From a first date to a team day out, every picnic is styled around its moment. Choose yours to see ideas, what's included and the starting price.
+          </p>
+          <p class="mt-5 flex max-w-[36rem] items-start gap-2.5 text-plum-soft">
+            <Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 self-start text-sage-ink" />
+            <span>We deliver, set up, style and clean up, anywhere in {s.serviceArea}. {startingLine(lowest, s)}.</span>
+          </p>
+
+          <nav aria-label="Occasion groups" class="mt-8 md:mt-10">
+            <ul class="flex flex-wrap gap-2">
+              {groups.map((g) => (
+                <li>
+                  <a href={`#${g.id}`} class="inline-flex min-h-11 items-center gap-2 rounded-full border border-plum/25 bg-cream/60 px-4 text-[0.95rem] font-medium no-underline transition-colors hover:border-plum hover:bg-cream">
+                    {g.title}<span class="text-plum-soft">{g.items.length}<span class="sr-only"> occasions</span></span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        {lead && (
+          <div class="hero-enter-delay hidden lg:col-span-5 lg:block">
+            <div class="relative ml-auto max-w-[26rem] pb-10">
+              <ArchImage
+                src={lead.data.heroImage}
+                alt={lead.data.heroAlt}
+                sizes="(min-width: 1280px) 340px, 27vw"
+                widths={[360, 540, 720, 960]}
+                outline
+                class="ml-auto w-[80%]"
+              />
+              {inset && (
+                <Picture
+                  src={inset.data.heroImage}
+                  alt=""
+                  widths={[240, 360, 480].filter((x) => x <= inset.data.heroImage.width)}
+                  sizes="(min-width: 1280px) 170px, 14vw"
+                  formats={['avif', 'webp']}
+                  fallbackFormat="jpg"
+                  loading="lazy"
+                  pictureAttributes={{ class: 'absolute bottom-0 left-0 block w-[42%]' }}
+                  class="aspect-[4/5] w-full rounded-[var(--radius-card)] border-[6px] border-petal bg-petal-deep object-cover"
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  {groups.map((g, i) => (
+    <OccasionGroup
+      id={g.id}
+      title={g.title}
+      intro={g.intro}
+      items={g.items}
+      packages={packages}
+      layout={g.layout}
+      tone={i % 2 === 0 ? 'cream' : 'petal'}
+    />
+  ))}
+
+  <CtaBand
+    title="Celebrating something else?"
+    text={`Choose “${OTHER_OCCASION.name}” in the booking form and tell us about it. We reply ${s.replyTime} with availability and your quote.`}
+    occasion={OTHER_OCCASION.id}
+    buttonLabel="Tell us your idea"
+  />
+</BaseLayout>

@@ -1,0 +1,49 @@
+---
+// The 3–4 details that make this occasion's picnic different, set as an editorial list:
+// a large serif title beside its note, separated by hairlines (no cards).
+import { type Occasion } from '../../lib/site';
+import { picnicPhrase, capitalize } from './text';
+
+interface Props {
+  entry: Occasion;
+}
+const { entry } = Astro.props;
+const items = entry.data.highlights;
+const phrase = picnicPhrase(entry);
+---
+<section aria-labelledby="highlights-title" class="section-y bg-cream">
+  <div class="container-x grid gap-x-16 gap-y-10 lg:grid-cols-12">
+    <div class="lg:col-span-4">
+      <div class="lg:sticky lg:top-28">
+        <h2 id="highlights-title" class="lg:max-w-[13ch]">{capitalize(`your ${phrase}, thought through`)}</h2>
+        <p class="mt-5 max-w-[30ch] text-plum-soft">
+          What we take care of, and the little details we build your setup around.
+        </p>
+      </div>
+    </div>
+
+    <ul class="lg:col-span-8" role="list">
+      {items.map((h) => (
+        <li class="highlight grid gap-x-10 gap-y-2 border-t border-line py-7 sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:py-9">
+          <h3 class="flex items-baseline gap-3.5 text-[1.45rem] md:text-[1.7rem]">
+            <span aria-hidden="true" class="highlight-mark" />
+            <span>{h.title}</span>
+          </h3>
+          <p class="pl-[1.475rem] text-plum-soft sm:pl-0 sm:pt-1.5">{h.text}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .highlight:last-child { border-bottom: 1px solid var(--color-line); }
+  /* a tiny arch, echoing the brand motif */
+  .highlight-mark {
+    flex: none;
+    width: 0.6rem;
+    height: 0.8rem;
+    background: var(--color-gold);
+    border-radius: 999px 999px 0 0;
+  }
+</style>

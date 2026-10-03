@@ -1,0 +1,45 @@
+---
+// Deposit & payment + the notes Instagram visitors usually have to DM for (HST, location, food,
+// policies). Deposit wording comes from settings.deposit; food answer from faqs.yaml ("food").
+import Icon from '../Icon.astro';
+import { getSettings, getFaqs, money, inlineMd } from '../../lib/site';
+
+const s = await getSettings();
+const food = (await getFaqs()).find((f) => f.id === 'food');
+const notes: { icon: 'sparkle' | 'map-pin' | 'clock' | 'heart' | 'calendar'; title: string; html: string }[] = [
+  { icon: 'sparkle', title: 'HST', html: inlineMd(`Every price on this site is a starting price, ${s.taxNote}.`) },
+  { icon: 'map-pin', title: 'Location', html: inlineMd(s.locationNote) },
+  { icon: 'clock', title: 'Replies', html: inlineMd(`We reply ${s.replyTime} with availability and your quote.`) },
+  ...(food ? [{ icon: 'heart' as const, title: 'Food', html: inlineMd(food.data.answer) }] : []),
+  {
+    icon: 'calendar',
+    title: 'Policies',
+    html: inlineMd('Weather, rescheduling and rented decor are covered in our [booking policies](/policies). Please read them before you pay your deposit.'),
+  },
+];
+---
+<section id="deposit" aria-labelledby="deposit-title" class="section-y scroll-mt-20 bg-cream">
+  <div class="container-x grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="on-dark relative overflow-hidden rounded-[var(--radius-card)] bg-plum px-7 py-9 text-cream sm:px-10 sm:py-12 lg:col-span-5 lg:self-start">
+      <h2 id="deposit-title" class="text-[1.9rem] text-cream md:text-[2.3rem]">Deposit &amp; payment</h2>
+      <p class="mt-6 flex items-baseline gap-3" aria-hidden="true">
+        <span class="font-display text-[3.4rem] leading-none text-cream">{money(s.deposit.standard)}</span>
+        <span class="text-cream/85">deposit</span>
+      </p>
+      <p class="mt-5 text-lg text-cream/90">{s.deposit.summary}</p>
+      <a href="/policies" class="mt-4 inline-flex min-h-11 items-center gap-1.5 font-semibold text-cream underline decoration-gold decoration-2 underline-offset-4 hover:decoration-cream">Read the booking policies<Icon name="arrow-right" size={16} /></a>
+    </div>
+
+    <div class="lg:col-span-7">
+      <h2 class="text-[1.9rem] md:text-[2.3rem]">Good to know</h2>
+      <dl class="mt-6 divide-y divide-line border-y border-line">
+        {notes.map((n) => (
+          <div class="grid gap-1 py-5 sm:grid-cols-[12rem_1fr] sm:gap-6">
+            <dt class="flex items-start gap-2.5 font-semibold"><Icon name={n.icon} size={20} class="mt-[0.2em] shrink-0 self-start text-sage-ink" />{n.title}</dt>
+            <dd class="text-plum-soft [&_a]:font-semibold [&_a]:text-plum [&_a]:underline [&_a]:decoration-gold [&_a]:decoration-2 [&_a]:underline-offset-4" set:html={n.html} />
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>

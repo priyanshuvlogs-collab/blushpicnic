@@ -19,6 +19,8 @@ const settings = defineCollection({
     smsBody: z.string(),
     instagramHandle: z.string(),
     instagramUrl: z.url(),
+    tiktokHandle: z.string(),
+    tiktokUrl: z.url(),
     serviceArea: z.string(),
     serviceAreaList: z.array(z.string()),
     replyTime: z.string(),
@@ -27,6 +29,11 @@ const settings = defineCollection({
     deposit: z.object({
       standard: money,
       largeEventPercent: z.number().min(1).max(100),
+      summary: z.string(),
+    }),
+    securityDeposit: z.object({
+      amount: money,
+      returnedWithin: z.string(),
       summary: z.string(),
     }),
     taxNote: z.string(),

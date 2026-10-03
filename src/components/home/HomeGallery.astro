@@ -1,0 +1,86 @@
+---
+// Gallery preview: items with showOnHome in gallery.yaml, in a staggered masonry that keeps
+// each photo's own proportions (so real photos of any shape drop straight in).
+// Every photo carries a "Book this look" link that pre-selects its occasion in the form.
+//
+// Layout: photos are balanced into 4 columns at build time (shortest column first, using each
+// image's real aspect ratio). Columns pair up as [0,2] and [1,3]: two columns on phones,
+// four on tablets and up — no client-side JS, no reflow.
+import { Picture } from 'astro:assets';
+import Icon from '../Icon.astro';
+import { getSettings, getGallery, getOccasions, bookUrl, type GalleryItem } from '../../lib/site';
+
+const s = await getSettings();
+const items = (await getGallery()).filter((g) => g.data.showOnHome);
+const names = new Map((await getOccasions()).map((o) => [o.id, o.data.name]));
+// Fallback while an occasion page doesn't exist yet: "be-my-girlfriend" → "Be my girlfriend"
+const nameFor = (id: string) => names.get(id) ?? id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+
+const COLS = 4;
+const CAPTION = 0.2; // caption height, in column widths
+const cols: { items: GalleryItem[]; h: number }[] = Array.from({ length: COLS }, () => ({ items: [], h: 0 }));
+for (const g of items) {
+  const col = cols.reduce((a, b) => (b.h < a.h - 0.001 ? b : a));
+  col.items.push(g);
+  col.h += g.data.image.height / g.data.image.width + CAPTION;
+}
+const pairs = [
+  [cols[0], cols[2]],
+  [cols[1], cols[3]],
+];
+---
+{items.length > 0 && (
+  <section aria-labelledby="gallery-title" class="section-y">
+    <div class="container-x">
+      <div class="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-10">
+        <h2 id="gallery-title" class="lg:col-span-6">Find your look</h2>
+        <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
+          See a setup you love? Tap “Book this look” and your request starts with that occasion. Tell us your colours and we'll make it yours.
+        </p>
+      </div>
+
+      <div class="mt-10 grid grid-cols-2 items-start gap-x-3 sm:gap-x-5 md:mt-14 md:gap-x-6">
+        {pairs.map((pair, pi) => (
+          <div class:list={['grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:gap-x-6', pi === 1 && 'mt-12 md:mt-0']}>
+            {pair.map((col, ci) => (
+              <div class:list={['flex flex-col gap-6 md:gap-8', ci === 1 && 'md:mt-16']}>
+                {col.items.map((g) => {
+                  const occ = g.data.occasions[0];
+                  const name = nameFor(occ);
+                  return (
+                    <figure>
+                      <Picture
+                        src={g.data.image}
+                        alt={g.data.alt}
+                        widths={[280, 420, 560, 720]}
+                        sizes="(min-width: 1280px) 290px, (min-width: 768px) 23vw, 47vw"
+                        formats={['avif', 'webp']}
+                        fallbackFormat="jpg"
+                        loading="lazy"
+                        class="w-full rounded-[14px] bg-petal-deep"
+                      />
+                      <figcaption class="mt-1.5 flex flex-col text-[0.92rem] leading-snug lg:flex-row lg:items-center lg:justify-between lg:gap-3">
+                        <span class="pt-1.5 text-plum-soft lg:pt-0">{name}</span>
+                        <a
+                          href={bookUrl({ occasion: occ })}
+                          class="inline-flex min-h-11 items-center gap-1 self-start font-semibold underline decoration-gold decoration-2 underline-offset-4 hover:decoration-plum lg:self-auto"
+                          data-track="booking_cta"
+                          data-track-location="home_gallery"
+                        >Book this look<span class="sr-only">: {name} picnic</span></a>
+                      </figcaption>
+                    </figure>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div class="mt-8 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-10">
+        <a href="/gallery" class="link-arrow">See the full gallery<Icon name="arrow-right" size={18} /></a>
+        <a href={s.instagramUrl} rel="noopener" class="link-arrow" data-track="click_instagram"><Icon name="instagram" size={20} />More on Instagram {s.instagramHandle}</a>
+      </div>
+    </div>
+  </section>
+)}

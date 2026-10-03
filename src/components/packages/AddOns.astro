@@ -1,0 +1,35 @@
+---
+// Add-ons from addons.yaml, set like a menu. price: null → "Price on request".
+import { getSettings, getAddons, money } from '../../lib/site';
+
+const s = await getSettings();
+const addons = await getAddons();
+const priceText = (price: number | null, suffix: string) =>
+  price === null ? 'Price on request' : `Starting at ${money(price)}${suffix ? ` ${suffix}` : ''}, ${s.taxNote}`;
+---
+{addons.length > 0 && (
+  <section id="add-ons" aria-labelledby="addons-title" class="section-y scroll-mt-20">
+    <div class="container-x grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
+        <h2 id="addons-title">Add-ons to make it yours</h2>
+        <p class="mt-4 max-w-md text-plum-soft">
+          Add any of these to a package. Tick them in the booking form and we'll include them in your quote — no need to decide everything now.
+        </p>
+        <a href="/book" class="btn btn-secondary mt-7" data-track="booking_cta" data-track-location="packages_addons">Start your booking request</a>
+      </div>
+
+      <ul class="lg:col-span-7">
+        {addons.map((a) => (
+          <li class="border-b border-line py-5 first:pt-0 md:py-6">
+            <div class="flex flex-wrap items-end gap-x-3 gap-y-1">
+              <h3 class="text-[1.35rem] md:text-[1.55rem]">{a.data.name}</h3>
+              <span aria-hidden="true" class="mb-[0.5rem] hidden h-0 min-w-6 flex-1 border-b border-dotted border-plum/35 sm:block"></span>
+              <p class="w-full text-[0.95rem] font-semibold text-sage-ink sm:w-auto sm:pb-0.5">{priceText(a.data.price, a.data.priceSuffix)}</p>
+            </div>
+            <p class="mt-1.5 text-plum-soft">{a.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}

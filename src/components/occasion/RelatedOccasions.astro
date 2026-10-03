@@ -1,0 +1,77 @@
+---
+// Small linked list of related occasions (frontmatter `related`). Ids without a page yet are skipped.
+import { Picture } from 'astro:assets';
+import Icon from '../Icon.astro';
+import { getOccasions, getPackage, getSettings, money, occasionUrl, type Occasion } from '../../lib/site';
+import { picnicPhrasePlural, capitalize } from './text';
+
+interface Props {
+  entry: Occasion;
+}
+const { entry } = Astro.props;
+const s = await getSettings();
+const all = new Map((await getOccasions()).map((o) => [o.id, o]));
+const related = entry.data.related
+  .filter((id) => id !== entry.id)
+  .map((id) => all.get(id))
+  .filter((o): o is Occasion => Boolean(o));
+const prices = new Map(
+  await Promise.all(related.map(async (o) => [o.id, await getPackage(o.data.recommendedPackage)] as const)),
+);
+---
+{related.length > 0 && (
+  <section aria-labelledby="related-title" class="pb-4">
+    <div class="container-x">
+      <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
+        <h2 id="related-title" class="text-[2rem] md:text-[2.5rem]">More moments worth a picnic</h2>
+        <a href="/occasions" class="link-arrow">All occasions<Icon name="arrow-right" size={18} /></a>
+      </div>
+      <ul class="mt-8 grid gap-x-10 border-t border-line md:mt-10 md:grid-cols-2 md:border-t-0 lg:grid-cols-3" role="list">
+        {related.map((o) => {
+          const p = prices.get(o.id)!;
+          return (
+            <li class="related group relative flex items-center gap-5 border-b border-line py-5 md:border-t md:border-b-0 md:py-6">
+              <Picture
+                src={o.data.heroImage}
+                alt=""
+                widths={[160, 240, 320].filter((w) => w <= o.data.heroImage.width)}
+                sizes="(min-width: 768px) 120px, 96px"
+                formats={['avif', 'webp']}
+                fallbackFormat="jpg"
+                loading="lazy"
+                pictureAttributes={{ class: 'block w-24 shrink-0 md:w-[7.5rem]' }}
+                class="aspect-[4/5] w-full rounded-[14px] bg-petal-deep object-cover"
+              />
+              <div class="min-w-0">
+                <h3 class="text-[1.35rem] md:text-[1.5rem]">
+                  <a href={occasionUrl(o)} class="related-link no-underline">{capitalize(picnicPhrasePlural(o))}</a>
+                </h3>
+                <p class="mt-1.5 text-[0.92rem] leading-snug text-plum-soft">
+                  Starting at {money(p.data.priceFrom)} {p.data.guestsLabel}, {s.taxNote}
+                </p>
+                <span aria-hidden="true" class="mt-2 inline-flex items-center gap-1.5 text-[0.95rem] font-semibold underline decoration-gold decoration-2 underline-offset-4 group-hover:decoration-plum">
+                  Explore<Icon name="arrow-right" size={16} />
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  /* The whole row is clickable; the link text stays the accessible name. */
+  .related-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+  }
+  .related-link:focus-visible { outline: none; }
+  .related-link:focus-visible::after {
+    outline: 3px solid var(--color-plum);
+    outline-offset: 2px;
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+// /gallery — every photo in src/content/gallery.yaml, filterable by occasion (?occasion=<id>),
+// with an accessible lightbox and "Book this look" on every photo.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import GalleryBrowser from '../components/gallery/GalleryBrowser.astro';
+import Lightbox from '../components/gallery/Lightbox.astro';
+import { getSettings, getGallery, igDmUrl } from '../lib/site';
+import { breadcrumbs } from '../lib/schema';
+
+const s = await getSettings();
+const gallery = await getGallery();
+
+// Arriving filtered (/gallery?occasion=proposal): a tiny head script marks <html> before first paint
+// and these rules hide the other photos, so the full grid never flashes. gallery-filter.ts takes over.
+const ids = [...new Set(gallery.flatMap((g) => g.data.occasions))].filter((id) => /^[a-z0-9-]+$/.test(id));
+const preFilterCss = ids
+  .map((id) => `html[data-gallery-occasion="${id}"] [data-gallery-item]:not([data-occasions~="${id}"]){display:none}`)
+  .join('');
+
+const crumbs = [{ name: 'Gallery', path: '/gallery' }];
+const title = 'Luxury Picnic Gallery, Toronto | Proposals & More | Blush Picnic';
+const description = `Browse luxury picnic setups across ${s.serviceArea} by occasion: proposals, birthdays, showers, dates and more. See a look you love? Book it in minutes.`;
+---
+<BaseLayout {title} {description} jsonLd={[breadcrumbs(s, crumbs)]}>
+  <Fragment slot="head">
+    <noscript><style>[data-gallery-filters]{display:none!important}</style></noscript>
+    <style is:inline set:html={preFilterCss}></style>
+    <script is:inline>
+      (function () {
+        try {
+          var o = new URLSearchParams(location.search).get('occasion');
+          if (o && /^[a-z0-9-]+$/.test(o)) document.documentElement.setAttribute('data-gallery-occasion', o);
+        } catch (e) {}
+      })();
+    </script>
+  </Fragment>
+
+  <section aria-labelledby="page-title" class="container-x pt-3 md:pt-5">
+    <Breadcrumbs crumbs={crumbs} />
+    <div class="hero-enter mt-5 grid gap-x-14 gap-y-5 pb-8 md:mt-8 md:pb-10 lg:grid-cols-12 lg:items-end">
+      <h1 id="page-title" class="max-w-[13ch] lg:col-span-6">Find the look for your moment</h1>
+      <div class="lg:col-span-6 lg:pb-2">
+        <p class="measure text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">
+          Browse setups by occasion — proposals, birthdays, showers and slow afternoons for two. Open any photo and tap “Book this look”: your request starts there, and we style it around your colours, flowers and words.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Photo gallery" class="container-x pb-16 md:pb-24">
+    <GalleryBrowser />
+  </section>
+
+  <section aria-labelledby="instagram-title" class="border-y border-line bg-cream">
+    <div class="container-x grid gap-8 py-14 md:py-20 lg:grid-cols-12 lg:items-center lg:gap-12">
+      <div class="lg:col-span-7">
+        <h2 id="instagram-title">More setups on Instagram</h2>
+        <p class="measure mt-4 text-plum-soft">
+          Follow {s.instagramHandle} for new looks, styling details and ideas for your own picnic. Saw something there you love? Send us a DM, or describe it in your booking request.
+        </p>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row lg:col-span-5 lg:justify-end">
+        <a href={s.instagramUrl} rel="noopener" class="btn btn-primary" data-track="click_instagram" data-track-location="gallery">
+          <Icon name="instagram" size={18} />Follow {s.instagramHandle}
+        </a>
+        <a href={igDmUrl(s)} rel="noopener" class="btn btn-secondary" data-track="click_instagram" data-track-location="gallery_dm">
+          <Icon name="message" size={18} />Send a DM
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title="See a look you love?" text={`Tell us your occasion, date and area. We reply ${s.replyTime} with availability and your quote.`} />
+
+  <Lightbox />
+</BaseLayout>
