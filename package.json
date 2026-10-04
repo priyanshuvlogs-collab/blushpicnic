@@ -10,6 +10,7 @@
     "astro": "astro",
     "placeholders": "node scripts/make-placeholders.mjs",
     "photos": "node scripts/swap-photos.mjs",
+    "ai-photos": "node scripts/ai-photos.mjs",
     "test:api": "node tests/api-test.mjs",
     "test:e2e": "playwright test",
     "test": "npm run test:api && npm run test:e2e",
@@ -29,8 +30,8 @@
   "homepage": "https://github.com/priyanshuvlogs-collab/blushpicnic#readme",
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
-    "@fontsource-variable/figtree": "^5.3.0",
-    "@fontsource/gloock": "^5.3.0",
+    "@fontsource-variable/jost": "^5.3.0",
+    "@fontsource/cormorant-garamond": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.5",
     "sharp": "^0.35.5",
@@ -42,7 +43,7 @@
     "@playwright/test": "1.56",
     "html-validate": "^11.16.1",
     "lighthouse": "^13.5.0",
-    "opentype.js": "^2.0.0",
+    "svgo": "^4.1.0",
     "typescript": "^6.0.3"
   },
   "private": true,

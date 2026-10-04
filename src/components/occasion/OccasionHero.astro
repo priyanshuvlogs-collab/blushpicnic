@@ -51,14 +51,14 @@ const longH1 = d.h1.length > 50 || /\S{12,}/.test(d.h1);
 
       <dl class="hero-facts mt-7 grid max-w-[38rem] grid-cols-3 border-y border-line md:mt-8">
         <div class="py-4 pr-3">
-          <dt class="text-sm text-plum-soft">Starting at</dt>
+          <dt class="label-caps">Starting at</dt>
           <dd class="mt-1">
             <span class="font-display text-[1.75rem] leading-none md:text-[2.1rem]">{money(p.priceFrom)}</span>
             <span class="mt-1.5 block text-sm text-plum-soft">{s.taxNote}</span>
           </dd>
         </div>
         <div class="border-l border-line px-3 py-4 sm:px-5">
-          <dt class="text-sm text-plum-soft">Guests</dt>
+          <dt class="label-caps">Guests</dt>
           <dd class="mt-1">
             <span class="font-display text-[1.75rem] leading-none md:text-[2.1rem]">{guestsShort(pkg).replace(/\s*guests?$/i, '')}</span>
             <span class="mt-1.5 block text-sm text-plum-soft">
@@ -67,7 +67,7 @@ const longH1 = d.h1.length > 50 || /\S{12,}/.test(d.h1);
           </dd>
         </div>
         <div class="border-l border-line py-4 pl-3 sm:pl-5">
-          <dt class="text-sm text-plum-soft">Picnic time</dt>
+          <dt class="label-caps">Picnic time</dt>
           <dd class="mt-1">
             <span class="font-display text-[1.75rem] leading-none md:text-[2.1rem]">{p.durationHours}</span>
             <span class="mt-1.5 block text-sm text-plum-soft">{hours(p.durationHours).replace(/^[\d.]+\s*/, '')}</span>
@@ -108,4 +108,15 @@ const longH1 = d.h1.length > 50 || /\S{12,}/.test(d.h1);
     padding-block: 0.7rem;
   }
   .hero-text-link:hover { text-decoration-color: var(--color-plum); }
+
+  /* Fact labels in the brand's rose small caps (like the logo tagline), a touch tighter on phones so
+     "Starting at" and "Picnic time" hold to one line in a third of the screen. */
+  .hero-facts dt { font-size: 0.72rem; letter-spacing: 0.16em; }
+  @media (min-width: 40rem) {
+    .hero-facts dt { font-size: 0.78rem; letter-spacing: 0.2em; }
+  }
+  /* On the narrowest phones a label may wrap: give every label two lines so the figures stay level. */
+  @media (max-width: 22.49rem) {
+    .hero-facts dt { min-height: 2.8em; display: flex; align-items: flex-end; }
+  }
 </style>

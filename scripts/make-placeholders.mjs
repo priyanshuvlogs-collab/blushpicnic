@@ -12,13 +12,14 @@ const force = process.argv.includes('--force');
 mkdirSync(OUT, { recursive: true });
 
 // [file, width, height, label, tint]
+// Brand palette (Logo Guide): Blush 100/300/500, Sage, Linen, Gold
 const tints = {
-  blush: ['#F6E4E1', '#E9C4BE'],
-  rose: ['#F3D9D5', '#D9A7A1'],
-  sage: ['#EEF1EA', '#C5D1C0'],
-  cream: ['#FFFDFC', '#EFE2D6'],
-  plum: ['#EAD7DF', '#C9A9B8'],
-  gold: ['#F8EFE0', '#E3CFA4'],
+  blush: ['#F6E6E1', '#EFC7C0'],
+  rose: ['#F3DCD6', '#E3A6A0'],
+  sage: ['#EEF1EA', '#C7D3C3'],
+  cream: ['#FBF6F0', '#F0E2D2'],
+  plum: ['#F4E3DE', '#E8BDB6'],
+  gold: ['#FAF1E4', '#E6CFA6'],
 };
 
 const occasions = [
@@ -81,15 +82,15 @@ function svg(w, h, label, [a, b]) {
       <stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.35" r="0.6">
-      <stop offset="0" stop-color="#FFFDFC" stop-opacity="0.55"/><stop offset="1" stop-color="#FFFDFC" stop-opacity="0"/>
+      <stop offset="0" stop-color="#FBF6F0" stop-opacity="0.55"/><stop offset="1" stop-color="#FBF6F0" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="100%" height="100%" fill="url(#g)"/>
   <rect width="100%" height="100%" fill="url(#glow)"/>
   <path d="M ${x} ${y + archH} L ${x} ${y + r} A ${r} ${r} 0 0 1 ${x + archW} ${y + r} L ${x + archW} ${y + archH}"
-        fill="none" stroke="#C9A45C" stroke-opacity="0.75" stroke-width="${Math.max(2, w * 0.002)}"/>
+        fill="none" stroke="#C49A5A" stroke-opacity="0.75" stroke-width="${Math.max(2, w * 0.002)}"/>
   <text x="50%" y="${y + archH + fs * 2.2}" text-anchor="middle" font-family="sans-serif" font-size="${fs}"
-        fill="#3B1730" fill-opacity="0.62" letter-spacing="1">Placeholder · ${safe}</text>
+        fill="#3B2A26" fill-opacity="0.62" letter-spacing="1">Placeholder · ${safe}</text>
 </svg>`;
 }
 

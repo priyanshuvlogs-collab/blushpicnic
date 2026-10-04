@@ -119,8 +119,22 @@ Prices you set here also appear in the booking form's estimate. To go back to "P
 The phone number and deposit amounts in FAQs, occasion pages and policies come from here too
 (through the `{phone}` and `{deposit}` placeholders), so one change updates the whole site.
 
-**Name or tagline changed?** The logo and social-share image are made from them, so ask your
-developer to run `npm run brand`.
+**Your logo** lives in `public/brand/` as SVG files taken from your Logo Guide (horizontal for the
+header, reversed for the dark footer, plus the stacked, badge, basket-mark and app-icon versions).
+If your designer sends the original SVG files, drop them in with the same names and ask your
+developer to run `npm run brand` — that rebuilds the browser-tab icon, phone icons, the logo in
+booking emails and the social-share image from them. There's no version number to change: the site
+links each logo file with a short `?v=…` code worked out from the file itself, so a new logo gets a
+new address and reaches people who visited before, too.
+
+After publishing a new logo or tab icon (the first publish of this logo included), also:
+1. **Flush Hostinger's CDN cache once:** hPanel → your website → Performance → CDN → Flush cache.
+2. **Google:** in Search Console, inspect `https://blushpicnic.com` and click **Request indexing**,
+   so Google fetches the new tab icon (search results can still take a few days to show it).
+3. Optional: paste the home page into Facebook's Sharing Debugger and click **Scrape again**, so
+   link previews on Facebook, Instagram and WhatsApp show the new image.
+
+Safari and iPhones keep their own copy of tab icons, so the old one can linger there for a while.
 
 ### FAQs
 
@@ -244,7 +258,8 @@ Replace each `<p class="placeholder-note">…</p>` line with your real text when
 
 1. On GitHub, open the **Actions** tab.
 2. Click **Deploy to Hostinger** on the left.
-3. Click **Run workflow** (right side) → **Run workflow**.
+3. Click **Run workflow** (right side). Under "Use workflow from" choose **main**, then **Run workflow**.
+   (Started from any other branch, it stops with a red ✗ that says so: merge the changes into main first.)
 4. Wait 2–4 minutes for the green tick ✓. The last step checks the live site for you.
 5. Open https://blushpicnic.com and refresh.
 

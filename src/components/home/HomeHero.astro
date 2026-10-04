@@ -4,17 +4,25 @@
 import ArchImage from '../ArchImage.astro';
 import Icon from '../Icon.astro';
 import hero from '../../assets/photos/hero.jpg';
-import { getSettings, getPackages, money, hours, smsUrl, telUrl } from '../../lib/site';
+import { getSettings, getPackages, getOccasions, money, hours, smsUrl, telUrl } from '../../lib/site';
 
 const s = await getSettings();
 const pkgs = await getPackages();
 // Price anchor = the lowest starting price, so it stays true if the packages change.
 const entry = pkgs.reduce((a, b) => (b.data.priceFrom < a.data.priceFrom ? b : a));
 const e = entry.data;
+
+// The hero's one brand label (spaced small caps, like the logo tagline): three of the occasions
+// we style, named from occasion data so it only lists pages that exist.
+const occasions = new Map((await getOccasions()).map((o) => [o.id, o]));
+// Joined as a phrase ("Proposals, Birthdays & Picnic dates") so it wraps gracefully on small phones.
+const chips = ['proposal', 'birthday', 'picnic-date'].flatMap((id) => occasions.get(id)?.data.chip.replace(/ /g, '\u00a0') ?? []);
+const kicker = chips.length > 1 ? `${chips.slice(0, -1).join(', ')} & ${chips.at(-1)}` : (chips[0] ?? '');
 ---
 <section class="relative" aria-labelledby="hero-title">
   <div class="container-x grid items-center gap-x-10 gap-y-14 pb-16 pt-7 sm:pt-10 md:pb-20 lg:grid-cols-12 lg:pb-24 lg:pt-14">
     <div class="hero-enter lg:col-span-7">
+      {kicker && <p class="label-caps mb-4 md:mb-5">{kicker}</p>}
       <h1 id="hero-title" class="max-w-[17ch]">Luxury picnics in Toronto, styled and waiting for you</h1>
       <p class="mt-5 max-w-[36rem] text-lg text-plum-soft md:mt-7 md:text-[1.25rem] md:leading-relaxed">
         We deliver, set up, style and clean up — in a park, on a beach, in your backyard or indoors, anywhere in {s.serviceArea}. You just arrive.
@@ -26,8 +34,8 @@ const e = entry.data;
       </div>
 
       <p class="mt-6 max-w-[36rem] text-[0.95rem] leading-relaxed text-plum-soft">
-        <span class="font-semibold text-plum">{e.name}</span>, <span class="whitespace-nowrap">starting at
-        <span class="font-display text-[1.35rem] leading-none text-plum">{money(e.priceFrom)}</span></span>
+        <span class="font-semibold text-cocoa">{e.name}</span>, <span class="whitespace-nowrap">starting at
+        <span class="font-display text-[1.5rem] font-semibold leading-none text-cocoa">{money(e.priceFrom)}</span></span>
         <span class="whitespace-nowrap">{e.guestsLabel}</span> · <span class="whitespace-nowrap">{hours(e.durationHours)}</span> · <span class="whitespace-nowrap">{s.taxNote}</span>
       </p>
 
@@ -62,11 +70,11 @@ const e = entry.data;
     gap: 0.35rem;
     min-height: 2.75rem;
     font-weight: 600;
-    color: var(--color-plum);
+    color: var(--color-cocoa);
     text-decoration: underline;
     text-decoration-color: var(--color-gold);
     text-decoration-thickness: 2px;
     text-underline-offset: 0.3em;
   }
-  .hero-contact:hover { text-decoration-color: var(--color-plum); }
+  .hero-contact:hover { text-decoration-color: var(--color-cocoa); }
 </style>

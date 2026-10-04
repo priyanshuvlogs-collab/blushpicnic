@@ -19,7 +19,9 @@ that emails each request to the business.
 - **Tailwind CSS 4** (via `@tailwindcss/vite`). Design tokens live in `src/styles/global.css`.
 - **TypeScript** (strict). Interactivity is plain TypeScript in `<script>` tags. There's no UI framework.
 - **Images**: `astro:assets` + sharp. Every photo ships as AVIF and WebP in several widths.
-- **Fonts**: Gloock (headings) and Figtree (body), self-hosted through Fontsource and preloaded.
+- **Brand**: logo SVGs in `public/brand/` (from the Blush Picnic Logo Guide); `npm run brand` builds favicons, app icons, `logo.png`, `logo.svg`, the email logo and `og.jpg` from them (`/site.webmanifest` is `src/pages/site.webmanifest.ts`).
+  Pages link these fixed-URL files through `versioned()` in `src/lib/brand.ts`, which adds `?v=<content hash>`: a changed logo gets a new URL past browser, CDN and Google caches, with nothing to bump by hand.
+- **Fonts**: Cormorant Garamond (headings) and Jost (body) — the brand guide's typefaces — self-hosted through Fontsource via Astro's Fonts API and preloaded.
 - **Booking handler**: `public/api/book.php` (PHP 8.1+, vendored PHPMailer). It sends email
   through Hostinger SMTP as support@blushpicnic.com. Web3Forms is a switchable fallback.
 - **Hosting**: Hostinger shared hosting (LiteSpeed reading Apache-style `.htaccess`), files in `public_html`.
@@ -59,7 +61,7 @@ which writes emails to `tests/.mail/` as `.eml` files instead of sending them:
 | `bash docs/htaccess-test.sh [dist]` | Runs `.htaccess` on a throw-away Apache 2.4 and checks 60+ redirects, headers and blocked paths |
 | `npm run photos -- <folder>` | Swaps in real photos: strips metadata (GPS too), resizes, updates the gallery list |
 | `npm run placeholders` | Recreates the labelled placeholder photos (`--force` overwrites them) |
-| `npm run brand` | Regenerates the logo, favicons, manifest icons and `og.jpg` from `settings.yaml` |
+| `npm run brand` | Regenerates the logo images, favicons, manifest icons and `og.jpg` from the logo SVGs in `public/brand/` |
 | `npm run deploy` | `./deploy.sh`: build and upload to Hostinger (see below) |
 
 Several builds can run side by side without clobbering each other:
@@ -94,7 +96,7 @@ src/
 public/
   .htaccess             production server rules (HTTPS, clean URLs, caching, security headers)
   api/                  booking handler: book.php, lib/ (incl. PHPMailer), .htaccess rules
-  favicons, logo, og.jpg, site.webmanifest
+  brand/ (logo SVGs), favicons, logo.png/.svg, og.jpg (from `npm run brand`)
 api-config/blush-config.example.php   template for the server-only booking config (never commit the real one)
 scripts/                photo swap, placeholders, brand assets, screenshots
 tests/                  API tests, Playwright specs, PHP dev router, fixtures

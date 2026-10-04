@@ -77,7 +77,8 @@ minutes. The steps:
 
 1. checks the three secrets exist (and that it runs from `main`);
 2. `npm ci` and `npm run build`; a broken content file (a typo in a YAML file) stops here, and nothing is uploaded;
-3. checks the build: the key files exist; no secret-looking file, saved email or the FTP password
+3. checks the build: the key files exist, and so does every logo and icon file a page, the manifest,
+   JSON-LD or the booking emails link to; no secret-looking file, saved email or the FTP password
    is inside; no file outside `_astro/` is named like a fingerprinted one; the booking emails' business facts are there;
 4. runs `php -l` and the booking API tests (`npm run test:api`) against that build;
 5. uploads `dist/` to `public_html/` over **FTPS** with SamKirkland/FTP-Deploy-Action 4.3.5
@@ -200,6 +201,22 @@ the pages.
      `public_html`) → Upload → choose the file.
 3. `./deploy.sh --check` should then report "Booking handler runs" and "Booking handler found blush-config.php".
 4. Delete your local copy, or keep it somewhere private. Never commit it, and never put it in `public_html`.
+
+## After a logo or favicon change
+
+Pages link the brand files (favicons, app icons, `og.jpg`, `logo.png`, `brand/*.svg`) and the
+manifest with `?v=<content hash>` (`src/lib/brand.ts`), so a changed file gets a new URL and
+browsers, the CDN and Google fetch it instead of the 30-day cached copy. Nothing to bump by hand.
+Once, after deploying a new logo or favicon (the first deploy of the Logo Guide rebrand included):
+
+1. Flush Hostinger's CDN: hPanel → the website → Performance → CDN → Flush cache. The edge may
+   still hold the old files at their bare URLs (`/favicon.ico` is also fetched without `?v=`),
+   and if the CDN leaves query strings out of its cache key, `?v=` alone won't get past it.
+2. Search Console → URL Inspection → `https://blushpicnic.com` → Request indexing, so Google
+   refetches the favicon.
+3. Optional: Facebook's Sharing Debugger → Scrape again, for link previews (cached by URL too).
+
+Safari and iOS keep a favicon cache of their own; the old icon can show there for a while.
 
 ## Rolling back
 

@@ -39,7 +39,7 @@ const payment = [
 ---
 <section id="deposit" aria-labelledby="deposit-title" class="section-y scroll-mt-20 bg-cream">
   <div class="container-x grid gap-12 lg:grid-cols-12 lg:gap-14">
-    <div class="on-dark relative overflow-hidden rounded-[var(--radius-card)] bg-plum px-7 py-9 text-cream sm:px-10 sm:py-12 lg:col-span-5 lg:self-start">
+    <div class="on-dark relative overflow-hidden rounded-[var(--radius-card)] bg-cocoa px-7 py-9 text-cream sm:px-10 sm:py-12 lg:col-span-5 lg:self-start">
       <h2 id="deposit-title" class="text-[1.9rem] text-cream md:text-[2.3rem]">Deposit &amp; payment</h2>
       <dl class="mt-6 divide-y divide-cream/15">
         {payment.map((row) => (
@@ -61,7 +61,7 @@ const payment = [
         {notes.map((n) => (
           <div class="grid gap-1 py-5 sm:grid-cols-[12rem_1fr] sm:gap-6">
             <dt class="flex items-start gap-2.5 font-semibold"><Icon name={n.icon} size={20} class="mt-[0.2em] shrink-0 self-start text-sage-ink" />{n.title}</dt>
-            <dd class="text-plum-soft [&_a]:font-semibold [&_a]:text-plum [&_a]:underline [&_a]:decoration-gold [&_a]:decoration-2 [&_a]:underline-offset-4" set:html={n.html} />
+            <dd class="text-plum-soft [&_a]:font-semibold [&_a]:text-cocoa [&_a]:underline [&_a]:decoration-gold [&_a]:decoration-2 [&_a]:underline-offset-4" set:html={n.html} />
           </div>
         ))}
       </dl>

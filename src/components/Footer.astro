@@ -11,7 +11,7 @@ const year = new Date().getFullYear();
   <div class="container-x grid grid-cols-2 gap-x-6 gap-y-12 py-16 md:grid-cols-12 md:py-20">
     <div class="col-span-2 md:col-span-12 lg:col-span-4">
       <a href="/" class="inline-flex min-h-12 items-center no-underline" aria-label="Blush Picnic — home">
-        <Wordmark size="lg" class="text-cream" />
+        <Wordmark variant="stacked-reversed" width={190} />
       </a>
       <p class="mt-4 max-w-xs text-cream/85">
         Styled luxury picnics across {s.serviceArea}. We deliver, set up, style and clean up — you just arrive.
@@ -20,7 +20,7 @@ const year = new Date().getFullYear();
     </div>
 
     <nav aria-label="Footer — explore" class="md:col-span-3 lg:col-span-2">
-      <h2 class="heading-sm text-cream/75">Explore</h2>
+      <h2 class="footer-title">Explore</h2>
       <ul class="mt-3 space-y-1">
         {[
           ['/packages', 'Packages'],
@@ -31,29 +31,29 @@ const year = new Date().getFullYear();
           ['/policies', 'Policies'],
           ['/privacy', 'Privacy'],
         ].map(([href, label]) => (
-          <li><a href={href} class="inline-flex min-h-11 items-center no-underline hover:underline">{label}</a></li>
+          <li><a href={href} class="inline-flex min-h-11 items-center no-underline decoration-gold underline-offset-4 hover:underline">{label}</a></li>
         ))}
       </ul>
     </nav>
 
     <nav aria-label="Footer — occasions" class="md:col-span-4 lg:col-span-2">
-      <h2 class="heading-sm text-cream/75">Occasions</h2>
+      <h2 class="footer-title">Occasions</h2>
       <ul class="mt-3 space-y-1">
         {occasions.map((o) => (
-          <li><a href={occasionUrl(o)} class="inline-flex min-h-11 items-center no-underline hover:underline">{o.data.chip}</a></li>
+          <li><a href={occasionUrl(o)} class="inline-flex min-h-11 items-center no-underline decoration-gold underline-offset-4 hover:underline">{o.data.chip}</a></li>
         ))}
         <li><a href="/occasions" class="inline-flex min-h-11 items-center underline decoration-gold underline-offset-4">All occasions</a></li>
       </ul>
     </nav>
 
     <div class="col-span-2 md:col-span-5 lg:col-span-4">
-      <h2 class="heading-sm text-cream/75">Get in touch</h2>
+      <h2 class="footer-title">Get in touch</h2>
       <ul class="mt-3 space-y-1">
-        <li><a href={telUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_call"><Icon name="phone" size={18} />Call {s.phoneDisplay}</a></li>
-        <li><a href={smsUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_text"><Icon name="message" size={18} />Text us</a></li>
-        <li><a href={s.instagramUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_instagram"><Icon name="instagram" size={18} />Instagram {s.instagramHandle}</a></li>
-        <li><a href={s.tiktokUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_tiktok"><Icon name="tiktok" size={18} />TikTok {s.tiktokHandle}</a></li>
-        <li><a href={mailUrl(s)} class="inline-flex min-h-11 items-center gap-3 break-all no-underline hover:underline"><Icon name="mail" size={18} />{s.email}</a></li>
+        <li><a href={telUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline decoration-gold underline-offset-4 hover:underline" data-track="click_call"><Icon name="phone" size={18} />Call {s.phoneDisplay}</a></li>
+        <li><a href={smsUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline decoration-gold underline-offset-4 hover:underline" data-track="click_text"><Icon name="message" size={18} />Text us</a></li>
+        <li><a href={s.instagramUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline decoration-gold underline-offset-4 hover:underline" data-track="click_instagram"><Icon name="instagram" size={18} />Instagram {s.instagramHandle}</a></li>
+        <li><a href={s.tiktokUrl} rel="noopener" class="inline-flex min-h-11 items-center gap-3 no-underline decoration-gold underline-offset-4 hover:underline" data-track="click_tiktok"><Icon name="tiktok" size={18} />TikTok {s.tiktokHandle}</a></li>
+        <li><a href={mailUrl(s)} class="inline-flex min-h-11 items-center gap-3 break-all no-underline decoration-gold underline-offset-4 hover:underline"><Icon name="mail" size={18} />{s.email}</a></li>
       </ul>
       <p class="mt-5 text-sm text-cream/75">
         Serving {s.serviceAreaList.join(', ')} and across the GTA.
@@ -67,3 +67,14 @@ const year = new Date().getFullYear();
     </div>
   </div>
 </footer>
+
+<style>
+  /* Column titles: the brand's display serif at a size it reads well (never below ~1.3rem), Blush 300 on cocoa. */
+  .footer-title {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-blush-300);
+  }
+</style>

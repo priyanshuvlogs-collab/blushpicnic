@@ -71,7 +71,18 @@ for (const dir of [MAIL_DIR, TMP_DIR]) {
 
 let server = null;
 let serverLog = '';
-process.on('exit', () => server?.kill('SIGKILL'));
+// php -S runs in its own process group and is always stopped as a group: on PHP 8.1 the workers
+// that PHP_CLI_SERVER_WORKERS forks outlive the parent, keep the port (every later suite fails with
+// "Address already in use") and hold the output pipes open (the test run never exits).
+const signalGroup = (s, signal) => {
+  try {
+    process.kill(-s.pid, signal);
+    return true;
+  } catch {
+    return false; // the whole group is gone
+  }
+};
+process.on('exit', () => server && signalGroup(server, 'SIGKILL'));
 
 async function startServer(env = {}) {
   await stopServer();
@@ -80,6 +91,7 @@ async function startServer(env = {}) {
     cwd: ROOT,
     env: { ...process.env, BLUSH_CONFIG: CONFIG, TEST_MAIL_DIR: MAIL_DIR, TEST_DATA_DIR: TMP_DIR, ...env },
     stdio: ['ignore', 'pipe', 'pipe'],
+    detached: true,
   }));
   s.stdout.on('data', (d) => (serverLog += d));
   s.stderr.on('data', (d) => (serverLog += d));
@@ -99,11 +111,12 @@ async function stopServer() {
   if (!server) return;
   const s = server;
   server = null;
-  for (const signal of ['SIGTERM', 'SIGKILL']) {
-    if (s.exitCode !== null || s.signalCode !== null) return;
-    s.kill(signal);
+  if (s.exitCode === null && s.signalCode === null && signalGroup(s, 'SIGTERM')) {
     await Promise.race([once(s, 'exit'), sleep(2000)]);
   }
+  // Whatever is left of the group (workers whose parent already exited) is killed, and the port is
+  // only reused once the whole group is gone.
+  for (let i = 0; i < 40 && signalGroup(s, 'SIGKILL'); i++) await sleep(50);
 }
 
 // ── Helpers: dates, payloads, requests ───────────────────────────────────────
@@ -337,7 +350,7 @@ function assertEmails(ref, payload) {
   assert.match(biz.text, /\(Toronto time\)/);
   assert.match(biz.text, /STARTING ESTIMATE: (Starting at \$[\d,]+ before HST|To be quoted)/);
   assert.ok(biz.html.includes('href="tel:+14165550123"') && biz.html.includes('href="sms:+14165550123"') && biz.html.includes(`href="mailto:${payload.email}`), 'quick actions');
-  assert.ok(biz.html.includes('#3B1730') && biz.html.includes('#F6E4E1'), 'brand colours');
+  assert.ok(biz.html.includes('#3B2A26') && biz.html.includes('#F6E6E1'), 'brand colours');
 
   assert.ok(cli.text.includes(`Thank you, ${CLIENT.first}.`));
   assert.ok(cli.text.includes(occ.name) && cli.text.includes(fmtDate(payload.date)) && cli.text.includes('5:30 PM'));

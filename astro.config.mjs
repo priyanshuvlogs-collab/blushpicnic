@@ -33,27 +33,30 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.local(),
-      name: 'Gloock',
-      cssVariable: '--font-gloock',
+      name: 'Cormorant Garamond',
+      cssVariable: '--font-cormorant',
       // serif last: Astro then adds a size-matched Times New Roman face ahead of Georgia
       fallbacks: ['Georgia', 'serif'],
       options: {
         variants: [
-          { src: ['@fontsource/gloock/files/gloock-latin-400-normal.woff2'], weight: 400, style: 'normal', unicodeRange: LATIN },
-          { src: ['@fontsource/gloock/files/gloock-latin-ext-400-normal.woff2'], weight: 400, style: 'normal', unicodeRange: LATIN_EXT },
+          { src: ['@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-normal.woff2'], weight: 500, style: 'normal', unicodeRange: LATIN },
+          { src: ['@fontsource/cormorant-garamond/files/cormorant-garamond-latin-600-normal.woff2'], weight: 600, style: 'normal', unicodeRange: LATIN },
+          { src: ['@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-italic.woff2'], weight: 500, style: 'italic', unicodeRange: LATIN },
+          { src: ['@fontsource/cormorant-garamond/files/cormorant-garamond-latin-ext-500-normal.woff2'], weight: 500, style: 'normal', unicodeRange: LATIN_EXT },
+          { src: ['@fontsource/cormorant-garamond/files/cormorant-garamond-latin-ext-600-normal.woff2'], weight: 600, style: 'normal', unicodeRange: LATIN_EXT },
         ],
       },
     },
     {
       provider: fontProviders.local(),
-      name: 'Figtree',
-      cssVariable: '--font-figtree',
+      name: 'Jost',
+      cssVariable: '--font-jost',
       // system-ui last: Astro then size-matches Segoe UI (Windows), Roboto (Android), Helvetica Neue (Apple) and Arial
       fallbacks: ['system-ui'],
       options: {
         variants: [
-          { src: ['@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2'], weight: '300 900', style: 'normal', unicodeRange: LATIN },
-          { src: ['@fontsource-variable/figtree/files/figtree-latin-ext-wght-normal.woff2'], weight: '300 900', style: 'normal', unicodeRange: LATIN_EXT },
+          { src: ['@fontsource-variable/jost/files/jost-latin-wght-normal.woff2'], weight: '100 900', style: 'normal', unicodeRange: LATIN },
+          { src: ['@fontsource-variable/jost/files/jost-latin-ext-wght-normal.woff2'], weight: '100 900', style: 'normal', unicodeRange: LATIN_EXT },
         ],
       },
     },

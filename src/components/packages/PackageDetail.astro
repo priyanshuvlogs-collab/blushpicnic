@@ -22,7 +22,10 @@ const bestFor = d.bestFor.map((id) => occasions.get(id)).filter((o): o is Occasi
 
 // Skip a priceNote that only repeats the extra-guest price PriceTag already shows.
 const showNote = d.priceNote && !(d.extraGuestPrice !== null && d.priceNote.includes(money(d.extraGuestPrice)));
-const label = `Book the ${d.name}${/picnic$/i.test(d.name) ? '' : ' package'}`;
+// "Book the Signature Picnic" / "Book the Celebration" (+ " package" for screen readers):
+// short enough to stay on one line in a full-width phone button.
+const isPicnic = /picnic$/i.test(d.name);
+const label = `Book the ${d.name}`;
 const headingId = `pkg-${pkg.id}-title`;
 ---
 <section id={pkg.id} aria-labelledby={headingId} class:list={['section-y scroll-mt-20', tone === 'cream' && 'bg-cream']}>
@@ -70,7 +73,7 @@ const headingId = `pkg-${pkg.id}-title`;
           <ul class="mt-3 flex flex-wrap gap-2">
             {bestFor.map((o) => (
               <li>
-                <a href={occasionUrl(o)} class="inline-flex min-h-11 items-center rounded-full border border-plum/25 px-4 text-[0.95rem] font-medium no-underline transition-colors hover:border-plum hover:bg-cream">{o.data.chip}</a>
+                <a href={occasionUrl(o)} class:list={['inline-flex min-h-11 items-center rounded-full border border-cocoa/25 px-4 text-[0.95rem] font-medium no-underline transition-colors hover:border-cocoa', tone === 'cream' ? 'bg-petal/50 hover:bg-petal' : 'bg-cream/60 hover:bg-cream']}>{o.data.chip}</a>
               </li>
             ))}
           </ul>
@@ -78,7 +81,7 @@ const headingId = `pkg-${pkg.id}-title`;
       )}
 
       <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
-        <a href={bookUrl({ package: pkg.id })} class="btn btn-primary btn-lg" data-track="package_select" data-track-package={pkg.id}>{label}</a>
+        <a href={bookUrl({ package: pkg.id })} class="btn btn-primary btn-lg text-center [text-wrap:balance] max-sm:px-5" data-track="package_select" data-track-package={pkg.id}>{label}{!isPicnic && <span class="sr-only"> package</span>}</a>
         <a href={smsUrl(s)} class="link-arrow" data-track="click_text"><Icon name="message" size={18} />Text us a question</a>
       </div>
     </div>

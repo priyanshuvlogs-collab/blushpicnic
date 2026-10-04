@@ -66,7 +66,7 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
 <div class="gallery" data-gallery>
   <div class="gallery-toolbar" data-gallery-filters>
     <div role="group" aria-labelledby="gallery-filter-label">
-      <p id="gallery-filter-label" class="heading-sm text-plum-soft">Filter by occasion</p>
+      <p id="gallery-filter-label" class="label-caps">Filter by occasion</p>
       <div class="filter-scroller">
         <ul class="filter-list">
           <li>
@@ -171,7 +171,7 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
   }
   .filter-scroller {
     position: relative;
-    margin-top: 0.6rem;
+    margin-top: 0.75rem;
     margin-inline: calc(var(--gutter) * -1);
   }
   /* Soft fade on the right edge hints that the strip scrolls on phones. */
@@ -180,7 +180,7 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
     position: absolute;
     inset: 0 0 0.5rem auto;
     width: 2.5rem;
-    background: linear-gradient(to right, rgb(246 228 225 / 0), var(--color-petal));
+    background: linear-gradient(to right, color-mix(in srgb, var(--color-petal) 0%, transparent), var(--color-petal));
     pointer-events: none;
   }
   .filter-list {
@@ -209,8 +209,8 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
     min-height: 2.75rem;
     padding-inline: 1rem;
     border-radius: 999px;
-    border: 1px solid rgb(59 23 48 / 0.25);
-    background: rgb(255 253 252 / 0.6);
+    border: 1px solid color-mix(in srgb, var(--color-cocoa) 22%, transparent);
+    background: color-mix(in srgb, var(--color-cream) 65%, transparent);
     color: var(--color-plum);
     font-size: 0.95rem;
     font-weight: 500;
@@ -218,10 +218,10 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s, color 0.2s;
   }
-  .filter-chip:hover { border-color: var(--color-plum); background: var(--color-cream); }
+  .filter-chip:hover { border-color: var(--color-rose); background: var(--color-cream); }
   .filter-chip[aria-pressed="true"] {
-    background: var(--color-plum);
-    border-color: var(--color-plum);
+    background: var(--color-cocoa);
+    border-color: var(--color-cocoa);
     color: var(--color-cream);
   }
   /* High Contrast / forced colours drop the plum fill, so mark the active filter with the system highlight. */
@@ -292,8 +292,8 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 999px;
-    background: rgb(255 253 252 / 0.92);
-    color: var(--color-plum);
+    background: color-mix(in srgb, var(--color-cream) 92%, transparent);
+    color: var(--color-cocoa);
     opacity: 0;
     transition: opacity 0.2s;
   }
