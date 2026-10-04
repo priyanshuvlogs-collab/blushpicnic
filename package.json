@@ -10,6 +10,7 @@
     "astro": "astro",
     "placeholders": "node scripts/make-placeholders.mjs",
     "photos": "node scripts/swap-photos.mjs",
+    "ai-photos": "node scripts/ai-photos.mjs",
     "test:api": "node tests/api-test.mjs",
     "test:e2e": "playwright test",
     "test": "npm run test:api && npm run test:e2e",
