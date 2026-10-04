@@ -1,7 +1,7 @@
 // Which photos in src/assets/photos/ are AI illustrations rather than real Blush Picnic events.
 // scripts/ai-photos.mjs records every image it generates (with its SHA-256) in
 // src/assets/photos/ai-photos.json; `npm run photos` removes a file from that list when a real photo
-// replaces it — so labels appear and disappear on their own, with nothing to edit by hand.
+// replaces it — so the site's notes about them update on their own, with nothing to edit by hand.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -13,7 +13,7 @@ const LOG = join(DIR, 'ai-photos.json');
 const log: Record<string, { sha256?: string }> = existsSync(LOG) ? JSON.parse(readFileSync(LOG, 'utf8')) : {};
 const sha256 = (file: string) => createHash('sha256').update(readFileSync(file)).digest('hex');
 // Still AI only while the file is byte-for-byte the generated one: a photo replaced any other way
-// (e.g. uploaded on GitHub under the same name) loses its label by itself.
+// (e.g. uploaded on GitHub under the same name) stops counting by itself.
 const stems = new Set(
   Object.entries(log)
     .filter(([file, meta]) => existsSync(join(DIR, file)) && (!meta.sha256 || sha256(join(DIR, file)) === meta.sha256))

@@ -10,7 +10,6 @@
 //   occasion, with or without JavaScript).
 import { Picture, getImage } from 'astro:assets';
 import Icon from '../Icon.astro';
-import AiTag from '../AiTag.astro';
 import { isAiPhoto } from '../../lib/photos';
 import { getGallery, getOccasions, bookUrl, occasionUrl, type Occasion } from '../../lib/site';
 import { picnicPhrase, picnicPhrasePlural } from '../occasion/text';
@@ -134,7 +133,6 @@ const eager = new Set([0, ...[320, 360, 390, 430, 640, 767].flatMap(phone), ...[
             decoding="async"
             class="gallery-img"
           />
-          <AiTag src={g.data.image} class="ai-tag-sm" />
           <span class="gallery-zoom" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" /></svg>
           </span>

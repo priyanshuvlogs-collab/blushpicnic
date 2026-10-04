@@ -10,7 +10,7 @@ metaDescription: "Plan a luxury picnic date in Toronto or the GTA. Table, cushio
 h1: "A picnic date where your only job is to show up"
 lede: "Skip the reservation and the crowded patio. Pick a park, a stretch of beach or your own backyard in Toronto, and we'll have a low table, soft cushions and florals waiting for the two of you."
 heroImage: "../../assets/photos/occasion-picnic-date.jpg"
-heroAlt: "AI illustration: low oak table for two on a lakeside beach at golden hour, with blush peonies, pink lemonade, strawberries, macarons and velvet floor cushions"
+heroAlt: "Low oak table for two on a lakeside beach at golden hour, with blush peonies, pink lemonade, strawberries, macarons and velvet floor cushions"
 highlights:
   - title: "A real date, not a project"
     text: "No hauling blankets or hunting for matching plates. We deliver, set up and style everything, then clean up when you're done."

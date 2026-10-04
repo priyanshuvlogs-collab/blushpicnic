@@ -198,12 +198,12 @@ The server checks every request against this same file, so there's never any cod
 ### Photos
 
 For now, the photos on the site are **AI illustrations** made with Grok (xAI) to show the style of
-your setups. They are not photos of real Blush Picnic events, and the site says so: the larger ones
-carry a small "AI illustration" tag, every description starts with "AI illustration:", the gallery,
-occasion pages and /occasions explain it, and the footer covers the small thumbnails. Link previews
-(WhatsApp, Facebook…) and Google get your logo image instead of an AI one. Replace them with your
-own photos as soon as you can (below): a real photo takes over its spot, the AI label disappears by
-itself, and it's used in link previews and for Google too. The About photo is still a placeholder,
+your setups. They are not photos of real Blush Picnic events. The photos themselves carry no label,
+but the site says so in one place each: a short note on the gallery, the home gallery, the occasion
+pages and /occasions, and one line in the footer. Link previews (WhatsApp, Facebook…) and Google get
+your logo image instead of an AI one. Replace them with your own photos as soon as you can (below):
+a real photo takes over its spot, the notes update by themselves, and it's used in link previews and
+for Google too. The About photo is still a placeholder,
 because it should be you.
 
 **The easy way: the photo tool (on a computer with the project).**
@@ -230,7 +230,7 @@ tool tells you how).
 3. **Describe each new photo.** The tool lists exactly where. Descriptions are read aloud to
    blind visitors and help Google, so write what's actually in the picture: *"Low table set for
    two with blush roses, candles and a 'Marry Me' sign on the grass at sunset"*. Replace any
-   description that still says "Placeholder" or starts with "AI illustration:". For gallery photos, the tool marks each one with
+   description that still says "Placeholder". For gallery photos, the tool marks each one with
    `# TODO: describe this photo`; delete that note once you've written it.
 
 **Without a computer (on GitHub):** open `src/assets/photos/`, click **Add file → Upload files**,

@@ -10,7 +10,7 @@ metaDescription: "A welcome baby picnic in Toronto or the GTA for meeting your n
 h1: "A welcome baby picnic for gentle first hellos"
 lede: "A welcome baby picnic in Toronto or anywhere in the GTA: rugs and cushions to sink into, florals, and your little one's name on the letter board. We set it up and pack it away. All you bring is the baby and the diaper bag."
 heroImage: "../../assets/photos/occasion-new-baby.jpg"
-heroAlt: "AI illustration: backyard welcome-baby picnic with a blush, cream and sage balloon garland, a white cake on a wooden stand, roses, a teddy bear and a pink knit blanket"
+heroAlt: "Backyard welcome-baby picnic with a blush, cream and sage balloon garland, a white cake on a wooden stand, roses, a teddy bear and a pink knit blanket"
 highlights:
   - title: "A name everyone's waiting to read"
     text: "Share your baby's name and date of birth in the booking form, and it can be the first thing guests see on the letter board."

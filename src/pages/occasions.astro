@@ -8,7 +8,6 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getImage } from 'astro:assets';
 import CtaBand from '../components/CtaBand.astro';
 import Icon from '../components/Icon.astro';
-import AiTag from '../components/AiTag.astro';
 import OccasionGroup from '../components/occasion/OccasionGroup.astro';
 import { capitalize, picnicPhrasePlural, startingLine } from '../components/occasion/text';
 import { getSettings, getOccasions, getPackages, money, occasionUrl, type Occasion } from '../lib/site';
@@ -62,7 +61,7 @@ const groups = [
 ].filter((g) => g.items.length > 0);
 
 const ordered = groups.flatMap((g) => g.items);
-// The row thumbnails are too small for the "AI illustration" tag, so the page says it once.
+// AI illustrations (src/lib/photos.ts) are explained once, under the intro.
 const aiCount = ordered.filter((o) => isAiPhoto(o.data.heroImage)).length;
 // Hero pictures: the first occasion of the first two groups.
 const lead = groups[0]?.items[0];
@@ -154,25 +153,20 @@ const jsonLd = [
                     class="arch aspect-[4/5] h-full w-full bg-petal-deep object-cover"
                   />
                 </picture>
-                {/* Bottom-right: the inset photo covers the bottom-left corner. */}
-                <AiTag src={lead.data.heroImage} class="left-auto right-2.5" />
               </div>
               {inset && (
-                <div class="absolute bottom-0 left-0 w-[42%]">
-                  <picture class="block">
-                    {insetSources.map((src) => <source media={DESKTOP} type={src.type} srcset={src.srcset} sizes="(min-width: 1280px) 170px, 14vw" />)}
-                    <img
-                      src={BLANK}
-                      alt=""
-                      width={inset.data.heroImage.width}
-                      height={inset.data.heroImage.height}
-                      loading="eager"
-                      decoding="async"
-                      class="aspect-[4/5] w-full rounded-[var(--radius-card)] border-[6px] border-petal bg-petal-deep object-cover"
-                    />
-                  </picture>
-                  <AiTag src={inset.data.heroImage} />
-                </div>
+                <picture class="absolute bottom-0 left-0 block w-[42%]">
+                  {insetSources.map((src) => <source media={DESKTOP} type={src.type} srcset={src.srcset} sizes="(min-width: 1280px) 170px, 14vw" />)}
+                  <img
+                    src={BLANK}
+                    alt=""
+                    width={inset.data.heroImage.width}
+                    height={inset.data.heroImage.height}
+                    loading="eager"
+                    decoding="async"
+                    class="aspect-[4/5] w-full rounded-[var(--radius-card)] border-[6px] border-petal bg-petal-deep object-cover"
+                  />
+                </picture>
               )}
             </div>
           </div>

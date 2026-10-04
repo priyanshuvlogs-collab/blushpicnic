@@ -33,8 +33,8 @@ const pkg = await getPackage(d.recommendedPackage);
 // Body copy may contain {tokens} (prices, deposit…) — filled from the data files at build time.
 const storyHtml = await fillTokensHtml(entry.rendered?.html ?? '');
 // A placeholder hero cropped to 1200×630 loses its label and reads as an empty pink frame in link
-// previews, and an AI illustration (src/lib/photos.ts) would pass for a real setup there without its
-// tag, so both share the branded /og.jpg (BaseLayout's default) until a real photo is in.
+// previews, and an AI illustration (src/lib/photos.ts) would pass for a real setup there without the
+// site's note, so both share the branded /og.jpg (BaseLayout's default) until a real photo is in.
 const heroIsPlaceholder = /^placeholder\b/i.test(d.heroAlt) || isAiPhoto(d.heroImage);
 const heroOg = heroIsPlaceholder
   ? undefined

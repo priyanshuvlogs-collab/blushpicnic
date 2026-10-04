@@ -65,7 +65,7 @@ const year = new Date().getFullYear();
     <div class="container-x flex flex-col gap-2 py-6 text-sm text-cream/75 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p>© {year} {s.name}. All prices are starting prices, {s.taxNote}.</p>
-        {/* Not "photos marked…": thumbnails too small for the tag are AI illustrations as well. */}
+        {/* The one site-wide note about the AI illustrations (src/lib/photos.ts); the photos carry no tag. */}
         {anyAiPhotos() && (
           <p class="mt-1">
             {onlyAiPhotos()

@@ -3,7 +3,6 @@
 // with "Book this look" and a link to the gallery filtered to this occasion.
 import { Picture } from 'astro:assets';
 import Icon from '../Icon.astro';
-import AiTag from '../AiTag.astro';
 import { isAiPhoto } from '../../lib/photos';
 import { getGallery, getSettings, bookUrl, type Occasion, type Package } from '../../lib/site';
 import { picnicPhrasePlural, capitalize } from './text';
@@ -47,7 +46,7 @@ const pair = items.length === 2;
         {items.map((g, i) => {
           const slot = single ? { cls: 'col-span-12 md:col-span-8 md:col-start-3', aspect: '3/2', sizes: '(min-width: 1280px) 780px, (min-width: 768px) 66vw, 100vw' } : slots[i];
           return (
-            <figure class:list={['relative', slot.cls, pair && i === 1 && 'md:row-span-2']}>
+            <figure class:list={[slot.cls, pair && i === 1 && 'md:row-span-2']}>
               <Picture
                 src={g.data.image}
                 alt={g.data.alt}
@@ -59,7 +58,6 @@ const pair = items.length === 2;
                 class="w-full rounded-[var(--radius-card)] bg-petal-deep object-cover"
                 style={`aspect-ratio:${slot.aspect}`}
               />
-              <AiTag src={g.data.image} />
             </figure>
           );
         })}

@@ -315,7 +315,7 @@ if (!dryRun) {
   for (const a of added) writeAtomic(path.join(PHOTOS, a.file), a.job.data);
   if (newYaml !== yamlText) writeAtomic(GALLERY_YAML, newYaml);
   // Real photos take over from AI illustrations: drop them from src/assets/photos/ai-photos.json
-  // (so their "AI illustration" labels disappear) and list them in real-photos.json, which
+  // (so the site's AI-illustration notes stop counting them) and list them in real-photos.json, which
   // `npm run ai-photos` never overwrites.
   const real = [...done.filter((d) => d.kind === 'slot').map((j) => `${j.slot}.jpg`), ...added.map((a) => a.file)];
   const aiLog = path.join(PHOTOS, 'ai-photos.json');
@@ -387,7 +387,7 @@ for (const j of slotJobs) {
 }
 for (const a of added) todo.push(`src/content/gallery.yaml → ${a.id} → alt (marked "# TODO: describe this photo")`);
 if (todo.length) {
-  say('Next: describe what each new photo shows (its "alt text"). Replace any text that says "Placeholder" or "AI illustration".');
+  say('Next: describe what each new photo shows (its "alt text"). Replace any text that says "Placeholder".');
   say('Say what’s in it, e.g. "Low picnic table with pink roses and candles under a willow tree at sunset".');
   for (const t of todo) say(`  • ${t}`);
   say();

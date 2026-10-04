@@ -10,7 +10,7 @@ metaDescription: "A bridal shower picnic in Toronto or the GTA with her name on 
 h1: "The bridal shower picnic that makes you look effortless"
 lede: "For the maid of honour, the bridesmaids or the mother of the bride: a bridal shower picnic in Toronto or across the GTA with her name on the signage, a backdrop made for photos, and nothing for you to haul home afterwards."
 heroImage: "../../assets/photos/occasion-bridal-shower.jpg"
-heroAlt: "AI illustration: bridal shower tea picnic in a garden, low oak table with pink and white peonies, a macaron tower, gold-rimmed teacups and a white balloon garland"
+heroAlt: "Bridal shower tea picnic in a garden, low oak table with pink and white peonies, a macaron tower, gold-rimmed teacups and a white balloon garland"
 highlights:
   - title: "Her name, centre stage"
     text: "Share the bride's name and wedding date in the booking form, and tell us how you'd like them to appear on the custom signage."

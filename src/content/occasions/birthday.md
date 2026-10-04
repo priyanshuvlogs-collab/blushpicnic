@@ -10,7 +10,7 @@ metaDescription: "Birthday picnics in Toronto and the GTA, styled in their colou
 h1: "Birthday picnics, styled around the guest of honour"
 lede: "Tell us whose birthday it is, the age they're turning and the colours (or characters) they love. We'll turn it into a birthday picnic in Toronto or anywhere in the GTA that feels unmistakably theirs."
 heroImage: "../../assets/photos/occasion-birthday.jpg"
-heroAlt: "AI illustration: birthday picnic in a park, white two-tier cake with pink peonies and gold candles, cupcakes, macarons, wrapped gifts and a pastel balloon garland"
+heroAlt: "Birthday picnic in a park, white two-tier cake with pink peonies and gold candles, cupcakes, macarons, wrapped gifts and a pastel balloon garland"
 highlights:
   - title: "Their name on the board"
     text: "“Happy 30th, Jas” or a line only your friends will get, set out on the letter board for the moment they walk up."
