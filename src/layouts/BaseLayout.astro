@@ -54,7 +54,7 @@ else if (image) {
 }
 
 // Preload only each font's Latin file (its first variant in astro.config.mjs); Latin Extended loads on demand.
-const fontPreloads = (['--font-gloock', '--font-figtree'] as const)
+const fontPreloads = (['--font-cormorant', '--font-jost'] as const)
   .map((cssVariable) => fontData[cssVariable]?.[0]?.src[0]?.url)
   .filter((url): url is string => Boolean(url));
 
@@ -69,12 +69,12 @@ const ldJson = (data: Record<string, unknown>) => JSON.stringify(data).replace(/
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
-    <meta name="theme-color" content="#F6E4E1" />
+    <meta name="theme-color" content="#F6E6E1" />
     <meta name="format-detection" content="telephone=no" />
 
     {/* @font-face rules and size-matched fallback faces (Astro Fonts API) */}
-    <Font cssVariable="--font-gloock" />
-    <Font cssVariable="--font-figtree" />
+    <Font cssVariable="--font-cormorant" />
+    <Font cssVariable="--font-jost" />
     {fontPreloads.map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
 
     <link rel="icon" href="/favicon.ico" sizes="48x48" />

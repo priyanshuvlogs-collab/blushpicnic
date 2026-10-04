@@ -19,7 +19,8 @@ that emails each request to the business.
 - **Tailwind CSS 4** (via `@tailwindcss/vite`). Design tokens live in `src/styles/global.css`.
 - **TypeScript** (strict). Interactivity is plain TypeScript in `<script>` tags. There's no UI framework.
 - **Images**: `astro:assets` + sharp. Every photo ships as AVIF and WebP in several widths.
-- **Fonts**: Gloock (headings) and Figtree (body), self-hosted through Fontsource and preloaded.
+- **Brand**: logo SVGs in `public/brand/` (from the Blush Picnic Logo Guide); `npm run brand` builds favicons, app icons, `logo.png`, the email logo and `og.jpg` from them.
+- **Fonts**: Cormorant Garamond (headings) and Jost (body) — the brand guide's typefaces — self-hosted through Fontsource via Astro's Fonts API and preloaded.
 - **Booking handler**: `public/api/book.php` (PHP 8.1+, vendored PHPMailer). It sends email
   through Hostinger SMTP as support@blushpicnic.com. Web3Forms is a switchable fallback.
 - **Hosting**: Hostinger shared hosting (LiteSpeed reading Apache-style `.htaccess`), files in `public_html`.

@@ -1,29 +1,37 @@
 @import "tailwindcss";
-/* Fonts: Gloock + Figtree are self-hosted through Astro's Fonts API (astro.config.mjs → `fonts`,
-   rendered by <Font> in BaseLayout). It defines --font-gloock / --font-figtree, each followed by a
-   size-matched local fallback, so headings don't re-wrap when the web font arrives. */
+/* Fonts (brand guide): Cormorant Garamond for headings + Jost for text, self-hosted through Astro's
+   Fonts API (astro.config.mjs → `fonts`, rendered by <Font> in BaseLayout). It defines
+   --font-cormorant / --font-jost, each followed by a size-matched local fallback. */
 
 /* ───────────────────────── Design tokens ─────────────────────────
-   Palette from the original site, refined for WCAG AA:
-   - sage (#7E9A7A) and gold (#C9A45C) are decorative only (≈3:1 / ≈2:1 on petal)
-   - text uses plum, plum-soft or sage-ink, all ≥ 4.5:1 on petal and cream          */
+   Blush Picnic brand palette (Logo Guide, "Colour, space and size"):
+     Rose 700 #A14D4B · Blush 500 #E3A6A0 · Blush 300 #EFC7C0 · Blush 100 #F6E6E1
+     Sage 700 #4F6349 · Sage 500 #8FA58A · Gold 500 #C49A5A · Cocoa 900 #3B2A26 · Linen #FBF6F0
+   Text-safe (WCAG AA ≥ 4.5:1 on petal and cream): cocoa/plum, plum-soft, rose (not on petal-deep),
+   sage-ink, gold-ink. Decorative only: blush, blush-300, sage, gold.
+   `plum*` are kept as aliases of the cocoa tones so existing classes keep working.            */
 @theme {
-  --color-petal: #f6e4e1;
-  --color-petal-deep: #efd3ce;
-  --color-cream: #fffdfc;
-  --color-plum: #3b1730;
-  --color-plum-hover: #52223f;
-  --color-plum-soft: #6b4a60;
-  --color-sage: #7e9a7a;
-  --color-sage-ink: #4f6a4b;
-  --color-sage-wash: #e9eee6;
-  --color-gold: #c9a45c;
+  --color-petal: #f6e6e1;       /* Blush 100 — page background */
+  --color-petal-deep: #f1dcd6;  /* a step deeper, for alternating bands */
+  --color-cream: #fbf6f0;       /* Linen — cards, surfaces */
+  --color-cocoa: #3b2a26;       /* Cocoa 900 — text, dark bands */
+  --color-plum: #3b2a26;
+  --color-plum-hover: #4e3a35;
+  --color-plum-soft: #665049;   /* secondary text */
+  --color-rose: #a14d4b;        /* Rose 700 — primary buttons, accents */
+  --color-rose-hover: #8a3f3d;
+  --color-blush: #e3a6a0;       /* Blush 500 — decorative */
+  --color-blush-300: #efc7c0;   /* Blush 300 — decorative */
+  --color-sage: #8fa58a;        /* Sage 500 — decorative */
+  --color-sage-ink: #4f6349;    /* Sage 700 */
+  --color-sage-wash: #e8ede6;
+  --color-gold: #c49a5a;        /* Gold 500 — decorative */
   --color-gold-ink: #7a5c22;
-  --color-line: #e6cdc8;
-  --color-error: #a1263f;
+  --color-line: #ead0ca;
+  --color-error: #9b2335;
 
-  --font-display: var(--font-gloock, Georgia, serif);
-  --font-sans: var(--font-figtree, system-ui, sans-serif);
+  --font-display: var(--font-cormorant, Georgia, serif);
+  --font-sans: var(--font-jost, system-ui, sans-serif);
 
   --text-base: 1.0625rem; /* 17px */
   --text-base--line-height: 1.6;
@@ -34,7 +42,7 @@
   --radius-card: 20px;
   --radius-arch: 999px 999px 0 0;
 
-  --shadow-soft: 0 18px 50px -24px rgb(59 23 48 / 0.28);
+  --shadow-soft: 0 18px 50px -24px rgb(59 42 38 / 0.28);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -73,14 +81,16 @@
 
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    letter-spacing: 0;
+    /* Cormorant's default figures are old-style; prices and step numbers read better lining. */
+    font-variant-numeric: lining-nums;
     text-wrap: balance;
     color: var(--color-plum);
   }
-  h1 { font-size: clamp(2.4rem, 1.6rem + 3.6vw, 4.5rem); line-height: 1.05; }
-  h2 { font-size: clamp(1.9rem, 1.4rem + 2vw, 3rem); line-height: 1.1; }
-  h3 { font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.65rem); line-height: 1.2; }
+  h1 { font-size: clamp(2.65rem, 1.75rem + 4vw, 5rem); line-height: 1.04; }
+  h2 { font-size: clamp(2.1rem, 1.55rem + 2.2vw, 3.35rem); line-height: 1.08; }
+  h3 { font-size: clamp(1.5rem, 1.3rem + 0.7vw, 1.85rem); line-height: 1.18; font-weight: 600; }
 
   p { text-wrap: pretty; }
 
@@ -149,8 +159,8 @@
     .btn { transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s var(--ease-out-soft); }
     .btn:active { transform: translateY(1px); }
   }
-  .btn-primary { background: var(--color-plum); color: var(--color-cream); }
-  .btn-primary:hover { background: var(--color-plum-hover); }
+  .btn-primary { background: var(--color-rose); color: var(--color-cream); }
+  .btn-primary:hover { background: var(--color-rose-hover); }
   .btn-secondary { background: transparent; color: var(--color-plum); border-color: var(--color-plum); }
   .btn-secondary:hover { background: var(--color-plum); color: var(--color-cream); }
   .btn-light { background: var(--color-cream); color: var(--color-plum); }
@@ -165,6 +175,18 @@
     line-height: 1.4;
     letter-spacing: 0;
   }
+
+  /* Brand label: spaced small caps like the logo's tagline. Use sparingly (a few per page). */
+  .label-caps {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-rose);
+  }
+  .on-dark .label-caps { color: var(--color-blush-300); }
 
   /* Quiet text link with arrow */
   .link-arrow {
@@ -202,7 +224,7 @@
   /* Rich text from markdown (about, policies, occasion copy) */
   .prose-blush { max-width: var(--measure); }
   .prose-blush > * + * { margin-top: 1.1em; }
-  .prose-blush h2 { margin-top: 2em; font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.2rem); }
+  .prose-blush h2 { margin-top: 2em; font-size: clamp(1.8rem, 1.45rem + 1.3vw, 2.45rem); }
   .prose-blush h3 { margin-top: 1.6em; }
   .prose-blush ul { list-style: none; padding: 0; }
   .prose-blush ul li { position: relative; padding-left: 1.4em; }

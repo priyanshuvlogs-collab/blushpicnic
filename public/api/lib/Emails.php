@@ -1,6 +1,7 @@
 <?php
 // The two emails: a booking request for the business and a confirmation for the client.
-// Table layout + inline CSS for every mail app; brand plum #3B1730 on petal #F6E4E1.
+// Table layout + inline CSS for every mail app; Blush Picnic brand: cocoa #3B2A26 text, rose #A14D4B
+// accents and buttons, on blush #F6E6E1 / linen #FBF6F0, with the logo (PNG — mail apps don't show SVG).
 // Every piece of user input goes through e() (htmlspecialchars) before it touches HTML.
 declare(strict_types=1);
 
@@ -8,11 +9,13 @@ namespace Blush;
 
 final class Emails
 {
-    private const PLUM = '#3B1730';
-    private const PLUM_SOFT = '#6B4A60';
-    private const PETAL = '#F6E4E1';
-    private const CREAM = '#FFFDFC';
-    private const LINE = '#E6CDC8';
+    private const PLUM = '#3B2A26';      // Cocoa 900 (text)
+    private const PLUM_SOFT = '#665049';
+    private const ROSE = '#A14D4B';      // Rose 700 (buttons, accents)
+    private const PETAL = '#F6E6E1';     // Blush 100
+    private const CREAM = '#FBF6F0';     // Linen
+    private const LINE = '#EAD0CA';
+    private const LOGO_PATH = '/brand/logo-email.png';
     private const SERIF = "Georgia,'Times New Roman',Times,serif";
     private const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 
@@ -54,7 +57,7 @@ final class Emails
             . 'Hit reply to answer ' . self::e($first !== '' ? $first : 'the client') . ' directly.';
 
         $preheader = implode(' · ', array_filter([$b->packageName(), $b->timeLabel(), $b->guestsLabel(), $b->answers->get('location')], 'strlen'));
-        return self::layout($b->businessSubject(), $preheader, $html, $footer);
+        return self::layout($b->businessSubject(), $preheader, $html, $footer, $b->business['url'] ?? 'https://blushpicnic.com');
     }
 
     public static function businessText(Booking $b, string $spamNote = ''): string
@@ -130,7 +133,7 @@ final class Emails
         $footer = 'You’re receiving this one-time confirmation because you sent a booking request on '
             . self::e(self::host($biz['url'])) . '.<br>' . self::e($biz['name']);
 
-        return self::layout($b->clientSubject(), 'We’ve received your request. We’ll reply ' . $biz['replyTime'] . ' with availability and your quote.', $html, $footer);
+        return self::layout($b->clientSubject(), 'We’ve received your request. We’ll reply ' . $biz['replyTime'] . ' with availability and your quote.', $html, $footer, $biz['url'] ?? 'https://blushpicnic.com');
     }
 
     public static function clientText(Booking $b): string
@@ -232,8 +235,10 @@ final class Emails
         return (string) (parse_url($url, PHP_URL_HOST) ?: $url);
     }
 
-    private static function layout(string $title, string $preheader, string $inner, string $footer): string
+    private static function layout(string $title, string $preheader, string $inner, string $footer, string $siteUrl = 'https://blushpicnic.com'): string
     {
+        $site = self::e(rtrim($siteUrl, '/'));
+        $logo = self::e(rtrim($siteUrl, '/') . self::LOGO_PATH);
         $p = self::PETAL;
         $c = self::CREAM;
         $l = self::LINE;
@@ -268,7 +273,7 @@ final class Emails
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{$p}" style="background-color:{$p};">
 <tr><td align="center" style="padding:28px 10px 40px;">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
-<tr><td style="padding:0 8px 16px;font-family:{$serif};font-size:22px;line-height:1.2;color:{$plum};">Blush Picnic</td></tr>
+<tr><td align="center" style="padding:0 8px 18px;"><a href="{$site}" style="text-decoration:none;"><img src="{$logo}" width="280" height="57" alt="Blush Picnic" style="display:block;width:280px;max-width:80%;height:auto;border:0;font-family:{$serif};font-size:22px;color:{$plum};"></a></td></tr>
 <tr><td class="bp-card" bgcolor="{$c}" style="background-color:{$c};border:1px solid {$l};border-radius:20px;padding:36px 36px 32px;font-family:{$sans};font-size:16px;line-height:1.6;color:{$plum};">
 {$inner}
 </td></tr>
@@ -320,7 +325,7 @@ HTML;
     private static function button(string $href, string $label, bool $primary): string
     {
         $style = $primary
-            ? 'background-color:' . self::PLUM . ';color:' . self::CREAM . ';border:1px solid ' . self::PLUM . ';'
+            ? 'background-color:' . self::ROSE . ';color:' . self::CREAM . ';border:1px solid ' . self::ROSE . ';'
             : 'background-color:' . self::CREAM . ';color:' . self::PLUM . ';border:1px solid ' . self::PLUM . ';';
         return '<a href="' . self::e($href) . '" style="display:inline-block;margin:0 6px 8px 0;padding:11px 18px;border-radius:999px;'
             . $style . 'font-family:' . self::SANS . ';font-size:15px;font-weight:600;line-height:20px;text-decoration:none;">'

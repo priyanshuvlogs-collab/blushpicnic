@@ -22,9 +22,9 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
 {/* 1px marker 8px down the page: once it scrolls out of view, the header gets its hairline (no scroll listener). */}
 <div class="pointer-events-none absolute left-0 top-2 h-px w-px" aria-hidden="true" data-header-sentinel></div>
 <header class="site-header sticky top-0 z-40 border-b border-transparent bg-petal/95 backdrop-blur-sm transition-[border-color] duration-300" data-header>
-  <div class="container-x flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
-    <a href="/" class="-mx-1 flex min-h-12 items-center rounded-md px-1 no-underline" aria-label="Blush Picnic — home">
-      <Wordmark size="md" />
+  <div class="container-x flex h-[4.25rem] items-center justify-between gap-3 md:h-[4.75rem]">
+    <a href="/" class="-mx-1 flex min-h-12 shrink items-center rounded-md px-1 no-underline" aria-label="Blush Picnic — home">
+      <Wordmark variant="horizontal" width={256} eager class="w-[min(256px,calc(100vw-8.5rem))]" />
     </a>
 
     <nav aria-label="Main" class="hidden lg:block">

@@ -119,8 +119,11 @@ Prices you set here also appear in the booking form's estimate. To go back to "P
 The phone number and deposit amounts in FAQs, occasion pages and policies come from here too
 (through the `{phone}` and `{deposit}` placeholders), so one change updates the whole site.
 
-**Name or tagline changed?** The logo and social-share image are made from them, so ask your
-developer to run `npm run brand`.
+**Your logo** lives in `public/brand/` as SVG files taken from your Logo Guide (horizontal for the
+header, reversed for the dark footer, plus the stacked, badge, basket-mark and app-icon versions).
+If your designer sends the original SVG files, drop them in with the same names and ask your
+developer to run `npm run brand` — that rebuilds the browser-tab icon, phone icons, the logo in
+booking emails and the social-share image from them.
 
 ### FAQs
 
