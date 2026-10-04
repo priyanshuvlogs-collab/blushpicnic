@@ -39,14 +39,27 @@ jobs:
 
           echo "== Login folder (PWD) =="
           ftp -v --list-only "ftp://$name:$FTP_PORT/" 2>&1 | grep -E '^< 257' | sed 's/^< //' || true
-          for dir in "" "public_html/" "public_html/public_html/" "domains/" "domains/blushpicnic.com/" "domains/blushpicnic.com/public_html/"; do
+          # Paths after "//" are absolute (from the FTP account's top); after "/" they're relative to the login folder.
+          for dir in "/" "//" "//domains/" "//domains/blushpicnic.com/" "//domains/blushpicnic.com/public_html/" "//public_html/"; do
             echo ""
-            echo "== /$dir =="
-            ftp --list-only "ftp://$name:$FTP_PORT/$dir" 2>/dev/null | tr -d '\r' | sort | head -40 || echo "(not found)"
+            echo "== $dir =="
+            out="$(ftp --list-only "ftp://$name:$FTP_PORT$dir" 2>&1 | tr -d '\r' | sort)" || true
+            n="$(printf '%s\n' "$out" | grep -vcE '^\.{1,2}$|^$' || true)"
+            echo "($n entries)"; printf '%s\n' "$out" | grep -vE '^\.{1,2}$' | head -25
           done
 
       - name: What the website serves
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
         run: |
+          ftp_ip="$(printf '%s' "$FTP_SERVER" | tr -d '[:space:]')"; ftp_ip="${ftp_ip#ftp://}"; ftp_ip="${ftp_ip%%/*}"; ftp_ip="${ftp_ip%%:*}"
+          for h in blushpicnic.com www.blushpicnic.com; do
+            ips="$(dig +short A "$h" | tr '\n' ' ')"
+            same=no; for i in $ips; do [ "$i" = "$ftp_ip" ] && same=yes; done
+            echo "$h → A: ${ips:-none}  (same server as FTP_SERVER: $same)"
+          done
+          echo "Name servers: $(dig +short NS blushpicnic.com | tr '\n' ' ')"
+          curl -sSI --max-time 20 https://blushpicnic.com/ | tr -d '\r' | grep -iE '^(server|platform|panel|x-hcdn|x-powered-by|x-litespeed|cache|age|via|cf-)' || true
           for url in https://blushpicnic.com/ https://blushpicnic.com/packages https://blushpicnic.com/api/form-schema.json; do
             code="$(curl -s -o /tmp/b -w '%{http_code}' --max-time 20 "$url" || true)"
             echo "$url → $code $(grep -o '<title>[^<]*</title>' /tmp/b 2>/dev/null | head -1)"
