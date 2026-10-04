@@ -30,6 +30,7 @@ const description = `Request a luxury picnic in Toronto or the GTA. Choose your 
 
     <header class="book-hero">
       <div class="book-hero-arch" aria-hidden="true"></div>
+      <p class="hero-enter label-caps book-hero-label">Booking request</p>
       <h1 class="hero-enter book-hero-title">Let’s plan your picnic</h1>
       <p class="hero-enter-delay book-hero-lede">
         Tell us the occasion, the date and the spot. We reply {s.replyTime} with availability and your quote — no payment is taken here.
@@ -81,6 +82,7 @@ const description = `Request a luxury picnic in Toronto or the GTA. Choose your 
     -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 92%);
     mask-image: linear-gradient(to bottom, #000 40%, transparent 92%);
   }
+  .book-hero-label { position: relative; margin-bottom: 1rem; }
   .book-hero-title {
     position: relative;
     font-size: clamp(2.35rem, 1.7rem + 2.6vw, 3.75rem);
@@ -115,7 +117,7 @@ const description = `Request a luxury picnic in Toronto or the GTA. Choose your 
 
   .book-error { display: none; max-width: 44rem; margin: 0 auto 2rem; padding: 1.1rem 1.25rem; border: 2px solid var(--color-error); border-radius: 16px; background: var(--color-cream); }
   .book-error:target, .book-error.is-shown { display: block; }
-  .book-error-title { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.2; }
+  .book-error-title { font-family: var(--font-display); font-size: 1.55rem; font-weight: 600; line-height: 1.2; }
   .book-error p + p { margin-top: 0.4rem; }
   .book-error a { font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 0.2em; white-space: nowrap; }
   @media (min-width: 768px) {

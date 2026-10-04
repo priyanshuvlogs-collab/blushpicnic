@@ -1,7 +1,9 @@
 <?php
 // The two emails: a booking request for the business and a confirmation for the client.
-// Table layout + inline CSS for every mail app; Blush Picnic brand: cocoa #3B2A26 text, rose #A14D4B
-// accents and buttons, on blush #F6E6E1 / linen #FBF6F0, with the logo (PNG — mail apps don't show SVG).
+// Table layout + inline CSS for every mail app. Blush Picnic brand (Logo Guide): cocoa #3B2A26 text,
+// rose #A14D4B accents, links and buttons, a linen #FBF6F0 card on blush #F6E6E1. The horizontal logo
+// heads the card: it's a PNG (mail apps don't show SVG) flattened on linen, so it must sit on linen.
+// Headings ask for Cormorant Garamond and text for Jost, falling back to Georgia / the system sans.
 // Every piece of user input goes through e() (htmlspecialchars) before it touches HTML.
 declare(strict_types=1);
 
@@ -9,15 +11,15 @@ namespace Blush;
 
 final class Emails
 {
-    private const PLUM = '#3B2A26';      // Cocoa 900 (text)
-    private const PLUM_SOFT = '#665049';
-    private const ROSE = '#A14D4B';      // Rose 700 (buttons, accents)
+    private const COCOA = '#3B2A26';     // Cocoa 900 (text)
+    private const COCOA_SOFT = '#665049';
+    private const ROSE = '#A14D4B';      // Rose 700 (buttons, links, accents; 5.3:1 on linen)
     private const PETAL = '#F6E6E1';     // Blush 100
     private const CREAM = '#FBF6F0';     // Linen
     private const LINE = '#EAD0CA';
-    private const LOGO_PATH = '/brand/logo-email.png';
-    private const SERIF = "Georgia,'Times New Roman',Times,serif";
-    private const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+    private const LOGO_PATH = '/brand/logo-email.png'; // 560 × 114, horizontal logo on linen
+    private const SERIF = "'Cormorant Garamond',Georgia,'Times New Roman',Times,serif";
+    private const SANS = "Jost,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 
     // ── Business: "New booking request" ─────────────────────
 
@@ -38,7 +40,7 @@ final class Emails
 
         $html = ($spamNote !== '' ? self::notice(self::spamNoticeText($spamNote)) : '')
             . self::h1('New booking request')
-            . self::p(self::e($sub), 'margin:8px 0 22px;color:' . self::PLUM_SOFT . ';')
+            . self::p(self::e($sub), 'margin:8px 0 22px;color:' . self::COCOA_SOFT . ';')
             . ($actions ? '<div style="margin:0 0 18px;">' . implode('', $actions) . '</div>' : '')
             . self::rows($b->summaryRows(true))
             . self::estimateBox($b);
@@ -48,9 +50,9 @@ final class Emails
         }
 
         $html .= self::p(
-            '<strong style="color:' . self::PLUM . ';">Reference</strong> ' . self::e($b->ref)
-            . '<br><strong style="color:' . self::PLUM . ';">Received</strong> ' . self::e($b->receivedLabel()),
-            'margin:28px 0 0;font-size:14px;color:' . self::PLUM_SOFT . ';'
+            '<strong style="color:' . self::COCOA . ';">Reference</strong> ' . self::e($b->ref)
+            . '<br><strong style="color:' . self::COCOA . ';">Received</strong> ' . self::e($b->receivedLabel()),
+            'margin:28px 0 0;font-size:14px;color:' . self::COCOA_SOFT . ';'
         );
 
         $footer = 'Sent by the booking form on ' . self::e(self::host($b->business['url'])) . '. '
@@ -109,7 +111,7 @@ final class Emails
     {
         $biz = $b->business;
         $first = $b->greetingName();
-        $link = static fn (string $href, string $text): string => '<a href="' . self::e($href) . '" style="color:' . self::PLUM . ';">' . self::e($text) . '</a>';
+        $link = static fn (string $href, string $text): string => self::link($href, $text);
         $tel = $link('tel:' . $biz['phoneE164'], $biz['phoneDisplay']);
         $ig = $link($biz['instagramUrl'], $biz['instagramHandle']);
         $policies = $link(self::policiesUrl($b), 'Read our booking policies');
@@ -119,7 +121,8 @@ final class Emails
             $steps[] = [$title, self::e($text) . ($withPolicies ? ' ' . $policies . '.' : '')];
         }
 
-        $html = self::h1($first !== '' ? 'Thank you, ' . $first . '.' : 'Thank you.')
+        $html = self::label('Request received')
+            . self::h1($first !== '' ? 'Thank you, ' . $first . '.' : 'Thank you.')
             . self::p('We’ve received your picnic request. Here’s a summary:', 'margin:10px 0 18px;')
             . self::rows($b->summaryRows(false))
             . self::h2('What happens next')
@@ -128,7 +131,7 @@ final class Emails
                 'Questions before then, or something to add? Text or call ' . $tel . ', message us on Instagram ' . $ig . ', or simply reply to this email.',
                 'margin:24px 0 0;'
             )
-            . self::p('Your reference: <strong style="color:' . self::PLUM . ';">' . self::e($b->ref) . '</strong>', 'margin:18px 0 0;font-size:14px;color:' . self::PLUM_SOFT . ';');
+            . self::p('Your reference: <strong style="color:' . self::COCOA . ';">' . self::e($b->ref) . '</strong>', 'margin:18px 0 0;font-size:14px;color:' . self::COCOA_SOFT . ';');
 
         $footer = 'You’re receiving this one-time confirmation because you sent a booking request on '
             . self::e(self::host($biz['url'])) . '.<br>' . self::e($biz['name']);
@@ -242,8 +245,8 @@ final class Emails
         $p = self::PETAL;
         $c = self::CREAM;
         $l = self::LINE;
-        $plum = self::PLUM;
-        $soft = self::PLUM_SOFT;
+        $cocoa = self::COCOA;
+        $soft = self::COCOA_SOFT;
         $serif = self::SERIF;
         $sans = self::SANS;
         $t = self::e($title);
@@ -260,8 +263,10 @@ final class Emails
 <title>{$t}</title>
 <style>
 @media only screen and (max-width: 620px) {
-  .bp-card { padding: 28px 20px 26px !important; border-radius: 16px !important; }
-  .bp-h1 { font-size: 26px !important; }
+  .bp-card { border-radius: 16px !important; }
+  .bp-head { padding: 26px 20px 22px !important; }
+  .bp-body { padding: 26px 20px 28px !important; }
+  .bp-h1 { font-size: 27px !important; }
   .bp-label, .bp-value { display: block !important; width: auto !important; }
   .bp-label { padding: 12px 0 2px !important; border-bottom: 0 !important; }
   .bp-value { padding: 0 0 12px !important; }
@@ -273,9 +278,13 @@ final class Emails
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{$p}" style="background-color:{$p};">
 <tr><td align="center" style="padding:28px 10px 40px;">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
-<tr><td align="center" style="padding:0 8px 18px;"><a href="{$site}" style="text-decoration:none;"><img src="{$logo}" width="280" height="57" alt="Blush Picnic" style="display:block;width:280px;max-width:80%;height:auto;border:0;font-family:{$serif};font-size:22px;color:{$plum};"></a></td></tr>
-<tr><td class="bp-card" bgcolor="{$c}" style="background-color:{$c};border:1px solid {$l};border-radius:20px;padding:36px 36px 32px;font-family:{$sans};font-size:16px;line-height:1.6;color:{$plum};">
+<tr><td class="bp-card" bgcolor="{$c}" style="background-color:{$c};border:1px solid {$l};border-radius:20px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td class="bp-head" align="center" style="padding:32px 36px 26px;border-bottom:1px solid {$l};"><a href="{$site}" style="text-decoration:none;"><img src="{$logo}" width="272" height="55" alt="Blush Picnic" style="display:block;width:272px;max-width:100%;height:auto;border:0;font-family:{$serif};font-size:22px;letter-spacing:4px;color:{$cocoa};"></a></td></tr>
+<tr><td class="bp-body" style="padding:34px 36px 34px;font-family:{$sans};font-size:16px;line-height:1.6;color:{$cocoa};">
 {$inner}
+</td></tr>
+</table>
 </td></tr>
 <tr><td style="padding:20px 16px 0;font-family:{$sans};font-size:13px;line-height:1.6;color:{$soft};text-align:center;">{$footer}</td></tr>
 </table>
@@ -286,22 +295,34 @@ final class Emails
 HTML;
     }
 
+    /** Brand label: Rose 700 spaced small caps, like the logo's tagline. Use once, above the title. */
+    private static function label(string $text): string
+    {
+        return '<p style="margin:0 0 10px;font-family:' . self::SANS . ';font-size:12px;line-height:1.4;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:' . self::ROSE . ';">'
+            . self::e($text) . '</p>';
+    }
+
+    private static function link(string $href, string $text): string
+    {
+        return '<a href="' . self::e($href) . '" style="color:' . self::ROSE . ';text-decoration:underline;">' . self::e($text) . '</a>';
+    }
+
     private static function h1(string $text): string
     {
-        return '<h1 class="bp-h1" style="margin:0;font-family:' . self::SERIF . ';font-size:30px;line-height:1.2;font-weight:normal;color:' . self::PLUM . ';">'
+        return '<h1 class="bp-h1" style="margin:0;font-family:' . self::SERIF . ';font-size:30px;line-height:1.2;font-weight:normal;color:' . self::COCOA . ';">'
             . self::e($text) . '</h1>';
     }
 
     private static function h2(string $text): string
     {
-        return '<h2 style="margin:34px 0 4px;font-family:' . self::SERIF . ';font-size:20px;line-height:1.3;font-weight:normal;color:' . self::PLUM . ';">'
+        return '<h2 style="margin:34px 0 4px;font-family:' . self::SERIF . ';font-size:22px;line-height:1.3;font-weight:normal;color:' . self::COCOA . ';">'
             . self::e($text) . '</h2>';
     }
 
     /** $html must already be escaped. */
     private static function p(string $html, string $style = ''): string
     {
-        return '<p style="margin:0 0 14px;font-family:' . self::SANS . ';font-size:16px;line-height:1.6;color:' . self::PLUM . ';' . $style . '">' . $html . '</p>';
+        return '<p style="margin:0 0 14px;font-family:' . self::SANS . ';font-size:16px;line-height:1.6;color:' . self::COCOA . ';' . $style . '">' . $html . '</p>';
     }
 
     /** @param list<array{0:string,1:string}> $rows label/value pairs (plain text; escaped here) */
@@ -313,9 +334,9 @@ HTML;
         $out = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">';
         foreach ($rows as [$label, $value]) {
             $out .= '<tr>'
-                . '<td class="bp-label" width="36%" valign="top" style="width:36%;padding:12px 14px 12px 0;border-bottom:1px solid ' . self::LINE . ';font-family:' . self::SANS . ';font-size:14px;line-height:1.45;color:' . self::PLUM_SOFT . ';">'
+                . '<td class="bp-label" width="36%" valign="top" style="width:36%;padding:12px 14px 12px 0;border-bottom:1px solid ' . self::LINE . ';font-family:' . self::SANS . ';font-size:14px;line-height:1.45;color:' . self::COCOA_SOFT . ';">'
                 . self::e($label) . '</td>'
-                . '<td class="bp-value" valign="top" style="padding:12px 0;border-bottom:1px solid ' . self::LINE . ';font-family:' . self::SANS . ';font-size:16px;line-height:1.5;color:' . self::PLUM . ';word-wrap:break-word;overflow-wrap:anywhere;word-break:break-word;">'
+                . '<td class="bp-value" valign="top" style="padding:12px 0;border-bottom:1px solid ' . self::LINE . ';font-family:' . self::SANS . ';font-size:16px;line-height:1.5;color:' . self::COCOA . ';word-wrap:break-word;overflow-wrap:anywhere;word-break:break-word;">'
                 . nl2br(self::e($value), false) . '</td>'
                 . '</tr>';
         }
@@ -326,7 +347,7 @@ HTML;
     {
         $style = $primary
             ? 'background-color:' . self::ROSE . ';color:' . self::CREAM . ';border:1px solid ' . self::ROSE . ';'
-            : 'background-color:' . self::CREAM . ';color:' . self::PLUM . ';border:1px solid ' . self::PLUM . ';';
+            : 'background-color:' . self::CREAM . ';color:' . self::COCOA . ';border:1px solid ' . self::COCOA . ';';
         return '<a href="' . self::e($href) . '" style="display:inline-block;margin:0 6px 8px 0;padding:11px 18px;border-radius:999px;'
             . $style . 'font-family:' . self::SANS . ';font-size:15px;font-weight:600;line-height:20px;text-decoration:none;">'
             . self::e($label) . '</a>';
@@ -342,7 +363,7 @@ HTML;
     private static function notice(string $text): string
     {
         return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border-collapse:separate;">'
-            . '<tr><td style="padding:14px 18px;border:1px solid ' . self::PLUM . ';border-radius:12px;font-family:' . self::SANS . ';font-size:15px;line-height:1.5;color:' . self::PLUM . ';">'
+            . '<tr><td bgcolor="' . self::PETAL . '" style="padding:14px 18px;background-color:' . self::PETAL . ';border:1px solid ' . self::ROSE . ';border-radius:12px;font-family:' . self::SANS . ';font-size:15px;line-height:1.5;color:' . self::COCOA . ';">'
             . '<strong>Possible spam.</strong> ' . self::e($text) . '</td></tr></table>';
     }
 
@@ -356,19 +377,19 @@ HTML;
         $est = $b->estimate;
         $lines = '';
         foreach ($est->lines as [$label, $amount]) {
-            $lines .= '<tr><td style="padding:3px 12px 3px 0;font-family:' . self::SANS . ';font-size:14px;line-height:1.5;color:' . self::PLUM_SOFT . ';">' . self::e($label) . '</td>'
-                . '<td align="right" style="padding:3px 0;font-family:' . self::SANS . ';font-size:14px;line-height:1.5;color:' . self::PLUM . ';white-space:nowrap;">' . self::e(Money::format($amount)) . '</td></tr>';
+            $lines .= '<tr><td style="padding:3px 12px 3px 0;font-family:' . self::SANS . ';font-size:14px;line-height:1.5;color:' . self::COCOA_SOFT . ';">' . self::e($label) . '</td>'
+                . '<td align="right" style="padding:3px 0;font-family:' . self::SANS . ';font-size:14px;line-height:1.5;color:' . self::COCOA . ';white-space:nowrap;">' . self::e(Money::format($amount)) . '</td></tr>';
         }
         foreach ($est->toQuote() as $item) {
-            $lines .= '<tr><td colspan="2" style="padding:6px 0 0;font-family:' . self::SANS . ';font-size:14px;line-height:1.5;color:' . self::PLUM . ';">'
+            $lines .= '<tr><td colspan="2" style="padding:6px 0 0;font-family:' . self::SANS . ';font-size:14px;line-height:1.5;color:' . self::COCOA . ';">'
                 . '<strong>To quote:</strong> ' . self::e($item) . '</td></tr>';
         }
         return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="' . self::PETAL . '" style="margin:26px 0 4px;background-color:' . self::PETAL . ';border-radius:14px;">'
             . '<tr><td style="padding:20px 22px;">'
-            . '<p style="margin:0 0 2px;font-family:' . self::SANS . ';font-size:14px;line-height:1.4;color:' . self::PLUM_SOFT . ';">Starting estimate</p>'
-            . '<p style="margin:0 0 10px;font-family:' . self::SERIF . ';font-size:24px;line-height:1.25;color:' . self::PLUM . ';">' . self::e($est->headline($b->business['taxNote'])) . '</p>'
+            . '<p style="margin:0 0 4px;font-family:' . self::SANS . ';font-size:12px;line-height:1.4;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:' . self::ROSE . ';">Starting estimate</p>'
+            . '<p style="margin:0 0 10px;font-family:' . self::SERIF . ';font-size:24px;line-height:1.25;color:' . self::COCOA . ';">' . self::e($est->headline($b->business['taxNote'])) . '</p>'
             . ($lines !== '' ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $lines . '</table>' : '')
-            . '<p style="margin:10px 0 0;font-family:' . self::SANS . ';font-size:13px;line-height:1.5;color:' . self::PLUM_SOFT . ';">' . self::e(self::estimateNote($b)) . '</p>'
+            . '<p style="margin:10px 0 0;font-family:' . self::SANS . ';font-size:13px;line-height:1.5;color:' . self::COCOA_SOFT . ';">' . self::e(self::estimateNote($b)) . '</p>'
             . '</td></tr></table>';
     }
 
@@ -379,10 +400,10 @@ HTML;
         foreach ($steps as $i => [$title, $text]) {
             $out .= '<tr>'
                 . '<td width="44" valign="top" style="width:44px;padding:12px 0;">'
-                . '<div style="width:30px;height:30px;border-radius:15px;background-color:' . self::PETAL . ';font-family:' . self::SERIF . ';font-size:16px;line-height:30px;text-align:center;color:' . self::PLUM . ';">' . ($i + 1) . '</div></td>'
-                . '<td valign="top" style="padding:12px 0;font-family:' . self::SANS . ';font-size:16px;line-height:1.55;color:' . self::PLUM . ';">'
+                . '<div style="width:30px;height:30px;border-radius:15px;background-color:' . self::PETAL . ';font-family:' . self::SERIF . ';font-size:17px;line-height:30px;text-align:center;color:' . self::ROSE . ';">' . ($i + 1) . '</div></td>'
+                . '<td valign="top" style="padding:12px 0;font-family:' . self::SANS . ';font-size:16px;line-height:1.55;color:' . self::COCOA . ';">'
                 . '<strong style="display:block;font-weight:600;">' . self::e($title) . '</strong>'
-                . '<span style="color:' . self::PLUM_SOFT . ';">' . $text . '</span></td>'
+                . '<span style="color:' . self::COCOA_SOFT . ';">' . $text . '</span></td>'
                 . '</tr>';
         }
         return $out . '</table>';

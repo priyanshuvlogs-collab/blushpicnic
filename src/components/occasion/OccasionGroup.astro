@@ -22,9 +22,11 @@ const { id, title, intro, items, packages, layout, tone = 'petal' } = Astro.prop
 const s = await getSettings();
 const headingId = `group-${id}`;
 
-const priceLine = (o: Occasion) => {
+// "Starting at $375" leads in the text colour; "for 2 guests, before HST" follows, quieter (the guest
+// count kept on one line).
+const price = (o: Occasion) => {
   const p = packages.get(o.data.recommendedPackage)!;
-  return `Starting at ${money(p.data.priceFrom)} ${p.data.guestsLabel}, ${s.taxNote}`;
+  return { from: `Starting at ${money(p.data.priceFrom)}`, guests: p.data.guestsLabel };
 };
 const label = (o: Occasion) => capitalize(picnicPhrasePlural(o));
 const w = (o: Occasion, list: number[]) => list.filter((x) => x <= o.data.heroImage.width);
@@ -50,11 +52,11 @@ const w = (o: Occasion, list: number[]) => list.filter((x) => x <= o.data.heroIm
               loading="lazy"
               class="occ-img aspect-[4/5] w-full rounded-[var(--radius-card)] bg-petal-deep object-cover"
             />
-            <h3 class="mt-4 text-[1.3rem] sm:text-[1.5rem] lg:text-[1.7rem]">
+            <h3 class="mt-4 text-[1.4rem] sm:text-[1.55rem] lg:text-[1.7rem]">
               <a href={occasionUrl(o)} class="occ-link no-underline">{label(o)}</a>
             </h3>
             <p class="mt-2 hidden text-plum-soft sm:block">{excerpt(o.data.lede, 120)}</p>
-            <p class="mt-2 text-[0.9rem] leading-snug text-plum-soft sm:text-[0.95rem]">{priceLine(o)}</p>
+            <p class="mt-2 text-[0.9rem] leading-snug text-plum-soft sm:text-[0.95rem]"><span class="font-medium text-plum">{price(o).from}</span> <span class="whitespace-nowrap">{price(o).guests},</span> <span class="whitespace-nowrap">{s.taxNote}</span></p>
           </li>
         ))}
       </ul>
@@ -74,13 +76,13 @@ const w = (o: Occasion, list: number[]) => list.filter((x) => x <= o.data.heroIm
               loading="lazy"
               class:list={['occ-img w-full rounded-[var(--radius-card)] bg-petal-deep object-cover', i === 0 ? 'aspect-[4/3] lg:aspect-[5/6]' : 'aspect-square']}
             />
-            <h3 class:list={['mt-4', i === 0 ? 'text-[1.7rem] md:text-[2.1rem]' : 'text-[1.3rem] sm:text-[1.45rem]']}>
+            <h3 class:list={['mt-4', i === 0 ? 'text-[1.75rem] md:text-[2.1rem]' : 'text-[1.4rem] sm:text-[1.5rem]']}>
               <a href={occasionUrl(o)} class="occ-link no-underline">{label(o)}</a>
             </h3>
             {i === 0
               ? <p class="measure mt-2 text-plum-soft">{excerpt(o.data.lede, 170)}</p>
               : <p class="mt-2 hidden text-[0.95rem] text-plum-soft xl:block">{excerpt(o.data.lede, 80)}</p>}
-            <p class="mt-2 text-[0.9rem] leading-snug text-plum-soft sm:text-[0.95rem]">{priceLine(o)}</p>
+            <p class="mt-2 text-[0.9rem] leading-snug text-plum-soft sm:text-[0.95rem]"><span class="font-medium text-plum">{price(o).from}</span> <span class="whitespace-nowrap">{price(o).guests},</span> <span class="whitespace-nowrap">{s.taxNote}</span></p>
           </li>
         ))}
       </ul>
@@ -102,11 +104,11 @@ const w = (o: Occasion, list: number[]) => list.filter((x) => x <= o.data.heroIm
               class="occ-img aspect-[4/5] w-full rounded-[14px] bg-petal-deep object-cover"
             />
             <div class="min-w-0">
-              <h3 class="text-[1.3rem] sm:text-[1.55rem]">
+              <h3 class="text-[1.4rem] sm:text-[1.55rem]">
                 <a href={occasionUrl(o)} class="occ-link no-underline">{label(o)}</a>
               </h3>
               <p class="mt-1.5 hidden text-plum-soft sm:block">{excerpt(o.data.lede, 110)}</p>
-              <p class="mt-1.5 text-[0.9rem] leading-snug text-plum-soft sm:text-[0.95rem]">{priceLine(o)}</p>
+              <p class="mt-1.5 text-[0.9rem] leading-snug text-plum-soft sm:text-[0.95rem]"><span class="font-medium text-plum">{price(o).from}</span> <span class="whitespace-nowrap">{price(o).guests},</span> <span class="whitespace-nowrap">{s.taxNote}</span></p>
             </div>
             <Icon name="arrow-right" size={20} class="ml-auto hidden shrink-0 text-plum-soft motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1 sm:block" />
           </li>

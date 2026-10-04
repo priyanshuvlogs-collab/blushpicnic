@@ -55,8 +55,9 @@ import Icon from '../Icon.astro';
     padding: 0;
     border: 0;
     /* The dark scrim lives on the dialog itself (not ::backdrop) so its colour is the real,
-       measurable background of the text; the backdrop only blurs the page behind. */
-    background: rgb(33 10 26 / 0.96);
+       measurable background of the text; the backdrop only blurs the page behind. Brand Cocoa 900,
+       the guide's ground for the reversed logo. */
+    background: color-mix(in srgb, var(--color-cocoa) 97%, transparent);
     color: var(--color-cream);
     overflow: hidden;
     overscroll-behavior: contain;
@@ -87,11 +88,13 @@ import Icon from '../Icon.astro';
     justify-content: space-between;
     gap: 1rem;
   }
+  /* "2 / 32" in the brand's spaced small caps, in Blush 300 (8.8:1 on cocoa). */
   .lb-count {
-    font-size: 0.95rem;
-    font-variant-numeric: tabular-nums;
-    color: rgb(255 253 252 / 0.8);
-    letter-spacing: 0.02em;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: 0.18em;
+    color: var(--color-blush-300);
   }
 
   .lb-btn {
@@ -101,12 +104,15 @@ import Icon from '../Icon.astro';
     height: 3rem;
     border-radius: 999px;
     color: var(--color-cream);
-    background: rgb(255 253 252 / 0.1);
-    border: 1px solid rgb(255 253 252 / 0.25);
+    background: color-mix(in srgb, var(--color-cream) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-blush-300) 40%, transparent);
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
   }
-  .lb-btn:hover { background: rgb(255 253 252 / 0.2); border-color: rgb(255 253 252 / 0.5); }
+  .lb-btn:hover {
+    background: color-mix(in srgb, var(--color-cream) 16%, transparent);
+    border-color: var(--color-blush-300);
+  }
   .lb-close { margin-right: -0.25rem; }
 
   .lb-stage {
@@ -129,8 +135,8 @@ import Icon from '../Icon.astro';
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    border-radius: 10px;
-    background: rgb(255 253 252 / 0.06);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--color-cream) 6%, transparent);
     user-select: none;
     -webkit-user-drag: none;
   }
@@ -144,13 +150,14 @@ import Icon from '../Icon.astro';
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgb(33 10 26 / 0.45);
+    background: color-mix(in srgb, var(--color-cocoa) 55%, transparent);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
   }
   .lb-prev { left: 0.25rem; }
   .lb-next { right: 0.25rem; }
   @media (min-width: 768px) {
-    .lb-nav { width: 3.5rem; height: 3.5rem; background: rgb(255 253 252 / 0.1); }
+    .lb-nav { width: 3.5rem; height: 3.5rem; background: color-mix(in srgb, var(--color-cream) 8%, transparent); }
     .lb-prev { left: 0; }
     .lb-next { right: 0; }
   }
@@ -168,14 +175,14 @@ import Icon from '../Icon.astro';
   }
   .lb-title {
     color: var(--color-cream);
-    font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.7rem);
-    line-height: 1.15;
+    font-size: clamp(1.6rem, 1.4rem + 0.7vw, 2rem);
+    line-height: 1.1;
   }
   .lb-desc {
-    margin-top: 0.3rem;
+    margin-top: 0.35rem;
     font-size: 0.95rem;
-    line-height: 1.45;
-    color: rgb(255 253 252 / 0.8);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-cream) 82%, transparent);
     max-width: 60ch;
   }
   .lb-actions {
@@ -196,7 +203,7 @@ import Icon from '../Icon.astro';
     text-decoration-thickness: 2px;
     text-underline-offset: 0.3em;
   }
-  .lb-link:hover { text-decoration-color: var(--color-cream); }
+  .lb-link:hover { text-decoration-color: var(--color-blush-300); }
   .lb-link[hidden] { display: none; }
 
   /* Short screens (landscape phones, a zoomed-in browser): the photo must never shrink to a

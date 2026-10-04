@@ -96,7 +96,7 @@
 
   a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
 
-  ::selection { background: var(--color-plum); color: var(--color-cream); }
+  ::selection { background: var(--color-blush-300); color: var(--color-cocoa); }
 
   :focus-visible {
     outline: 3px solid var(--color-plum);
@@ -147,9 +147,10 @@
     min-height: 3rem;
     padding: 0.8rem 1.5rem;
     border-radius: var(--radius-btn);
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1rem;
     line-height: 1.2;
+    letter-spacing: 0.01em;
     text-decoration: none;
     border: 1.5px solid transparent;
     cursor: pointer;
@@ -164,10 +165,11 @@
   .btn-secondary { background: transparent; color: var(--color-plum); border-color: var(--color-plum); }
   .btn-secondary:hover { background: var(--color-plum); color: var(--color-cream); }
   .btn-light { background: var(--color-cream); color: var(--color-plum); }
-  .btn-light:hover { background: var(--color-petal); }
+  .btn-light:hover { background: var(--color-blush-300); }
   .btn-lg { min-height: 3.5rem; padding: 1rem 1.9rem; font-size: 1.0625rem; }
 
-  /* Small sans heading for footers, form groups, meta labels (not an all-caps eyebrow) */
+  /* Small sans heading for form groups and meta labels (not an all-caps eyebrow). Cormorant is never set
+     this small: below ~1.3rem it turns spindly, so small titles use Jost (this) or a ≥1.3rem display size. */
   .heading-sm {
     font-family: var(--font-sans);
     font-size: 0.95rem;
@@ -200,7 +202,7 @@
     text-decoration-thickness: 2px;
     text-underline-offset: 0.3em;
   }
-  .link-arrow:hover { text-decoration-color: var(--color-plum); }
+  .link-arrow:hover { text-decoration-color: var(--color-rose); }
 
   /* Signature motif: the arch. Use sparingly. */
   .arch {
@@ -246,7 +248,7 @@
     text-decoration-color: var(--color-gold);
     text-decoration-thickness: 2px;
   }
-  .prose-blush a:hover { text-decoration-color: var(--color-plum); }
+  .prose-blush a:hover { text-decoration-color: var(--color-rose); }
   .prose-blush strong { font-weight: 650; }
 
   /* Clearly marked owner-content placeholder */

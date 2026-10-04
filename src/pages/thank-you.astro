@@ -50,8 +50,8 @@ const heroSources = await Promise.all(
 >
   <section class="container-x grid items-center gap-x-16 gap-y-12 pb-16 pt-10 md:pt-16 lg:grid-cols-12 lg:pb-24" aria-labelledby="thanks-title">
     <div class="hero-enter lg:col-span-7">
-      <p class="ty-sent"><Icon name="check" size={18} />Request sent</p>
-      <h1 id="thanks-title" class="mt-5 max-w-[14ch]">Thank you<span data-thanks-name></span>.</h1>
+      <p class="ty-sent label-caps"><Icon name="check" size={16} />Request sent</p>
+      <h1 id="thanks-title" class="mt-4 max-w-[14ch]"><span class="whitespace-nowrap">Thank you</span><span data-thanks-name></span>.</h1>
       <p class="mt-5 max-w-[36rem] text-lg text-plum-soft md:text-xl md:leading-relaxed">
         Your booking request is with us<span data-thanks-occasion hidden></span>. Here’s what happens next.
       </p>
@@ -161,31 +161,27 @@ const heroSources = await Promise.all(
 </script>
 
 <style>
+  /* Brand label (rose spaced small caps, like the logo's tagline) above the title */
   .ty-sent {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.35rem 0.85rem 0.35rem 0.7rem;
-    border-radius: 999px;
-    background: var(--color-sage-wash);
-    color: var(--color-sage-ink);
-    font-size: 0.95rem;
-    font-weight: 600;
+    gap: 0.5rem;
   }
   .ty-ref {
     display: inline-block;
     margin-top: 1.5rem;
-    padding: 0.7rem 1rem;
-    border: 1px dashed var(--color-gold);
+    padding: 0.7rem 1.1rem;
+    border: 1px solid var(--color-line);
     border-radius: 12px;
     background: var(--color-cream);
     font-size: 1rem;
+    color: var(--color-plum-soft);
   }
-  .ty-ref strong { font-weight: 700; letter-spacing: 0.03em; }
+  .ty-ref strong { font-weight: 600; letter-spacing: 0.04em; color: var(--color-plum); white-space: nowrap; }
   .ty-steps { display: grid; gap: 1.75rem; max-width: 38rem; }
   .ty-steps li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 1rem; }
-  .ty-num { font-family: var(--font-display); font-size: 2.4rem; line-height: 1; color: var(--color-gold-ink); }
-  .ty-step-title { font-size: clamp(1.3rem, 1.2rem + 0.5vw, 1.55rem); line-height: 1.2; }
+  .ty-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 500; line-height: 0.9; font-variant-numeric: lining-nums; color: var(--color-rose); }
+  .ty-step-title { font-size: clamp(1.45rem, 1.3rem + 0.5vw, 1.7rem); font-weight: 600; line-height: 1.2; }
   .ty-band { background: var(--color-cream); border-top: 1px solid var(--color-line); }
   .ty-link {
     font-weight: 600;

@@ -12,8 +12,8 @@ const { items, label = 'On this page', id = 'page-toc', class: className = '' } 
 const labelId = `${id}-label`;
 ---
 <nav aria-labelledby={labelId} class:list={['page-toc', className]} data-page-toc>
-  <p id={labelId} class="heading-sm text-plum-soft">{label}</p>
-  <ul class="mt-2 grid grid-cols-2 gap-x-6 sm:grid-cols-3 lg:mt-3 lg:grid-cols-1 lg:gap-0 lg:border-l lg:border-line">
+  <p id={labelId} class="label-caps">{label}</p>
+  <ul class="mt-2 grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3 lg:mt-4 lg:grid-cols-1 lg:gap-0 lg:border-l lg:border-line">
     {items.map((item) => (
       <li>
         <a href={`#${item.id}`} class="toc-link" data-toc-link={item.id}>{item.label}</a>
@@ -70,29 +70,34 @@ const labelId = `${id}-label`;
     min-height: 2.75rem;
     font-size: 0.98rem;
     font-weight: 500;
-    color: var(--color-plum);
+    color: var(--color-cocoa);
     text-decoration: underline;
-    text-decoration-color: var(--color-line);
+    text-decoration-color: var(--color-blush-300);
     text-decoration-thickness: 2px;
     text-underline-offset: 0.3em;
     line-height: 1.3;
+    /* transparent from the start, so crossing the desktop breakpoint never flashes a dark rule */
+    border-left: 0 solid transparent;
   }
   .toc-link:hover { text-decoration-color: var(--color-gold); }
   @media (min-width: 1024px) {
     .toc-link {
       min-height: 2.6rem;
       margin-left: -1px;
-      padding-left: 1rem;
-      border-left: 2px solid transparent;
+      padding-left: 1.1rem;
+      border-left-width: 2px;
       text-decoration: none;
       color: var(--color-plum-soft);
-      transition: color 0.2s, border-color 0.2s;
     }
-    .toc-link:hover { color: var(--color-plum); text-decoration: underline; text-decoration-color: var(--color-gold); }
+    @media (prefers-reduced-motion: no-preference) {
+      .toc-link { transition: color 0.2s, border-color 0.2s; }
+    }
+    .toc-link:hover { color: var(--color-cocoa); text-decoration: underline; text-decoration-color: var(--color-gold); }
+    /* The section being read: cocoa text with a Rose 700 rule (5.3:1 / 4.7:1 on linen / blush). */
     .toc-link[aria-current] {
-      color: var(--color-plum);
+      color: var(--color-cocoa);
       font-weight: 600;
-      border-left-color: var(--color-gold-ink);
+      border-left-color: var(--color-rose);
     }
   }
 </style>

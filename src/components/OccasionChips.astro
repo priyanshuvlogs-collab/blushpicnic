@@ -18,7 +18,7 @@ if (limit) occasions = occasions.slice(0, limit);
   <ul class="-mx-[var(--gutter)] -mt-2 flex snap-x scroll-px-[var(--gutter)] gap-2 overflow-x-auto px-[var(--gutter)] pb-2 pt-2 [scrollbar-width:none] lg:mx-0 lg:mt-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pt-0 [&::-webkit-scrollbar]:hidden" data-chip-strip>
     {occasions.map((o) => (
       <li class="shrink-0 snap-start">
-        <a href={occasionUrl(o)} class="inline-flex min-h-11 items-center rounded-full border border-plum/25 bg-cream/60 px-4 text-[0.95rem] font-medium no-underline transition-colors hover:border-plum hover:bg-cream">{o.data.chip}</a>
+        <a href={occasionUrl(o)} class="inline-flex min-h-11 items-center rounded-full border border-plum/25 bg-cream/60 px-4 text-[0.95rem] font-medium no-underline transition-colors hover:border-rose/60 hover:bg-cream hover:text-rose">{o.data.chip}</a>
       </li>
     ))}
     <li class="shrink-0 snap-start">

@@ -1,10 +1,11 @@
 ---
 // Instagram link-in-bio (/links). Not indexed. Big, thumb-sized buttons; every tap is tracked.
 // Occasion links come from occasion data and are skipped if that page doesn't exist yet.
+// It opens on the basket mark (public/brand/logo-mark-small.svg, the mark of the app icon) in a
+// linen arch — the arch echoing the basket's handle — so visitors arriving from the profile
+// recognise the brand at once. The mark is used as-is: never recoloured, stretched or cropped.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ArchImage from '../components/ArchImage.astro';
 import Icon from '../components/Icon.astro';
-import hero from '../assets/photos/hero.jpg';
 import { getSettings, getPackages, getOccasions, occasionUrl, smsUrl, telUrl, mailUrl, money, type Occasion } from '../lib/site';
 
 type IconName = 'message' | 'phone' | 'mail';
@@ -69,16 +70,13 @@ const trackAttrs = (l: LinkItem) => ({
   <section aria-labelledby="links-title" class="container-x pb-16 pt-6 md:pb-24 md:pt-10">
     <div class="hero-enter mx-auto max-w-[29rem]">
       <div class="text-center">
-        <ArchImage
-          src={hero}
-          alt={s.heroAlt}
-          sizes="7.5rem"
-          widths={[120, 240, 360]}
-          priority
-          outline
-          class="mx-auto w-[7.5rem]"
-        />
-        <h1 id="links-title" class="mx-auto mt-6 max-w-[18ch] text-[2rem] leading-[1.1] sm:text-[2.3rem]">{s.tagline}</h1>
+        <div class="arch-outline mx-auto mt-3 w-[8rem]">
+          <div class="arch flex aspect-[4/5] items-end justify-center bg-cream pb-[1.35rem]">
+            {/* viewBox 18.76 × 14.91 */}
+            <img src="/brand/logo-mark-small.svg" alt="" width="88" height="70" loading="eager" decoding="async" class="w-[5.5rem]" />
+          </div>
+        </div>
+        <h1 id="links-title" class="mx-auto mt-7 max-w-[18ch] text-[2.1rem] leading-[1.08] sm:text-[2.4rem]">{s.tagline}</h1>
         <p class="mx-auto mt-3 max-w-[22rem] text-plum-soft">
           We deliver, set up, style and clean up — you just arrive.
         </p>
@@ -98,16 +96,16 @@ const trackAttrs = (l: LinkItem) => ({
         ))}
       </ul>
 
-      <h2 class="heading-sm mt-10 text-center text-plum-soft">Prefer to talk first?</h2>
+      <h2 class="label-caps mt-11 text-center">Prefer to talk first?</h2>
       <ul class="mt-3 grid gap-3">
         {talk.map((l) => (
           <li>
             <a href={l.href} class="link-btn" {...trackAttrs(l)}>
               <span class="flex min-w-0 items-center gap-3.5">
-                <span class="grid size-10 shrink-0 place-items-center rounded-full bg-petal">{l.icon && <Icon name={l.icon} size={20} />}</span>
+                <span class="grid size-10 shrink-0 place-items-center rounded-full bg-petal text-rose">{l.icon && <Icon name={l.icon} size={20} />}</span>
                 <span class="min-w-0">
                   <span class="block text-[1.06rem] font-semibold leading-snug">{l.label}</span>
-                  <span class="link-sub mt-0.5 block break-all text-[0.88rem] leading-snug">{l.sub}</span>
+                  <span class="link-sub mt-0.5 block text-[0.88rem] leading-snug [overflow-wrap:anywhere]">{l.sub.includes('@') ? <>{l.sub.slice(0, l.sub.indexOf('@') + 1)}<wbr />{l.sub.slice(l.sub.indexOf('@') + 1)}</> : l.sub}</span>
                 </span>
               </span>
               <Icon name="arrow-right" size={20} class="shrink-0" />
@@ -137,14 +135,18 @@ const trackAttrs = (l: LinkItem) => ({
     border-radius: var(--radius-btn);
     border: 1px solid var(--color-line);
     background: var(--color-cream);
-    color: var(--color-plum);
+    color: var(--color-cocoa);
     text-decoration: none;
-    transition: border-color 0.2s, background-color 0.2s, transform 0.2s var(--ease-out-soft);
+    transition: border-color 0.2s, background-color 0.2s;
   }
-  .link-btn:hover { border-color: var(--color-plum); }
-  .link-btn:active { transform: translateY(1px); }
+  .link-btn:hover { border-color: var(--color-rose); }
+  @media (prefers-reduced-motion: no-preference) {
+    .link-btn { transition: border-color 0.2s, background-color 0.2s, transform 0.2s var(--ease-out-soft); }
+    .link-btn:active { transform: translateY(1px); }
+  }
   .link-sub { color: var(--color-plum-soft); }
-  .link-btn-primary { background: var(--color-plum); border-color: var(--color-plum); color: var(--color-cream); min-height: 4.75rem; }
-  .link-btn-primary:hover { background: var(--color-plum-hover); }
-  .link-btn-primary .link-sub { color: rgb(255 253 252 / 0.85); }
+  /* Rose, like every primary button; the subline stays full linen so it keeps AA contrast. */
+  .link-btn-primary { background: var(--color-rose); border-color: var(--color-rose); color: var(--color-cream); min-height: 4.75rem; }
+  .link-btn-primary:hover { background: var(--color-rose-hover); border-color: var(--color-rose-hover); }
+  .link-btn-primary .link-sub { color: var(--color-cream); }
 </style>

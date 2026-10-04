@@ -36,14 +36,17 @@ const links = [
         </p>
       </div>
 
+      {/* An empty arch — the picnic spot — with the brand's basket mark waiting at its threshold
+          (the arch echoes the basket's handle). Decorative: the h1 carries "page not found". */}
       <div class="hero-enter-delay order-1 lg:order-2 lg:col-span-5" aria-hidden="true">
         <div class="nf-arch mx-auto">
           <svg viewBox="0 0 200 260" fill="none" class="h-full w-full">
             <path d="M14 258V108a86 86 0 0 1 172 0v150" stroke="currentColor" stroke-width="1.2" class="text-gold" />
             <path d="M32 258V112a68 68 0 0 1 136 0v146" fill="currentColor" class="text-cream" />
-            <path d="M0 259.5h200" stroke="currentColor" stroke-width="1" class="text-line" />
+            <path d="M0 259.5h200" stroke="currentColor" stroke-width="1" class="text-blush-300" />
           </svg>
           <span class="nf-num font-display">404</span>
+          <img src="/brand/logo-mark.svg" alt="" width="108" height="80" decoding="async" class="nf-basket" />
         </div>
       </div>
     </div>
@@ -72,17 +75,30 @@ const links = [
     width: min(46vw, 12.5rem);
     aspect-ratio: 200 / 260;
   }
+  @media (min-width: 640px) {
+    .nf-arch { width: 14rem; }
+  }
   @media (min-width: 1024px) {
     .nf-arch { width: min(100%, 21rem); margin-right: 0.75rem; }
   }
   .nf-num {
     position: absolute;
-    inset: 38% 0 auto;
+    inset: 29% 0 auto;
     text-align: center;
-    font-size: clamp(3.25rem, 2.4rem + 4vw, 5.5rem);
+    font-size: clamp(2.6rem, 1.9rem + 3.4vw, 4.6rem);
+    font-weight: 500;
     line-height: 1;
-    color: var(--color-plum);
-    letter-spacing: -0.02em;
+    color: var(--color-cocoa);
+  }
+  /* The basket mark at the arch's threshold: ~half the arch wide, with clear space (about the
+     width of its heart tag) above the floor line. */
+  .nf-basket {
+    position: absolute;
+    left: 50%;
+    bottom: 7%;
+    width: 50%;
+    height: auto;
+    transform: translateX(-50%);
   }
   .nf-card {
     display: block;
@@ -94,12 +110,12 @@ const links = [
   @media (min-width: 640px) {
     .nf-card { padding-inline: 1.5rem; }
   }
-  .nf-card:hover { background: rgb(255 253 252 / 0.55); }
+  .nf-card:hover { background: color-mix(in srgb, var(--color-cream) 60%, transparent); }
   .nf-link {
     display: inline-block;
     padding-block: 0.65rem;
     font-weight: 600;
-    color: var(--color-plum);
+    color: var(--color-cocoa);
     text-decoration: underline;
     text-decoration-color: var(--color-gold);
     text-decoration-thickness: 2px;

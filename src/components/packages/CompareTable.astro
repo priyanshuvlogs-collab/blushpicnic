@@ -63,9 +63,9 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
           </colgroup>
           <thead>
             <tr>
-              <td class="border-b border-plum/30"></td>
+              <td class="border-b border-cocoa/30"></td>
               {pkgs.map((p) => (
-                <th scope="col" class={`border-b border-plum/30 px-1 pb-4 pt-5 text-center align-bottom font-display text-[clamp(0.7rem,3.6vw,1.05rem)] font-normal leading-tight sm:px-4 sm:text-[1.2rem] md:text-[1.35rem] ${p.id === featured ? `rounded-t-[14px] ${HL}` : ''}`}>
+                <th scope="col" class={`border-b border-cocoa/30 px-1 pb-4 pt-5 text-center align-bottom text-[clamp(0.74rem,3.4vw,0.95rem)] font-semibold leading-tight sm:px-4 sm:font-display sm:text-[1.45rem] md:text-[1.6rem] ${p.id === featured ? `rounded-t-[14px] ${HL}` : ''}`}>
                   {p.data.name}
                 </th>
               ))}
@@ -74,7 +74,7 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
           <tbody>
             <tr>
               <th scope="row">Starting price <span class="whitespace-nowrap">({s.taxNote})</span></th>
-              {pkgs.map((p) => <td class={colClass(p)}><span class="font-display text-[1.15rem] sm:text-[1.45rem]">{money(p.data.priceFrom)}</span></td>)}
+              {pkgs.map((p) => <td class={colClass(p)}><span class="font-display text-[1.3rem] font-semibold leading-none sm:text-[1.65rem]">{money(p.data.priceFrom)}</span></td>)}
             </tr>
             <tr>
               <th scope="row">Guests included</th>
@@ -97,7 +97,7 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
           </tbody>
           <tbody>
             <tr>
-              <th scope="rowgroup" colspan={pkgs.length + 1} class="group-head">Styling and details</th>
+              <th scope="rowgroup" colspan={pkgs.length + 1} class="group-head label-caps">Styling and details</th>
             </tr>
             {rows.map((item) => (
               <tr>
@@ -154,13 +154,10 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
   .compare :global(tbody tr) { border-bottom: 1px solid var(--color-line); }
   /* Quieter than a tick, so the ticks still carry the table. */
   .compare .ask { font-size: 0.8rem; font-weight: 500; line-height: 1.2; }
+  /* Group label in the brand's spaced small caps (rose on linen, AA). */
   .compare :global(.group-head) {
-    padding: 2rem 0 0.6rem;
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 1.2rem;
-    border-bottom: 1px solid var(--color-plum);
-    border-bottom-color: rgb(59 23 48 / 0.3);
+    padding: 2.25rem 0 0.75rem;
+    border-bottom: 1px solid rgb(59 42 38 / 0.3); /* cocoa, like the header rule */
   }
   .compare :global(tbody tr:has(.group-head)) { border-bottom: 0; }
   @media (min-width: 640px) {

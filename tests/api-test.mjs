@@ -337,7 +337,7 @@ function assertEmails(ref, payload) {
   assert.match(biz.text, /\(Toronto time\)/);
   assert.match(biz.text, /STARTING ESTIMATE: (Starting at \$[\d,]+ before HST|To be quoted)/);
   assert.ok(biz.html.includes('href="tel:+14165550123"') && biz.html.includes('href="sms:+14165550123"') && biz.html.includes(`href="mailto:${payload.email}`), 'quick actions');
-  assert.ok(biz.html.includes('#3B1730') && biz.html.includes('#F6E4E1'), 'brand colours');
+  assert.ok(biz.html.includes('#3B2A26') && biz.html.includes('#F6E6E1'), 'brand colours');
 
   assert.ok(cli.text.includes(`Thank you, ${CLIENT.first}.`));
   assert.ok(cli.text.includes(occ.name) && cli.text.includes(fmtDate(payload.date)) && cli.text.includes('5:30 PM'));

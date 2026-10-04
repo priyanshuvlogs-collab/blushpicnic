@@ -46,7 +46,7 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
 
       <div class="hero-enter-delay lg:col-span-6">
         <div class="rounded-[var(--radius-card)] bg-cream px-6 py-6 sm:px-8 sm:py-7">
-          <h2 class="heading-sm text-plum-soft">At a glance</h2>
+          <h2 class="label-caps">At a glance</h2>
           <ul class="mt-2 divide-y divide-line">
             {pkgs.map((p) => (
               <li class="glance-row">
@@ -56,19 +56,19 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
                 </span>
                 <span class="text-right">
                   <span class="block text-[0.85rem] leading-tight text-plum-soft">Starting at</span>
-                  <span class="block font-display text-[1.5rem] leading-none">{money(p.data.priceFrom)}</span>
+                  <span class="glance-price block font-display">{money(p.data.priceFrom)}</span>
                 </span>
               </li>
             ))}
             {/* Deposit notes run the full width under the name and amount, so they don't squeeze into a narrow column on phones. */}
             <li class="glance-row glance-row--note">
               <span class="font-semibold">Booking deposit</span>
-              <span class="text-right font-display text-[1.5rem] leading-none">{money(s.deposit.standard)}</span>
+              <span class="glance-price text-right font-display">{money(s.deposit.standard)}</span>
               <span class="glance-note">Holds your date, or {s.deposit.largeEventPercent}% for larger events · <span class="whitespace-nowrap">non-refundable</span></span>
             </li>
             <li class="glance-row glance-row--note">
               <span class="font-semibold">Security deposit</span>
-              <span class="text-right font-display text-[1.5rem] leading-none">{money(s.securityDeposit.amount)}</span>
+              <span class="glance-price text-right font-display">{money(s.securityDeposit.amount)}</span>
               <span class="glance-note">Refundable, returned within {s.securityDeposit.returnedWithin} once items are collected and checked</span>
             </li>
           </ul>
@@ -116,6 +116,11 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
     padding-block: 0.8rem;
   }
   .glance-row--note { align-items: baseline; row-gap: 0.15rem; }
+  .glance-price {
+    font-size: 1.6rem;
+    line-height: 1;
+    font-weight: 500;
+  }
   .glance-note {
     grid-column: 1 / -1;
     font-size: 0.95rem;

@@ -22,9 +22,11 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
 {/* 1px marker 8px down the page: once it scrolls out of view, the header gets its hairline (no scroll listener). */}
 <div class="pointer-events-none absolute left-0 top-2 h-px w-px" aria-hidden="true" data-header-sentinel></div>
 <header class="site-header sticky top-0 z-40 border-b border-transparent bg-petal/95 backdrop-blur-sm transition-[border-color] duration-300" data-header>
-  <div class="container-x flex h-[4.25rem] items-center justify-between gap-3 md:h-[4.75rem]">
+  <div class="container-x flex h-[4.5rem] items-center justify-between gap-2 md:h-[4.75rem]">
+    {/* Logo guide: the horizontal logo stays ≥ 240px wide (below 375px the Text icon makes way for it; the
+        sticky bar and menu still offer Text), with about a heart-tag's width of clear space all round. */}
     <a href="/" class="-mx-1 flex min-h-12 shrink items-center rounded-md px-1 no-underline" aria-label="Blush Picnic — home">
-      <Wordmark variant="horizontal" width={256} eager class="w-[min(256px,calc(100vw-8.5rem))]" />
+      <Wordmark variant="horizontal" width={256} eager class="w-[min(256px,calc(100vw-5rem))] min-[375px]:w-[min(256px,calc(100vw-8.25rem))]" />
     </a>
 
     <nav aria-label="Main" class="hidden lg:block">
@@ -34,7 +36,7 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
             <a
               href={item.href}
               class:list={[
-                'inline-flex min-h-12 items-center rounded-lg px-3 text-[0.98rem] font-medium no-underline transition-colors hover:text-plum-hover',
+                'inline-flex min-h-12 items-center rounded-lg px-3 text-[0.98rem] font-medium no-underline transition-colors hover:text-rose',
                 isCurrent(item.href) ? 'underline decoration-gold decoration-2 underline-offset-[0.4em]' : '',
               ]}
               aria-current={isCurrent(item.href) ? 'page' : undefined}
@@ -45,17 +47,17 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
     </nav>
 
     <div class="flex items-center gap-1 sm:gap-2">
-      <a href={telUrl(s)} class="hidden min-h-12 items-center gap-2 whitespace-nowrap rounded-lg px-2 text-[0.98rem] font-medium no-underline md:inline-flex" data-track="click_call">
+      <a href={telUrl(s)} class="hidden min-h-12 items-center gap-2 whitespace-nowrap rounded-lg px-2 text-[0.98rem] font-medium no-underline transition-colors hover:text-rose md:inline-flex" data-track="click_call">
         <Icon name="phone" size={18} />
         <span class="lg:sr-only xl:not-sr-only">{s.phoneDisplay}</span>
       </a>
-      <a href={smsUrl(s)} class="inline-flex size-12 items-center justify-center rounded-full md:hidden" data-track="click_text">
+      <a href={smsUrl(s)} class="hidden size-12 items-center justify-center rounded-full transition-colors hover:bg-cream hover:text-rose focus-visible:outline-offset-0 min-[375px]:inline-flex md:hidden" data-track="click_text">
         <Icon name="message" size={22} label="Text us" />
       </a>
       <a href={bookHref} class="btn btn-primary hidden !min-h-11 whitespace-nowrap !px-5 sm:inline-flex" data-track="booking_cta" data-track-location="header" data-astro-prefetch>Book your picnic</a>
       <button
         type="button"
-        class="inline-flex size-12 items-center justify-center rounded-full lg:hidden"
+        class="-mr-2 inline-flex size-12 items-center justify-center rounded-full transition-colors hover:bg-cream hover:text-rose focus-visible:outline-offset-0 lg:hidden"
         aria-expanded="false"
         aria-controls="mobile-menu"
         data-menu-toggle
@@ -69,14 +71,14 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
 
   {/* Fills the screen below the bar (covering the page and the mobile Book bar) and scrolls on its
       own, so every item can be reached on short screens and at high zoom. */}
-  <div id="mobile-menu" class="h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-line bg-petal md:h-[calc(100dvh-4.5rem)] lg:hidden" hidden data-menu>
+  <div id="mobile-menu" class="h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain border-t border-line bg-petal md:h-[calc(100dvh-4.75rem)] lg:hidden" hidden data-menu>
     <nav aria-label="Mobile" class="container-x py-4">
       <ul class="divide-y divide-line">
         {nav.map((item) => (
           <li>
             <a
               href={item.href}
-              class="flex min-h-14 items-center justify-between font-display text-2xl no-underline"
+              class="flex min-h-14 items-center justify-between font-display text-[1.65rem] no-underline transition-colors hover:text-rose aria-[current=page]:text-rose"
               aria-current={isCurrent(item.href) ? 'page' : undefined}
             >{item.label}<Icon name="arrow-right" size={20} class="text-plum-soft" /></a>
           </li>

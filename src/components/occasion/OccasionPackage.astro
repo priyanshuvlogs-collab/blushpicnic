@@ -45,7 +45,7 @@ const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
           formats={['avif', 'webp']}
           fallbackFormat="jpg"
           loading="lazy"
-          class="aspect-[4/3] h-full w-full bg-petal-deep object-cover lg:absolute lg:inset-0 lg:aspect-auto"
+          class="aspect-[4/3] h-full w-full bg-petal-deep object-cover md:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto"
         />
       </div>
 
@@ -57,8 +57,8 @@ const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
           <PriceTag pkg={pkg} size="lg" />
         </div>
 
-        <h4 class="heading-sm mt-7 text-[1.0625rem]">What’s included</h4>
-        {d.includesFrom && <p class="mt-1.5 text-plum-soft">{d.includesFrom}</p>}
+        <h4 class="label-caps mt-7">What’s included</h4>
+        {d.includesFrom && <p class="mt-2 text-plum-soft">{d.includesFrom}</p>}
         <ul class="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
           {d.includes.map((item) => (
             <li class="flex gap-2.5">
@@ -90,17 +90,17 @@ const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
     {others.length > 0 && (
       <div class="mt-14 grid gap-x-16 gap-y-8 md:mt-16 lg:grid-cols-12">
         <div class="lg:col-span-4">
-          <h3 class="text-[1.5rem] md:text-[1.75rem]">Other ways to do it</h3>
-          <p class="mt-2 max-w-[34ch] text-plum-soft">Every package is delivered, styled and cleared away by us. Here’s what changes.</p>
+          <h3 class="text-[1.85rem] md:text-[2.15rem]">Other ways to do it</h3>
+          <p class="mt-3 max-w-[34ch] text-plum-soft">Every package is delivered, styled and cleared away by us. Here’s what changes.</p>
         </div>
         <ul class="divide-y divide-line border-y border-line lg:col-span-8" role="list">
           {others.map((o) => (
             <li class="grid gap-x-8 gap-y-3 py-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <div>
-                <h4 class="font-display text-[1.35rem] leading-tight">{o.data.name}</h4>
-                <p class="mt-1 text-[0.98rem] text-plum-soft">{o.data.summary}</p>
+                <h4 class="font-display text-[1.5rem] font-semibold leading-tight md:text-[1.6rem]">{o.data.name}</h4>
+                <p class="mt-1.5 text-[0.98rem] text-plum-soft">{o.data.summary}</p>
                 <p class="mt-2 text-[0.95rem]">
-                  <span class="font-semibold">Starting at {money(o.data.priceFrom)}</span>
+                  <span class="font-medium">Starting at {money(o.data.priceFrom)}</span>
                   <span class="text-plum-soft">{o.data.guestsLabel} · {hours(o.data.durationHours)} · {s.taxNote}</span>
                 </p>
               </div>
@@ -120,9 +120,9 @@ const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
 
     {addons.length > 0 && (
       <div class="mt-12 grid gap-x-16 gap-y-5 lg:grid-cols-12">
-        <h3 class="text-[1.5rem] md:text-[1.75rem] lg:col-span-4">Optional add-ons</h3>
+        <h3 class="text-[1.85rem] md:text-[2.15rem] lg:col-span-4">Optional add-ons</h3>
         <div class="lg:col-span-8">
-          <ul class="addons flex flex-wrap gap-x-6 gap-y-1.5 font-display text-[1.25rem] leading-snug md:gap-x-7 md:text-[1.4rem]" role="list">
+          <ul class="addons flex flex-wrap gap-x-6 gap-y-1.5 font-display text-[1.4rem] leading-snug md:gap-x-7 md:text-[1.5rem]" role="list">
             {addons.map((a) => (
               <li>
                 {a.data.name}

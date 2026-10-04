@@ -327,8 +327,16 @@ export function initBooking(root: HTMLElement): void {
         if (a && a.textContent !== msg) a.textContent = msg;
       }
     });
+    // Every listed problem is fixed (a new one, e.g. a clashing backup date, shows at its field and
+    // joins the summary on the next attempt): put the summary away rather than count "0 things".
+    const left = box.querySelectorAll('li[data-for]').length;
+    if (!left) {
+      box.hidden = true;
+      box.replaceChildren();
+      return;
+    }
     const title = box.querySelector('.bk-summary-title');
-    if (title) title.textContent = summaryTitle(box.querySelectorAll('li[data-for]').length);
+    if (title) title.textContent = summaryTitle(left);
   }
 
   // ───────────────────────── State ─────────────────────────

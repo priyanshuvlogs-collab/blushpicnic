@@ -43,11 +43,11 @@ const prices = new Map(
                 class="aspect-[4/5] w-full rounded-[14px] bg-petal-deep object-cover"
               />
               <div class="min-w-0">
-                <h3 class="text-[1.35rem] md:text-[1.5rem]">
+                <h3 class="text-[1.45rem] md:text-[1.55rem]">
                   <a href={occasionUrl(o)} class="related-link no-underline">{capitalize(picnicPhrasePlural(o))}</a>
                 </h3>
                 <p class="mt-1.5 text-[0.92rem] leading-snug text-plum-soft">
-                  Starting at {money(p.data.priceFrom)} {p.data.guestsLabel}, {s.taxNote}
+                  <span class="font-medium text-plum">Starting at {money(p.data.priceFrom)}</span> <span class="whitespace-nowrap">{p.data.guestsLabel},</span> <span class="whitespace-nowrap">{s.taxNote}</span>
                 </p>
                 <span aria-hidden="true" class="mt-2 inline-flex items-center gap-1.5 text-[0.95rem] font-semibold underline decoration-gold decoration-2 underline-offset-4 group-hover:decoration-plum">
                   Explore<Icon name="arrow-right" size={16} />
