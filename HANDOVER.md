@@ -280,6 +280,7 @@ GitHub → the repository → **Settings** → **Secrets and variables** → **A
 | `FTP_SERVER` | the "FTP IP (hostname)" from hPanel → Files → FTP Accounts (without `ftp://`) |
 | `FTP_USERNAME` | the "FTP username" from the same page |
 | `FTP_PASSWORD` | your new FTP password |
+| `SMTP_PASSWORD` | the password of the **support@blushpicnic.com** mailbox — the Deploy then writes `blush-config.php` for you, outside `public_html` (optional: you can also create that file by hand, step 5) |
 
 Secrets can't be read back, not even by you, so you'll never see the password on GitHub again.
 

@@ -9,6 +9,8 @@
 #      FTP_SERVER    the "FTP IP (hostname)" from hPanel → Files → FTP Accounts (the IP is fine)
 #      FTP_USERNAME  the FTP username from the same hPanel page
 #      FTP_PASSWORD  the FTP password (change it first if it was ever shared in a chat)
+#      SMTP_PASSWORD (optional) the support@ mailbox password: the deploy then writes
+#                    blush-config.php next to public_html, so booking emails work
 #    (Real values live only in these secrets and in your own deploy.env, never in a file in git.)
 #    Optional repository VARIABLES (same page, "Variables" tab):
 #      SITE_URL          https://blushpicnic.com (used by the checks after uploading)
@@ -174,6 +176,45 @@ jobs:
             **/node_modules/**
           timeout: 120000
           log-level: standard
+
+      # The booking form's private settings (blush-config.php) live in the folder ABOVE public_html,
+      # where the web can't reach them. When the SMTP_PASSWORD secret (the support@ mailbox
+      # password) is set, write a minimal config from it — every other setting has a default in
+      # public/api/lib/Config.php — and upload it next to public_html. The password only ever
+      # exists in the secret and on the server. Without the secret this step changes nothing, so a
+      # config made by hand in File Manager is left alone.
+      - name: Booking email settings (blush-config.php, outside public_html)
+        env:
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ vars.FTP_PORT || 21 }}
+          FTP_CERT_DOMAIN: ${{ vars.FTP_CERT_DOMAIN || 'hstgr.io' }}
+        run: |
+          if [ -z "$SMTP_PASSWORD" ]; then
+            echo "::warning::SMTP_PASSWORD secret not set: blush-config.php was not touched. Add the support@blushpicnic.com mailbox password as the SMTP_PASSWORD secret (or create the file in File Manager) to switch booking emails on."
+            exit 0
+          fi
+          umask 077
+          work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT
+          host="${FTP_SERVER#ftp://}"; host="${host#ftps://}"; host="${host%%/*}"
+          # Connect by IP but verify TLS against a name under the certificate's domain (checked above).
+          name="deploy-check.$FTP_CERT_DOMAIN"
+          case "$host" in "$FTP_CERT_DOMAIN"|*".$FTP_CERT_DOMAIN") name="$host" ;; esac
+          printf 'machine %s\nlogin "%s"\npassword "%s"\n' "$name" "$FTP_USERNAME" "$FTP_PASSWORD" > "$work/netrc"
+          ftp() { curl -sS --ssl-reqd --netrc-file "$work/netrc" --connect-to "$name:$FTP_PORT:$host:$FTP_PORT" "$@"; }
+          # Only write the file next to public_html, never anywhere else.
+          if ! ftp --list-only "ftp://$name:$FTP_PORT/" | tr -d '\r' | grep -qx 'public_html'; then
+            echo "::error::public_html isn't in the FTP login folder, so the right place for blush-config.php is unclear. Create it by hand in File Manager (domains/blushpicnic.com/blush-config.php)."
+            exit 1
+          fi
+          php -r 'echo "<?php\n// Written by the Deploy workflow from the SMTP_PASSWORD secret. Other settings: defaults.\nreturn ", var_export(["smtp_password" => getenv("SMTP_PASSWORD")], true), ";\n";' > "$work/blush-config.php"
+          php -l "$work/blush-config.php" >/dev/null
+          ftp -T "$work/blush-config.php" "ftp://$name:$FTP_PORT/blush-config.php"
+          ftp -Q "SITE CHMOD 600 blush-config.php" --list-only "ftp://$name:$FTP_PORT/" >/dev/null 2>&1 \
+            || echo "(couldn't set file permissions to 600; the file is outside public_html either way)"
+          echo "blush-config.php uploaded next to public_html."
 
       - name: Check the live site
         if: ${{ inputs.check_live_site }}
