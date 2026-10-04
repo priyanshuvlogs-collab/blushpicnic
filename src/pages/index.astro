@@ -12,6 +12,7 @@ import HomeFaq from '../components/home/HomeFaq.astro';
 import hero from '../assets/photos/hero.jpg';
 import { getSettings, getPackages, money } from '../lib/site';
 import { localBusiness, website, priceRange } from '../lib/schema';
+import { versioned } from '../lib/brand';
 
 const s = await getSettings();
 const pkgs = await getPackages();
@@ -23,7 +24,7 @@ const description = `Luxury picnic setups in Toronto and the GTA for proposals, 
 // While the hero is a stand-in (alt starts "Placeholder"), structured data uses the brand share image.
 const heroIsPlaceholder = /^placeholder\b/i.test(s.heroAlt.trim());
 const businessImage = heroIsPlaceholder
-  ? new URL('/og.jpg', s.url).href
+  ? new URL(versioned('/og.jpg'), s.url).href
   : new URL((await getImage({ src: hero, width: 1200, format: 'jpg' })).src, s.url).href;
 const jsonLd = [localBusiness(s, { image: businessImage, priceRange: priceRange(s, pkgs) }), website(s)];
 ---

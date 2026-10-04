@@ -6,6 +6,7 @@
 // recognise the brand at once. The mark is used as-is: never recoloured, stretched or cropped.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
+import { versioned } from '../lib/brand';
 import { getSettings, getPackages, getOccasions, occasionUrl, smsUrl, telUrl, mailUrl, money, type Occasion } from '../lib/site';
 
 type IconName = 'message' | 'phone' | 'mail';
@@ -73,7 +74,7 @@ const trackAttrs = (l: LinkItem) => ({
         <div class="arch-outline mx-auto mt-3 w-[9rem]">
           <div class="arch flex aspect-[4/5] items-end justify-center bg-cream pb-[1.4rem]">
             {/* viewBox 108.36 × 84.65; side clear space ≈ the width of the heart tag */}
-            <img src="/brand/logo-mark.svg" alt="" width="104" height="81" loading="eager" decoding="async" class="w-[6.5rem]" />
+            <img src={versioned('/brand/logo-mark.svg')} alt="" width="104" height="81" loading="eager" decoding="async" class="w-[6.5rem]" />
           </div>
         </div>
         <h1 id="links-title" class="mx-auto mt-7 max-w-[18ch] text-[2.1rem] leading-[1.08] sm:text-[2.4rem]">{s.tagline}</h1>

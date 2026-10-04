@@ -11,6 +11,7 @@ import Prose from '../components/pages/Prose.astro';
 import { fillTokensText } from '../components/pages/prose';
 import { getSettings, getPackages } from '../lib/site';
 import { breadcrumbs, businessRef } from '../lib/schema';
+import { versioned } from '../lib/brand';
 import aboutPhoto from '../assets/photos/about.jpg';
 
 const s = await getSettings();
@@ -99,18 +100,22 @@ const lede = d.lede ? await fillTokensText(d.lede) : undefined;
     <div class="container-x grid gap-5 md:gap-6 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-4">
         {/* The brand's badge (Logo Guide: "stickers, seals") signs the story, like a seal on a letter.
-            Decorative — the page already names the business. */}
+            Below 1024px its lettering would be smaller than the guide allows, so the basket mark
+            (the guide's small-space logo) stands in. Decorative — the page already names the business. */}
         <div class="flex items-center justify-between gap-6 lg:sticky lg:top-28 lg:block">
           <h2 id="story-title">Our story</h2>
-          <img
-            src="/brand/logo-badge.svg"
-            alt=""
-            width="144"
-            height="144"
-            loading="lazy"
-            decoding="async"
-            class="story-badge"
-          />
+          <picture class="block shrink-0">
+            <source media="(min-width: 1024px)" srcset={versioned('/brand/logo-badge.svg')} width="144" height="144" />
+            <img
+              src={versioned('/brand/logo-mark.svg')}
+              alt=""
+              width="104"
+              height="81"
+              loading="lazy"
+              decoding="async"
+              class="story-badge"
+            />
+          </picture>
         </div>
       </div>
       <div class="lg:col-span-8">
@@ -191,8 +196,7 @@ const lede = d.lede ? await fillTokensText(d.lede) : undefined;
 
 <style>
   .story-badge {
-    flex-shrink: 0;
-    width: 6rem;
+    width: 5.5rem;
     height: auto;
   }
   @media (min-width: 640px) { .story-badge { width: 6.5rem; } }

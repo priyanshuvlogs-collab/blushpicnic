@@ -7,6 +7,7 @@ import Footer from '../components/Footer.astro';
 import StickyBar from '../components/StickyBar.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
 import { getSettings } from '../lib/site';
+import { versioned, manifestUrl, THEME_COLOR } from '../lib/brand';
 
 interface Props {
   /** Full <title>. Aim for ≤ 60 characters, keyword first, brand last. */
@@ -15,7 +16,7 @@ interface Props {
   description: string;
   /** Social share image: an imported image, or a path under /public. Defaults to /og.jpg (1200×630). */
   image?: ImageMetadata | string;
-  /** Describes `image`. Defaults to a description of /og.jpg (the wordmark card). */
+  /** Describes `image`. Defaults to a description of /og.jpg (the logo card). */
   imageAlt?: string;
   /** JSON-LD objects for this page (see src/lib/schema.ts). */
   jsonLd?: Record<string, unknown>[];
@@ -44,9 +45,10 @@ const s = await getSettings();
 const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/').replace(/(.)\/$/, '$1');
 const canonical = new URL(path, s.url).href.replace(/\/$/, path === '/' ? '/' : '');
 
-// /og.jpg is the brand card (arch, wordmark, tagline, web address) made by `npm run brand`.
-const imageAlt = imageAltProp ?? `${s.name} — ${s.tagline}`;
-let ogImage = new URL('/og.jpg', s.url).href;
+// /og.jpg is the brand share card (the primary stacked logo on linen, in a blush frame), made by
+// `npm run brand` from public/brand/logo-stacked.svg. The logo's tagline is outlined artwork, not settings.yaml.
+const imageAlt = imageAltProp ?? `${s.name} logo: a picnic basket filled with flowers, with the words “${s.name}” and “Luxury Picnic Experiences”`;
+let ogImage = new URL(versioned('/og.jpg'), s.url).href;
 if (image && typeof image === 'string') ogImage = new URL(image, s.url).href;
 else if (image) {
   const img = await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
@@ -69,7 +71,7 @@ const ldJson = (data: Record<string, unknown>) => JSON.stringify(data).replace(/
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
-    <meta name="theme-color" content="#F6E6E1" />
+    <meta name="theme-color" content={THEME_COLOR} />
     <meta name="format-detection" content="telephone=no" />
 
     {/* @font-face rules and size-matched fallback faces (Astro Fonts API) */}
@@ -77,10 +79,11 @@ const ldJson = (data: Record<string, unknown>) => JSON.stringify(data).replace(/
     <Font cssVariable="--font-jost" />
     {fontPreloads.map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
 
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    {/* ?v= is each file's content hash (src/lib/brand.ts): a new logo gets a new URL, past every cache */}
+    <link rel="icon" href={versioned('/favicon.ico')} sizes="48x48" />
+    <link rel="icon" href={versioned('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={versioned('/apple-touch-icon.png')} />
+    <link rel="manifest" href={manifestUrl(s)} />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
     <meta property="og:site_name" content={s.name} />

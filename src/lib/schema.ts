@@ -1,6 +1,7 @@
 // JSON-LD builders. Pass the results to <BaseLayout jsonLd={[...]}>.
 import type { Settings, Package, Occasion } from './site';
 import { plainMd, money } from './site';
+import { versioned } from './brand';
 import { picnicPhrase, capitalize } from '../components/occasion/text';
 
 type Thing = Record<string, unknown>;
@@ -42,7 +43,7 @@ export function localBusiness(s: Settings, opts: { image?: string; priceRange?: 
     email: s.email,
     telephone: s.phoneE164,
     image: opts.image,
-    logo: `${s.url}/logo.png`,
+    logo: `${s.url}${versioned('/logo.png')}`,
     priceRange: opts.priceRange,
     address: { '@type': 'PostalAddress', addressLocality: 'Toronto', addressRegion: 'ON', addressCountry: 'CA' },
     sameAs: profiles(s),

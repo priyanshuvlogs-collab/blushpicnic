@@ -7,6 +7,7 @@
 // The image is decorative (alt=""); a visually hidden name follows it. Inside a link with an
 // aria-label the label wins; used bare the element still has a name.
 import { getSettings } from '../lib/site';
+import { versioned } from '../lib/brand';
 
 interface Props {
   variant?: 'horizontal' | 'stacked' | 'stacked-reversed';
@@ -17,11 +18,12 @@ interface Props {
   eager?: boolean;
 }
 
-// viewBox sizes of the files in public/brand/ (keep in step with scripts/make-brand.mjs)
+// viewBox sizes of the files in public/brand/ (keep in step with scripts/make-brand.mjs).
+// versioned() adds the file's content hash, so a replaced logo isn't hidden by the 30-day cache.
 const FILES = {
-  horizontal: { src: '/brand/logo-horizontal.svg', w: 291.48, h: 59.16 },
-  stacked: { src: '/brand/logo-stacked.svg', w: 288.36, h: 190.97 },
-  'stacked-reversed': { src: '/brand/logo-stacked-reversed.svg', w: 95.37, h: 63.38 },
+  horizontal: { src: versioned('/brand/logo-horizontal.svg'), w: 291.48, h: 59.16 },
+  stacked: { src: versioned('/brand/logo-stacked.svg'), w: 288.36, h: 190.97 },
+  'stacked-reversed': { src: versioned('/brand/logo-stacked-reversed.svg'), w: 95.37, h: 63.38 },
 } as const;
 
 const { variant = 'horizontal', width = 250, class: className = '', eager = false } = Astro.props;

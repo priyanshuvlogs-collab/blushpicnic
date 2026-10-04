@@ -2,6 +2,7 @@
 // 404 — built to /404.html (served by .htaccess / tests/router.php for unknown URLs). Not indexed.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
+import { versioned } from '../lib/brand';
 import { getSettings, getPackages, money, smsUrl, telUrl } from '../lib/site';
 
 const s = await getSettings();
@@ -46,7 +47,7 @@ const links = [
             <path d="M0 259.5h200" stroke="currentColor" stroke-width="1" class="text-blush-300" />
           </svg>
           <span class="nf-num font-display">404</span>
-          <img src="/brand/logo-mark.svg" alt="" width="108" height="84" decoding="async" class="nf-basket" />
+          <img src={versioned('/brand/logo-mark.svg')} alt="" width="108" height="84" decoding="async" class="nf-basket" />
         </div>
       </div>
     </div>

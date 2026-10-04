@@ -147,8 +147,9 @@ live_checks() {
   expect "Old .html address redirects" 301 "$SITE_URL/packages.html"
   # www → apex. Hostinger's CDN may switch http → https before our .htaccess runs, which makes
   # it two hops (http://www → https://www → https://apex); that's fine as long as it ends here.
-  local final hops
-  read -r final hops < <(curl -s -o /dev/null -L --max-redirs 5 -m 20 -w '%{url_effective} %{num_redirects}' "http://www.$SITE_HOST/packages" 2>/dev/null || true)
+  local final="" hops=""
+  # (|| true: read fails at end of input — e.g. curl got no answer — and set -e would end the checks here)
+  read -r final hops < <(curl -s -o /dev/null -L --max-redirs 5 -m 20 -w '%{url_effective} %{num_redirects}\n' "http://www.$SITE_HOST/packages" 2>/dev/null || true) || true
   if [[ "$final" == "$SITE_URL/packages" ]]; then ok "http://www.$SITE_HOST/packages → $final (${hops:-?} redirect(s))"
   else warn "http://www.$SITE_HOST/packages should end at $SITE_URL/packages (ended at \"${final:-nothing}\")"; CHECK_FAILS=$((CHECK_FAILS + 1)); fi
   local headers
@@ -530,6 +531,16 @@ step "Checking the build"
 for f in index.html 404.html .htaccess sitemap-index.xml robots.txt api/book.php api/form-schema.json api/.htaccess api/lib/.htaccess; do
   [[ -f "$DIST/$f" ]] || die "dist/$f is missing: the build is incomplete. Run ./deploy.sh again (without --skip-build)."
 done
+# Logo and icon files: every one a page or the manifest links to (?v= stripped), plus logo.png
+# (JSON-LD) and brand/logo-email.png (booking emails). Pages name them as plain strings, so the
+# build itself wouldn't notice one missing.
+while IFS= read -r f; do
+  [[ -f "$DIST/$f" ]] || die "dist/$f is missing: pages, the manifest, JSON-LD or the booking emails link to it (npm run brand makes it)."
+done < <({
+  grep -ohE '(src|srcset|href|content)="(https?://[^/"]+)?/(brand/[^"?# ]+|favicon\.(ico|svg)|apple-touch-icon\.png|icon-[0-9]+\.png|site\.webmanifest|og\.jpg|logo\.(png|svg))' "$DIST"/*.html | sed -E 's#^[a-z]+="(https?://[^/"]+)?/##' || true
+  grep -oE '"src": *"/[^"?#]+' "$DIST/site.webmanifest" 2>/dev/null | sed -E 's#^"src": *"/##' || true
+  printf '%s\n' favicon.ico favicon.svg apple-touch-icon.png icon-192.png icon-512.png site.webmanifest og.jpg logo.png brand/logo-email.png
+} | sort -u)
 leaks="$(cd "$DIST" && find . \( -name 'blush-config.php' -o -name 'deploy*.env' -o -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' -o -name 'id_rsa*' -o -name 'id_ed25519*' -o -name '*.eml' -o -path '*/.mail*' -o -path '*/blush-data*' \) -print)"
 [[ -z "$leaks" ]] || die "secret-looking files or saved emails in dist/ (never upload these into public_html):
 $leaks"

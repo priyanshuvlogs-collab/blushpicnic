@@ -5,10 +5,13 @@
 //   public/favicon.svg            app icon (scales in the browser tab)
 //   public/favicon.ico            16/32/48 px, from the simplified small mark
 //   public/apple-touch-icon.png   180 px app icon
-//   public/icon-192.png / icon-512.png, public/site.webmanifest
+//   public/icon-192.png / icon-512.png   manifest icons (/site.webmanifest is built by src/pages/site.webmanifest.ts)
 //   public/logo.png               600 px stacked logo (search engines, JSON-LD)
+//   public/logo.svg               horizontal logo as a plain SVG at a fixed URL (copy of brand/logo-horizontal.svg)
 //   public/brand/logo-email.png   horizontal logo for the booking emails (Gmail can't show SVG)
 //   public/og.jpg                 1200×630 social share image
+// Pages link these with a ?v=<content hash> (src/lib/brand.ts), so a regenerated file reaches
+// returning visitors, the CDN and Google straight away: no version number to bump by hand.
 import { readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 import sharp from 'sharp';
 
@@ -52,33 +55,13 @@ for (const [file, size] of [['public/apple-touch-icon.png', 180], ['public/icon-
   await raster('logo-app-icon', size).flatten({ background: C.blush100 }).png({ compressionLevel: 9 }).toFile(file);
 }
 
-writeFileSync(
-  'public/site.webmanifest',
-  JSON.stringify(
-    {
-      name: 'Blush Picnic',
-      short_name: 'Blush Picnic',
-      description: 'Luxury picnic setups in Toronto & the GTA',
-      start_url: '/',
-      display: 'browser',
-      background_color: C.blush100,
-      theme_color: C.blush100,
-      icons: [
-        { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-        { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
-      ],
-    },
-    null,
-    2,
-  ) + '\n',
-);
-
 // ── Logos as images ─────────────────────────────────────────────────────────
 await raster('logo-stacked', 600).png({ compressionLevel: 9 }).toFile('public/logo.png');
+copyFileSync(`${BRAND}/logo-horizontal.svg`, 'public/logo.svg');
 await raster('logo-horizontal', 560).flatten({ background: C.linen }).png({ compressionLevel: 9 }).toFile(`${BRAND}/logo-email.png`);
 
 // ── Social share image (1200×630): primary logo on linen, inside the guide's clear space ──
+// (its description is the default og:image:alt in src/layouts/BaseLayout.astro: keep them in step)
 const W = 1200, H = 630;
 const logo = await raster('logo-stacked', 640).png().toBuffer();
 const lm = await sharp(logo).metadata();
@@ -91,4 +74,4 @@ await sharp(frame)
   .jpeg({ quality: 86, mozjpeg: true })
   .toFile('public/og.jpg');
 
-console.log('Brand images written: favicon.svg/.ico, apple-touch-icon, icon-192/512, site.webmanifest, logo.png, brand/logo-email.png, og.jpg');
+console.log('Brand images written: favicon.svg/.ico, apple-touch-icon, icon-192/512, logo.png, logo.svg, brand/logo-email.png, og.jpg');
