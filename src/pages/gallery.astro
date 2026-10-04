@@ -9,6 +9,7 @@ import GalleryBrowser from '../components/gallery/GalleryBrowser.astro';
 import Lightbox from '../components/gallery/Lightbox.astro';
 import { getSettings, getGallery, igDmUrl } from '../lib/site';
 import { breadcrumbs } from '../lib/schema';
+import { isAiPhoto } from '../lib/photos';
 
 const s = await getSettings();
 const gallery = await getGallery();
@@ -16,8 +17,19 @@ const gallery = await getGallery();
 // Arriving filtered (/gallery?occasion=proposal): a tiny head script marks <html> before first paint
 // and these rules hide the other photos, so the full grid never flashes. gallery-filter.ts takes over.
 const ids = [...new Set(gallery.flatMap((g) => g.data.occasions))].filter((id) => /^[a-z0-9-]+$/.test(id));
+// The notes about AI and placeholder photos are hidden the same way for an occasion with none of them.
 const preFilterCss = ids
-  .map((id) => `html[data-gallery-occasion="${id}"] [data-gallery-item]:not([data-occasions~="${id}"]){display:none}`)
+  .map((id) => {
+    const sel = `html[data-gallery-occasion="${id}"]`;
+    const shown = gallery.filter((g) => g.data.occasions.includes(id));
+    const ai = shown.some((g) => isAiPhoto(g.data.image));
+    const placeholder = shown.some((g) => g.data.placeholder && !isAiPhoto(g.data.image));
+    return (
+      `${sel} [data-gallery-item]:not([data-occasions~="${id}"]){display:none}` +
+      (ai ? '' : `${sel} [data-gallery-ai]{display:none}`) +
+      (placeholder ? '' : `${sel} [data-gallery-placeholder]{display:none}`)
+    );
+  })
   .join('');
 
 const crumbs = [{ name: 'Gallery', path: '/gallery' }];

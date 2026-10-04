@@ -10,7 +10,7 @@ metaDescription: "A romantic anniversary picnic in Toronto or the GTA: candles, 
 h1: "An anniversary picnic that remembers where you started"
 lede: "Rose petals, candlelight, fresh flowers and a sign in your own words, set out in Toronto or anywhere in the GTA. Maybe even in the place where it all began."
 heroImage: "../../assets/photos/occasion-anniversary.jpg"
-heroAlt: "Garden picnic for two at dusk under string lights, with pink roses, candles, chocolates, pink lemonade and rose petals on a cream rug"
+heroAlt: "Romantic lakeside picnic table at moonrise with red and white roses, glowing candles, gold candlesticks and a gold heart on a red runner"
 highlights:
   - title: "Back to where it began"
     text: "Tell us where you met or had your first date. If it's a park, beach or backyard in the GTA, it could be where we set up."

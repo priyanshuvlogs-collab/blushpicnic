@@ -5,12 +5,6 @@
     "generated": "2026-10-04",
     "sha256": "1b44838d49053b6bd01640d3ebe611ec6a8abacb9cf1709b6057dd847b11b3e5"
   },
-  "hero.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A luxury styled picnic on green grass in a Toronto park at golden hour, the CN Tower softly out of focus in the distance. A low light-oak table with a cream linen runner, low arrangements of blush and dusty-rose roses, gold-rimmed glassware, ceramic plates, linen napkins and small candles. Blush, cream and sage velvet floor cushions on a large neutral rug, a woven rattan basket, pampas grass and a soft pink parasol. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "bdf2bc1c5574b251293118fc8c6a556de542b6f49a4b6ed3af6a4b284d2a115d"
-  },
   "pkg-proposal-romance.jpg": {
     "model": "grok-imagine-image",
     "prompt": "A romantic proposal picnic at sunset on a grassy waterfront park by Lake Ontario, Toronto skyline far in the background. A tall arch covered in blush, white and dusty-rose roses, a low table for two with a cream cloth, gold-rimmed glassware, many pillar candles in glass lanterns, a path of rose petals leading to blush velvet cushions on a cream rug. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
@@ -40,42 +34,6 @@
     "prompt": "Close-up detail of a picnic table for two: blush napkins tied with silk ribbon, gold cutlery, ceramic plates with fresh berries, small bud vases with garden roses, soft bokeh of green grass behind. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
     "generated": "2026-10-04",
     "sha256": "dc9c77a58dc0ce5e9ffd79f8669626443a7a7cf09b3d125636c325de117970ec"
-  },
-  "occasion-birthday.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A birthday picnic in a green Toronto park. A low light-oak table with cream linen, a small white two-tier cake decorated with fresh blush flowers and thin gold candles, cupcakes, pastel macarons, wrapped gift boxes with silk ribbons. An organic balloon garland in blush, cream, gold and sage behind the table, velvet floor cushions on a rug, pampas grass. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "36c68722b3cc01718f9f0be3e4a271bd80b50453debab024a45e40ffc34207b9"
-  },
-  "gallery-birthday-1.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A birthday picnic in a sunny backyard: a long low table for six, a wooden arch backdrop with a balloon garland in blush, cream and gold, a cake stand with cupcakes, gift boxes, floor cushions on rugs. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "0c91a68be45aca140957392615ccd65c9ae9572bd652e9755e1600426ba74a20"
-  },
-  "gallery-birthday-2.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "Close-up of a small white birthday cake decorated with fresh blush roses and thin gold candles on a glass cake stand, macarons and pastel plates around it. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "a3d5948efc9ef859264441a827cb98162a93415b36b84a80295969225f969dba"
-  },
-  "occasion-anniversary.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A romantic anniversary picnic in a backyard garden at dusk. A low table for two with a cream linen cloth, dusty-rose and blush roses, two short gold-rimmed tumblers of pink strawberry lemonade beside a clear glass water jug with a handle, a box of chocolates, many candles in glass hurricanes, warm string lights overhead, blush velvet cushions on a cream rug, scattered rose petals. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "54df2c6a7a18603cd72c678d477c8821238d77bf93ef20cf606b558c22a0cf18"
-  },
-  "gallery-anniversary-1.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "An anniversary picnic for two on a grassy bluff above Lake Ontario at sunset: a low table with deep rose and blush florals, candle lanterns, a cream throw and two velvet cushions. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "4ebfead8172ea4763f9dbd642d14cc012146ab0481afb15bdf42bc8e29428b34"
-  },
-  "gallery-anniversary-2.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "Close-up of an anniversary table: two short gold-rimmed tumblers of still pale pink rose lemonade with ice, a thin lemon slice and mint, chocolates, rose petals and a sealed cream envelope with a plain wax seal, in warm candlelight. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "156c0bdcf1ed1c2eee8e8fb244a27988815826c4f964cecce04eeed853d8f2bf"
   },
   "occasion-be-my-girlfriend.jpg": {
     "model": "grok-imagine-image",
