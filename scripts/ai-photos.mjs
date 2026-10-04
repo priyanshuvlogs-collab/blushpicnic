@@ -16,6 +16,7 @@
 // These are illustrations, not photos of real Blush Picnic events: the site labels them as AI
 // illustrations (alt text, gallery note). Never generate the About photo (it must be the owner),
 // and replace these with real photos via `npm run photos` as soon as they exist.
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -160,7 +161,26 @@ const only = opt('--only')
   .map((g) => new RegExp(`^${g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`));
 
 const log = existsSync(LOG) ? JSON.parse(readFileSync(LOG, 'utf8')) : {};
-const todo = JOBS.filter((j) => (!only.length || only.some((r) => r.test(j.file))) && (force || only.length || !log[j.file]));
+// Real photos swapped in with `npm run photos` are listed here and are never overwritten, and a gallery
+// photo is only made while its entry's file still exists (real photos remove the stand-in entries).
+const REAL = path.join(DIR, 'real-photos.json');
+const real = new Set(existsSync(REAL) ? JSON.parse(readFileSync(REAL, 'utf8')) : []);
+const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
+// A logged file whose bytes changed was replaced by hand (e.g. uploaded on GitHub): it's real too.
+for (const [file, meta] of Object.entries(log)) {
+  const full = path.join(DIR, file);
+  if (meta.sha256 && existsSync(full) && sha256(full) !== meta.sha256) real.add(file);
+}
+const wanted = (j) => !only.length || only.some((r) => r.test(j.file));
+const protectedJobs = JOBS.filter((j) => wanted(j) && real.has(j.file));
+if (protectedJobs.length) console.log(`Skipping real photos: ${protectedJobs.map((j) => j.file).join(', ')}`);
+const todo = JOBS.filter(
+  (j) =>
+    wanted(j) &&
+    !real.has(j.file) &&
+    (!j.file.startsWith('gallery-') || existsSync(path.join(DIR, j.file))) &&
+    (force || only.length || !log[j.file]),
+);
 
 if (!todo.length) {
   console.log('Nothing to do: every photo is generated already (use --force or --only to redo some).');
@@ -275,7 +295,7 @@ async function worker() {
     try {
       const buf = await generate(model, job.prompt, nearestRatio(meta.width, meta.height));
       const [w, h, sw, sh] = await save(buf, job.file, meta.width, meta.height);
-      log[job.file] = { model, prompt: job.prompt, generated: new Date().toISOString().slice(0, 10) };
+      log[job.file] = { model, prompt: job.prompt, generated: new Date().toISOString().slice(0, 10), sha256: sha256(out) };
       writeFileSync(LOG, JSON.stringify(log, null, 2) + '\n');
       done++;
       console.log(`✓ ${job.file}  ${w}×${h} (from ${sw}×${sh})`);

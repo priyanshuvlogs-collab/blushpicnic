@@ -10,12 +10,15 @@
 // first one top left.
 import { Picture } from 'astro:assets';
 import Icon from '../Icon.astro';
+import AiTag from '../AiTag.astro';
+import { isAiPhoto } from '../../lib/photos';
 import { picnicPhrase } from '../occasion/text';
 import { getSettings, getGallery, getOccasions, bookUrl, type GalleryItem } from '../../lib/site';
 
 const s = await getSettings();
 const items = (await getGallery()).filter((g) => g.data.showOnHome);
-const anyPlaceholder = items.some((g) => g.data.placeholder);
+const anyAi = items.some((g) => isAiPhoto(g.data.image));
+const anyPlaceholder = items.some((g) => g.data.placeholder && !isAiPhoto(g.data.image));
 const occasions = new Map((await getOccasions()).map((o) => [o.id, o]));
 // Fallback while an occasion page doesn't exist yet: "be-my-girlfriend" → "Be my girlfriend"
 const nameFor = (id: string) => occasions.get(id)?.data.name ?? id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
@@ -87,16 +90,19 @@ const pairs = [
                   const name = nameFor(occ);
                   return (
                     <figure>
-                      <Picture
-                        src={g.data.image}
-                        alt={g.data.alt}
-                        widths={[280, 420, 560, 720]}
-                        sizes="(min-width: 1280px) 266px, (min-width: 768px) 22vw, 46vw"
-                        formats={['avif', 'webp']}
-                        fallbackFormat="jpg"
-                        loading="lazy"
-                        class="w-full rounded-[14px] bg-petal-deep"
-                      />
+                      <div class="relative">
+                        <Picture
+                          src={g.data.image}
+                          alt={g.data.alt}
+                          widths={[280, 420, 560, 720]}
+                          sizes="(min-width: 1280px) 266px, (min-width: 768px) 22vw, 46vw"
+                          formats={['avif', 'webp']}
+                          fallbackFormat="jpg"
+                          loading="lazy"
+                          class="w-full rounded-[14px] bg-petal-deep"
+                        />
+                        <AiTag src={g.data.image} />
+                      </div>
                       <figcaption class="mt-1.5 flex flex-col text-[0.92rem] leading-snug lg:flex-row lg:items-center lg:justify-between lg:gap-3">
                         <span class="pt-1.5 text-plum-soft lg:pt-0">{name}</span>
                         <a
@@ -115,6 +121,11 @@ const pairs = [
         ))}
       </div>
 
+      {anyAi && (
+        <p class="placeholder-note mt-10 max-w-2xl">
+          <strong>AI illustrations —</strong> these images were created with AI to show the style of our setups. Photos from real Blush Picnic picnics are coming soon.
+        </p>
+      )}
       {anyPlaceholder && (
         <p class="placeholder-note mt-10 max-w-2xl">
           <strong>Placeholder —</strong> these are stand-in images until real photos are added to the gallery.

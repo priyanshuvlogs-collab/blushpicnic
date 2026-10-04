@@ -197,7 +197,12 @@ The server checks every request against this same file, so there's never any cod
 
 ### Photos
 
-Every photo on the site is a placeholder labelled "Placeholder" until you swap in your own.
+For now, the photos on the site are **AI illustrations** made with Grok (xAI) to show the style of
+your setups. They are not photos of real Blush Picnic events, and the site says so: each one has a
+small "AI illustration" tag, its description starts with "AI illustration:", and the gallery and
+the footer explain it. Replace them with your own photos as soon as you can (below): a real photo
+takes over its spot and the AI label disappears by itself. The About photo is still a placeholder,
+because it should be you.
 
 **The easy way: the photo tool (on a computer with the project).**
 
@@ -223,7 +228,7 @@ tool tells you how).
 3. **Describe each new photo.** The tool lists exactly where. Descriptions are read aloud to
    blind visitors and help Google, so write what's actually in the picture: *"Low table set for
    two with blush roses, candles and a 'Marry Me' sign on the grass at sunset"*. Replace any
-   description that still says "Placeholder". For gallery photos, the tool marks each one with
+   description that still says "Placeholder" or starts with "AI illustration:". For gallery photos, the tool marks each one with
    `# TODO: describe this photo`; delete that note once you've written it.
 
 **Without a computer (on GitHub):** open `src/assets/photos/`, click **Add file → Upload files**,
@@ -233,6 +238,13 @@ uploading, remove the location: on iPhone, tap Share → **Options** → turn of
 
 **Good photos:** at least 1600 pixels on the long side for the home, About and occasion photos;
 portrait (taller than wide) suits those spots best. Landscape works well for packages.
+
+**New AI illustrations** (only until you have real photos): on GitHub go to **Actions → Generate
+AI photos → Run workflow**. Leave the boxes empty to fill any missing ones, or type file names
+(e.g. `occasion-birthday.jpg, gallery-family-2.jpg`) to redo just those. It uses your
+`XAI_API_KEY` secret, never touches a real photo you've added, and commits the new images to the
+branch you ran it on; then describe each new image and publish. The scene for each photo is
+written in `scripts/ai-photos.mjs` (no people, no text, no alcohol or confetti).
 
 ### Reviews
 

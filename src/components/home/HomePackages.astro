@@ -7,6 +7,7 @@
 import Icon from '../Icon.astro';
 import PriceTag from '../PriceTag.astro';
 import PackagePhoto from '../packages/PackagePhoto.astro';
+import AiTag from '../AiTag.astro';
 import { getSettings, getPackages, bookUrl } from '../../lib/site';
 
 const s = await getSettings();
@@ -39,6 +40,7 @@ const bookLabel = (name: string) => `Book the ${name}${/picnic$/i.test(name) ? '
                   desktopSizes="(min-width: 1280px) 600px, 57vw"
                   class="aspect-[4/3] h-full w-full object-cover lg:absolute lg:inset-0 lg:aspect-auto"
                 />
+                <AiTag src={d.image} />
               </div>
               <div class="px-6 py-8 sm:px-10 sm:py-10 lg:col-span-7 lg:px-12 lg:py-12 xl:col-span-6 xl:px-14 xl:py-14">
                 <h3 id={`home-pkg-${p.id}`} class="text-[2.1rem] md:text-[2.6rem]">{d.name}</h3>
