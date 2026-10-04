@@ -10,7 +10,7 @@ metaDescription: "Say thank you with an appreciation picnic in Toronto or the GT
 h1: "Say thank you with an appreciation picnic"
 lede: "An appreciation picnic in Toronto or the GTA for the team that delivered, the mentor who believed in you, or the person who quietly holds everything together."
 heroImage: "../../assets/photos/occasion-appreciation.jpg"
-heroAlt: "Placeholder photo for an appreciation picnic in Toronto with a thank-you message on a letter board, florals and cushions"
+heroAlt: "AI illustration: garden tea-party picnic with a floral porcelain teapot, teacups and a gold tiered stand of scones and pastries, framed by pink and cream peonies"
 highlights:
   - title: "Their name, your message"
     text: "“Thank you, Coach” or one line from the whole team, set out on the letter board where they'll see it first."

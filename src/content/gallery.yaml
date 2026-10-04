@@ -8,7 +8,7 @@
 # ─────────────────────────────────────────────────────────────
 - id: picnic-date-1
   image: "../assets/photos/gallery-picnic-date-1.jpg"
-  alt: "Placeholder image for a picnic date for two setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: picnic date for two under a shady park tree, low oak table with pink roses, a cream parasol, two blush velvet cushions on a rug and a wicker basket"
   occasions: ["picnic-date"]
   order: 1
   showOnHome: true
@@ -16,7 +16,7 @@
 
 - id: birthday-1
   image: "../assets/photos/gallery-birthday-1.jpg"
-  alt: "Placeholder image for a birthday picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: backyard birthday picnic under a wooden arch with a blush, cream and gold balloon garland, low table set for six with cupcakes, gifts and floor cushions"
   occasions: ["birthday"]
   order: 2
   showOnHome: true
@@ -24,7 +24,7 @@
 
 - id: anniversary-1
   image: "../assets/photos/gallery-anniversary-1.jpg"
-  alt: "Placeholder image for an anniversary picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: anniversary picnic for two on a grassy bluff above Lake Ontario at sunset, oak table with peonies, gold lanterns and rose velvet cushions"
   occasions: ["anniversary"]
   order: 3
   showOnHome: true
@@ -32,7 +32,7 @@
 
 - id: be-my-girlfriend-1
   image: "../assets/photos/gallery-be-my-girlfriend-1.jpg"
-  alt: "Placeholder image for a Be My Girlfriend picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: be-my-girlfriend picnic at sunset with pink and red heart balloons, a cream teddy bear, roses in a vase and candles on a low oak table"
   occasions: ["be-my-girlfriend"]
   order: 4
   showOnHome: true
@@ -40,7 +40,7 @@
 
 - id: proposal-1
   image: "../assets/photos/gallery-proposal-1.jpg"
-  alt: "Placeholder image for a proposal picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: indoor proposal setup by tall arched windows, an oak table set for two, white and blush roses lining a cream rug and glowing pillar candles"
   occasions: ["proposal"]
   order: 5
   showOnHome: true
@@ -48,7 +48,7 @@
 
 - id: just-engaged-1
   image: "../assets/photos/gallery-just-engaged-1.jpg"
-  alt: "Placeholder image for an engagement celebration picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: just-engaged garden picnic under a pink and white rose arch, low oak table set with gold goblets and cutlery, pampas grass and cream floor cushions"
   occasions: ["just-engaged"]
   order: 6
   showOnHome: false
@@ -56,7 +56,7 @@
 
 - id: newly-married-1
   image: "../assets/photos/gallery-newly-married-1.jpg"
-  alt: "Placeholder image for a newlywed picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: newlywed picnic for two by a lake at golden hour, low wooden table with white roses and baby's breath, candles, a cream parasol and blush cushions"
   occasions: ["newly-married"]
   order: 7
   showOnHome: false
@@ -64,7 +64,7 @@
 
 - id: family-1
   image: "../assets/photos/gallery-family-1.jpg"
-  alt: "Placeholder image for a family picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: family picnic in a backyard, long low oak table of watermelon, berries and mango, sage, blush and cream cushions, and a cream bell tent behind"
   occasions: ["family"]
   order: 8
   showOnHome: false
@@ -72,7 +72,7 @@
 
 - id: appreciation-1
   image: "../assets/photos/gallery-appreciation-1.jpg"
-  alt: "Placeholder image for an appreciation picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: thank-you picnic in a park with a low oak table, pink-wrapped gifts at each place, blush and white florals, sage cushions and a cream parasol"
   occasions: ["appreciation"]
   order: 9
   showOnHome: false
@@ -80,7 +80,7 @@
 
 - id: retirement-1
   image: "../assets/photos/gallery-retirement-1.jpg"
-  alt: "Placeholder image for a retirement picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: retirement picnic by a calm lake at golden hour, a low oak table with pink peonies, sage cushions, a cream parasol and a wicker basket"
   occasions: ["retirement"]
   order: 10
   showOnHome: false
@@ -88,7 +88,7 @@
 
 - id: new-baby-1
   image: "../assets/photos/gallery-new-baby-1.jpg"
-  alt: "Placeholder image for a welcome baby picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: welcome-baby picnic in a sunny park, a low oak table with white flowers, pink-ribboned gifts, a wicker gift basket and a cream parasol"
   occasions: ["new-baby"]
   order: 11
   showOnHome: false
@@ -96,7 +96,7 @@
 
 - id: gender-reveal-1
   image: "../assets/photos/gallery-gender-reveal-1.jpg"
-  alt: "Placeholder image for a gender reveal picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: gender reveal picnic on a park lawn, oak table with pink and blue cupcakes and peony posies, sage and white cushions on rugs, a giant cream balloon"
   occasions: ["gender-reveal"]
   order: 12
   showOnHome: false
@@ -104,7 +104,7 @@
 
 - id: baby-shower-1
   image: "../assets/photos/gallery-baby-shower-1.jpg"
-  alt: "Placeholder image for a baby shower picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: baby shower picnic in a garden, oak table with sage runners, white rose bouquets, a tiered macaron stand, ribboned gifts and cream floor cushions"
   occasions: ["baby-shower"]
   order: 13
   showOnHome: true
@@ -112,7 +112,7 @@
 
 - id: announcement-1
   image: "../assets/photos/gallery-announcement-1.jpg"
-  alt: "Placeholder image for a pregnancy announcement picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: beach picnic for two to share pregnancy news, low oak table with peonies in a glass vase, a wicker basket, blush and sage cushions, pastel balloons"
   occasions: ["announcement"]
   order: 14
   showOnHome: false
@@ -120,7 +120,7 @@
 
 - id: bridal-shower-1
   image: "../assets/photos/gallery-bridal-shower-1.jpg"
-  alt: "Placeholder image for a bridal shower picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: bridal shower table in a bright room with arched windows, white rose arrangements, pearl strands, gold taper candles and blush velvet floor cushions"
   occasions: ["bridal-shower"]
   order: 15
   showOnHome: true
@@ -128,7 +128,7 @@
 
 - id: corporate-1
   image: "../assets/photos/gallery-corporate-1.jpg"
-  alt: "Placeholder image for a team picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: corporate picnic on a wide lawn with two long low tables, sage linen runners, white flowers in vases, blush floor cushions and cream umbrellas"
   occasions: ["corporate"]
   order: 16
   showOnHome: true
@@ -136,7 +136,7 @@
 
 - id: picnic-date-2
   image: "../assets/photos/gallery-picnic-date-2.jpg"
-  alt: "Placeholder image for a picnic date for two setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: picnic date table for two with blush linen napkins tied in ribbon bows, fresh berries on cream plates, gold cutlery and pink roses in bud vases"
   occasions: ["picnic-date"]
   order: 17
   showOnHome: false
@@ -144,7 +144,7 @@
 
 - id: birthday-2
   image: "../assets/photos/gallery-birthday-2.jpg"
-  alt: "Placeholder image for a birthday picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: birthday cake detail, a small white cake with blush roses and gold candles on a glass stand, with pastel pink, green and cream macarons around it"
   occasions: ["birthday"]
   order: 18
   showOnHome: false
@@ -160,7 +160,7 @@
 
 - id: be-my-girlfriend-2
   image: "../assets/photos/gallery-be-my-girlfriend-2.jpg"
-  alt: "Placeholder image for a Be My Girlfriend picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: be-my-girlfriend details, red and blush rose bouquet on cream linen beside chocolate-dipped strawberries and a gift box with a pink satin bow"
   occasions: ["be-my-girlfriend"]
   order: 20
   showOnHome: false
@@ -168,7 +168,7 @@
 
 - id: proposal-2
   image: "../assets/photos/gallery-proposal-2.jpg"
-  alt: "Placeholder image for a proposal picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: proposal detail of a diamond solitaire in an open blush velvet ring box on cream linen, with rose petals and candles in wooden holders"
   occasions: ["proposal"]
   order: 21
   showOnHome: false
@@ -184,7 +184,7 @@
 
 - id: newly-married-2
   image: "../assets/photos/gallery-newly-married-2.jpg"
-  alt: "Placeholder image for a newlywed picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: newlywed treat of a small white cake and blush-cream roses on a lace doily, beside two gold-rimmed glasses of creamy pink drink on an oak table"
   occasions: ["newly-married"]
   order: 23
   showOnHome: false
@@ -192,7 +192,7 @@
 
 - id: family-2
   image: "../assets/photos/gallery-family-2.jpg"
-  alt: "Placeholder image for a family picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: blush-pink kids' snack boxes of fruit, crackers and cookies beside small juice bottles with paper straws on a linen runner for a family picnic"
   occasions: ["family"]
   order: 24
   showOnHome: false
@@ -200,7 +200,7 @@
 
 - id: appreciation-2
   image: "../assets/photos/gallery-appreciation-2.jpg"
-  alt: "Placeholder image for an appreciation picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: appreciation tea with a two-tier oak stand of scones, pink macarons and iced petit fours beside a rose-patterned teapot and teacups on white linen"
   occasions: ["appreciation"]
   order: 25
   showOnHome: false
@@ -208,7 +208,7 @@
 
 - id: retirement-2
   image: "../assets/photos/gallery-retirement-2.jpg"
-  alt: "Placeholder image for a retirement picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: grazing board for a retirement picnic with brie, cheese cubes, red and green grapes, halved figs, crackers and thyme on sage and white linen"
   occasions: ["retirement"]
   order: 26
   showOnHome: false
@@ -216,7 +216,7 @@
 
 - id: new-baby-2
   image: "../assets/photos/gallery-new-baby-2.jpg"
-  alt: "Placeholder image for a welcome baby picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: new-baby keepsakes, pink knitted booties with gold flecks beside a white and blush rose posy and pastel pink, sage and cream macarons on linen"
   occasions: ["new-baby"]
   order: 27
   showOnHome: false
@@ -224,7 +224,7 @@
 
 - id: gender-reveal-2
   image: "../assets/photos/gallery-gender-reveal-2.jpg"
-  alt: "Placeholder image for a gender reveal picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: white buttercream cake on an oak stand ringed with pink and powder-blue macarons and daisies, a gender reveal dessert with a gold candlestick behind"
   occasions: ["gender-reveal"]
   order: 28
   showOnHome: false
@@ -232,7 +232,7 @@
 
 - id: baby-shower-2
   image: "../assets/photos/gallery-baby-shower-2.jpg"
-  alt: "Placeholder image for a baby shower picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: baby shower cupcakes with sage and cream swirled frosting beside a peony and ranunculus bouquet and small pink and white gifts tied in gold ribbon"
   occasions: ["baby-shower"]
   order: 29
   showOnHome: false
@@ -240,7 +240,7 @@
 
 - id: announcement-2
   image: "../assets/photos/gallery-announcement-2.jpg"
-  alt: "Placeholder image for a pregnancy announcement picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: tiny white knitted baby booties on cream linen beside a bouquet of blush peonies and eucalyptus, a soft detail for a pregnancy announcement picnic"
   occasions: ["announcement"]
   order: 30
   showOnHome: false
@@ -248,7 +248,7 @@
 
 - id: bridal-shower-2
   image: "../assets/photos/gallery-bridal-shower-2.jpg"
-  alt: "Placeholder image for a bridal shower picnic setup in Toronto (real photo coming soon)"
+  alt: "AI illustration: close-up of a bridal shower table with pastel macarons on a two-tier wooden stand, white and blush roses, gold cutlery and pearl napkin rings"
   occasions: ["bridal-shower"]
   order: 31
   showOnHome: false

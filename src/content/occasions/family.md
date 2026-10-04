@@ -10,7 +10,7 @@ metaDescription: "A styled family picnic in Toronto or the GTA: low table, cushi
 h1: "A family picnic where everyone gets to sit down"
 lede: "Grandparents in town, cousins visiting, or just a Sunday you want to make count. We set up a styled family picnic in Toronto or across the GTA, and pack it all away when you're done."
 heroImage: "../../assets/photos/occasion-family.jpg"
-heroAlt: "Placeholder photo for a family picnic in Toronto with a low table, cushions and games"
+heroAlt: "AI illustration: family picnic in a leafy park, a long low oak table with fruit, tiered sandwiches, a lemonade dispenser, wicker basket and sage and blush cushions"
 highlights:
   - title: "The whole family, one table"
     text: "A low table with rugs and cushions, tableware and florals, set for everyone from grandparents to little ones."

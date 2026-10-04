@@ -10,7 +10,7 @@ metaDescription: "Plan a retirement picnic in Toronto or the GTA, with custom si
 h1: "A retirement picnic as generous as the career behind it"
 lede: "Whether you're the colleague who volunteered or the family planning it quietly, a retirement picnic in Toronto or anywhere in the GTA gives years of hard work a proper farewell, styled, set up and cleared away for you."
 heroImage: "../../assets/photos/occasion-retirement.jpg"
-heroAlt: "Placeholder photo for a retirement picnic in Toronto with custom signage, a themed backdrop and a balloon garland"
+heroAlt: "AI illustration: long low oak table in a leafy garden with sage and cream runners, cheese and fruit boards, carafes of lemonade, florals and velvet cushions"
 highlights:
   - title: "Decades, in a single line"
     text: "“Happy retirement, Marguerite: 34 years, well spent.” Share the message or years of service in the booking form and we'll work it into the custom signage."

@@ -10,7 +10,7 @@ metaDescription: "A baby shower picnic in Toronto or the GTA, themed in your col
 h1: "A baby shower picnic the host gets to enjoy, too"
 lede: "You're throwing a baby shower in Toronto for someone you love. We take care of the styling, the backdrop and the pack-up, so you can spend the afternoon with the parent-to-be instead of your to-do list."
 heroImage: "../../assets/photos/occasion-baby-shower.jpg"
-heroAlt: "Placeholder photo for a baby shower picnic in Toronto with a themed backdrop, balloon garland and custom signage"
+heroAlt: "AI illustration: baby shower picnic in a park with a sage, cream and blush balloon arch over a low table of cupcakes, pastel gifts, white peonies and velvet cushions"
 highlights:
   - title: "Their palette, not a preset"
     text: "Soft sage, buttery yellow, classic blush: add the colours and vibe in the booking form and we'll plan the theme around them."

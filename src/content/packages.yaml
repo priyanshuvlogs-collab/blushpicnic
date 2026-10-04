@@ -30,7 +30,7 @@
     - "Games"
   bestFor: ["picnic-date", "birthday", "anniversary", "family", "appreciation", "just-engaged", "newly-married", "announcement"]
   image: "../assets/photos/pkg-signature.jpg"
-  imageAlt: "Placeholder photo for the Signature Picnic: low table with rugs, cushions and florals"
+  imageAlt: "AI illustration: picnic for two under a cream parasol in a leafy park, low oak table with blush roses, taper candles, lemonade carafe and a charcuterie board"
 
 - id: proposal-romance
   name: "Proposal & Romance"
@@ -52,7 +52,7 @@
     - "Fresh flower arrangement"
   bestFor: ["proposal", "be-my-girlfriend", "anniversary", "picnic-date"]
   image: "../assets/photos/pkg-proposal-romance.jpg"
-  imageAlt: "Placeholder photo for the Proposal & Romance package: picnic with a Marry Me sign, rose petals and candles"
+  imageAlt: "AI illustration: lakeside proposal setup at sunset, arch of blush and white roses, low table for two with candles, rose petals and blush velvet cushions"
   priceNote: "Family or friends joining after? We'll quote extra guests."
 
 - id: celebration
@@ -76,5 +76,5 @@
     - "Games"
   bestFor: ["birthday", "baby-shower", "gender-reveal", "bridal-shower", "retirement", "corporate", "family", "new-baby"]
   image: "../assets/photos/pkg-celebration.jpg"
-  imageAlt: "Placeholder photo for the Celebration package: themed group picnic with balloon garland and backdrop"
+  imageAlt: "AI illustration: long low oak table for a group in a park, blush florals, two-tier cake, fruit platters, velvet cushions and a blush, sage and gold balloon garland"
   priceNote: "More than 8 guests? We'll quote your group."
