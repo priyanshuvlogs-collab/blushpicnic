@@ -57,6 +57,26 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "Names on the certificate:"; for n in $names; do echo "  $n"; done
 
+          # A wildcard certificate (*.example.io) needs a real name under it that points to this
+          # server. If HOST is an IP, the reverse DNS name usually is one.
+          if [[ "$HOST" =~ ^[0-9.]+$ ]]; then
+            ptr="$(dig +short -x "$HOST" | sed 's/\.$//' | head -1)"
+            echo "Reverse DNS for $HOST: ${ptr:-none}"
+            if [ -n "$ptr" ]; then
+              back="$(dig +short A "$ptr" | head -5 | tr '\n' ' ')"
+              echo "  $ptr resolves to: $back"
+              match=no
+              for n in $names; do
+                case "$ptr" in $n) match=yes ;; esac
+              done
+              echo "  matches the certificate: $match"
+              {
+                echo ""
+                echo "Reverse DNS for \`$HOST\`: \`$ptr\` (resolves to $back; matches the certificate: **$match**)"
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+
       - name: Website status
         env:
           SITE: ${{ inputs.site }}
