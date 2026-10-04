@@ -57,6 +57,15 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "Names on the certificate:"; for n in $names; do echo "  $n"; done
 
+          # The same identity check the Deploy workflow runs before sending the password.
+          if timeout 30 openssl s_client -starttls ftp -connect "$HOST:21" -servername "$HOST" -verify_return_error \
+               -verify_hostname "deploy-check.hstgr.io" </dev/null 2>&1 | grep -q 'Verify return code: 0 (ok)'; then
+            echo "Deploy identity check (valid, trusted *.hstgr.io certificate): PASS"
+            echo "" >> "$GITHUB_STEP_SUMMARY"; echo "Deploy identity check: **PASS** — the FTP_SERVER secret can be \`$HOST\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::Deploy identity check: FAIL — the certificate isn't a valid *.hstgr.io one."
+          fi
+
           # A wildcard certificate (*.example.io) needs a real name under it that points to this
           # server. If HOST is an IP, the reverse DNS name usually is one.
           if [[ "$HOST" =~ ^[0-9.]+$ ]]; then

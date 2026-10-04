@@ -6,22 +6,22 @@
 #
 #  One-time setup (HANDOVER.md has screenshots-free, step-by-step instructions):
 #    Settings → Secrets and variables → Actions → New repository secret:
-#      FTP_SERVER    the FTP host NAME from hPanel → Files → FTP Accounts — the name on the
-#                    server's certificate (./deploy.sh --show-cert prints it), not the IP address
+#      FTP_SERVER    the "FTP IP (hostname)" from hPanel → Files → FTP Accounts (the IP is fine)
 #      FTP_USERNAME  the FTP username from the same hPanel page
 #      FTP_PASSWORD  the FTP password (change it first if it was ever shared in a chat)
 #    (Real values live only in these secrets and in your own deploy.env, never in a file in git.)
 #    Optional repository VARIABLES (same page, "Variables" tab):
 #      SITE_URL          https://blushpicnic.com (used by the checks after uploading)
 #      FTP_PORT          21
-#      FTP_TLS_SECURITY  strict (default) or loose — see "Encryption" below
+#      FTP_CERT_DOMAIN   hstgr.io (default) — the domain on Hostinger's FTP certificate
+#      FTP_TLS_SECURITY  strict or loose — normally worked out automatically, see "Encryption"
 #    Settings → Environments → production → Deployment branches: "Selected branches" → main
 #    (optionally also a required reviewer), so no other branch can reach the live site.
 #
-#  Encryption: the upload always uses FTPS (FTP over TLS) and, by default, checks that the
-#  server's certificate matches FTP_SERVER, so nobody in between can pose as Hostinger and
-#  catch the password. That's why FTP_SERVER must be the certificate's name: with an IP
-#  address the check fails. "loose" switches the check off; avoid it.
+#  Encryption: the upload always uses FTPS (FTP over TLS). Before sending the password, the
+#  workflow checks the server presents a valid, publicly trusted certificate for Hostinger's
+#  FTP domain (*.hstgr.io, or the FTP_CERT_DOMAIN variable), so nobody in between can pose as
+#  Hostinger. FTP_TLS_SECURITY (strict/loose) overrides the upload's own name check.
 #
 #  To deploy automatically on every push to main later, add this under "on:" (and keep
 #  workflow_dispatch so you can still deploy by hand):
@@ -71,6 +71,32 @@ jobs:
           if [ -n "$missing" ]; then
             echo "::error::Missing repository secrets:$missing. Add them in Settings → Secrets and variables → Actions (HANDOVER.md → One-time setup)."
             exit 1
+          fi
+
+      # Prove the FTP server is Hostinger's before sending the password: it must present a valid,
+      # publicly trusted certificate for FTP_CERT_DOMAIN (Hostinger's is *.hstgr.io). With an IP
+      # address in FTP_SERVER the upload can't match the name itself, so after this check it
+      # uploads with the name check off ("loose"); with a matching host name it stays "strict".
+      - name: Verify the FTP server's certificate
+        id: tls
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_PORT: ${{ vars.FTP_PORT || 21 }}
+          FTP_CERT_DOMAIN: ${{ vars.FTP_CERT_DOMAIN || 'hstgr.io' }}
+        run: |
+          host="${FTP_SERVER#ftp://}"; host="${host#ftps://}"; host="${host%%/*}"
+          out="$(timeout 30 openssl s_client -starttls ftp -connect "$host:$FTP_PORT" -servername "$host" \
+                   -verify_return_error -verify_hostname "deploy-check.$FTP_CERT_DOMAIN" </dev/null 2>&1 || true)"
+          if ! grep -q 'Verify return code: 0 (ok)' <<<"$out"; then
+            echo "$out" | grep -E 'subject=|issuer=|Verify return code|error' | head -5 || true
+            echo "::error::The FTP server didn't present a valid certificate for *.$FTP_CERT_DOMAIN — not uploading. Check FTP_SERVER (or the FTP_CERT_DOMAIN variable) and run the 'Check Hostinger connection' workflow."
+            exit 1
+          fi
+          echo "Certificate OK: valid and trusted for *.$FTP_CERT_DOMAIN"
+          if [[ "$host" == "$FTP_CERT_DOMAIN" || "$host" == *".$FTP_CERT_DOMAIN" ]]; then
+            echo "security=strict" >> "$GITHUB_OUTPUT"
+          else
+            echo "security=loose" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/checkout@v5
@@ -138,7 +164,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ vars.FTP_PORT || 21 }}
           protocol: ftps
-          security: ${{ vars.FTP_TLS_SECURITY || 'strict' }}
+          security: ${{ vars.FTP_TLS_SECURITY || steps.tls.outputs.security }}
           local-dir: ./dist/
           server-dir: ./public_html/
           dangerous-clean-slate: false
