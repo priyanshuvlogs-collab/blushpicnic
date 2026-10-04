@@ -10,7 +10,7 @@ metaDescription: "A gender reveal picnic in Toronto or the GTA with a themed bac
 h1: "A gender reveal picnic built around the big moment"
 lede: "Balloon pop, cake cut or something else entirely: you choose how to reveal, and we style the backdrop, signage and setting around it, anywhere in Toronto and the GTA."
 heroImage: "../../assets/photos/occasion-gender-reveal.jpg"
-heroAlt: "Placeholder photo for a gender reveal picnic in Toronto with a themed backdrop, balloon garland and custom signage"
+heroAlt: "AI illustration: backyard gender reveal picnic with a pink, powder-blue and cream balloon garland over a low table, a white cake topped with macarons and white florals"
 highlights:
   - title: "Pick your reveal"
     text: "A balloon pop, a cake cut, smoke or something else: tell us how you'd like to reveal in the booking form, or say “Not sure yet” and we'll talk it through."

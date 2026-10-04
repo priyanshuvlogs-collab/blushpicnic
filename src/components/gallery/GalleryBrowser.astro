@@ -10,6 +10,8 @@
 //   occasion, with or without JavaScript).
 import { Picture, getImage } from 'astro:assets';
 import Icon from '../Icon.astro';
+import AiTag from '../AiTag.astro';
+import { isAiPhoto } from '../../lib/photos';
 import { getGallery, getOccasions, bookUrl, occasionUrl, type Occasion } from '../../lib/site';
 import { picnicPhrase, picnicPhrasePlural } from '../occasion/text';
 import { columnStarts } from './columns';
@@ -48,20 +50,21 @@ const items = await Promise.all(
     };
   }),
 );
-const anyPlaceholder = gallery.some((g) => g.data.placeholder);
+// AI illustrations (src/lib/photos.ts) get their own note; any other stand-in keeps the placeholder note.
+const anyAi = gallery.some((g) => isAiPhoto(g.data.image));
+const anyPlaceholder = gallery.some((g) => g.data.placeholder && !isAiPhoto(g.data.image));
 const total = items.length;
 
 // Only the first photo of each column is on screen when the page opens (CSS columns fill top to
 // bottom), so those load eagerly and the rest lazily. columnStarts() re-runs the browser's column
 // balancing from each photo's shape; the numbers mirror the CSS below (caption row, gaps, columns).
-// On phones the two column tops are the likely LCP, so they also get fetchpriority="high".
+// No fetchpriority="high": the page's LCP is the intro text (also on phones), whose fonts go first.
 const ratios = gallery.map((g) => g.data.image.height / g.data.image.width);
 const CAPTION = 44; // .gallery-cap min-height (2.75rem)
 const phone = (viewport: number) => columnStarts(ratios, { cols: 2, viewport, colGap: viewport < 640 ? 12 : 20, rowGap: 12, below: CAPTION });
 const tablet = (viewport: number) => columnStarts(ratios, { cols: 3, viewport, colGap: 20, rowGap: 20, below: CAPTION });
 const desktop = (viewport: number) => columnStarts(ratios, { cols: 4, viewport, colGap: 24, rowGap: 20, below: CAPTION });
-const high = new Set([0, ...[360, 390, 430].flatMap(phone)]);
-const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024, 1279].flatMap(tablet), ...[1280, 1440].flatMap(desktop)]);
+const eager = new Set([0, ...[320, 360, 390, 430, 640, 767].flatMap(phone), ...[768, 1024, 1279].flatMap(tablet), ...[1280, 1440].flatMap(desktop)]);
 ---
 <div class="gallery" data-gallery>
   <div class="gallery-toolbar" data-gallery-filters>
@@ -92,6 +95,11 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
     <p class="gallery-status" role="status" data-gallery-status>Showing all {total} photos</p>
   </div>
 
+  {anyAi && (
+    <p class="placeholder-note gallery-note">
+      <strong>AI illustrations —</strong> these images were created with AI to show the style of our setups. Photos from real Blush Picnic picnics are coming soon.
+    </p>
+  )}
   {anyPlaceholder && (
     <p class="placeholder-note gallery-note" data-gallery-placeholder>
       <strong>Placeholder —</strong> these images are stand-ins until real photos are added.
@@ -123,10 +131,10 @@ const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024
             formats={['avif', 'webp']}
             fallbackFormat="jpg"
             loading={eager.has(i) ? 'eager' : 'lazy'}
-            fetchpriority={high.has(i) ? 'high' : undefined}
             decoding="async"
             class="gallery-img"
           />
+          <AiTag src={g.data.image} class="ai-tag-sm" />
           <span class="gallery-zoom" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" /></svg>
           </span>

@@ -22,7 +22,8 @@ const preFilterCss = ids
 
 const crumbs = [{ name: 'Gallery', path: '/gallery' }];
 const title = 'Luxury Picnic Gallery | Toronto & the GTA | Blush Picnic';
-const description = `Browse luxury picnic setups across ${s.serviceArea} by occasion: proposals, birthdays, showers, dates and more. See a look you love? Book it in minutes.`;
+// Worded so it doesn't claim the photos are of real events (for now they're AI illustrations).
+const description = `Picnic styles for proposals, birthdays, showers, dates and more, set up anywhere in ${s.serviceArea}. See a look you love? Book it in minutes.`;
 ---
 <BaseLayout {title} {description} jsonLd={[breadcrumbs(s, crumbs)]}>
   <Fragment slot="head">
@@ -44,7 +45,7 @@ const description = `Browse luxury picnic setups across ${s.serviceArea} by occa
       <h1 id="page-title" class="max-w-[13ch] lg:col-span-6">Find the look for your moment</h1>
       <div class="lg:col-span-6 lg:pb-2">
         <p class="measure text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">
-          Luxury picnic setups from across {s.serviceArea} — proposals, birthdays, showers and slow afternoons for two. Open any photo and tap “Book this look”: your request starts there, styled in your colours, with your words.
+          Picnic looks for every occasion — proposals, birthdays, showers and slow afternoons for two, styled anywhere in {s.serviceArea}. Open any photo and tap “Book this look”: your request starts there, styled in your colours, with your words.
         </p>
       </div>
     </div>

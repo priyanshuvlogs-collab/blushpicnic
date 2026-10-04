@@ -10,7 +10,7 @@ metaDescription: "Share your news with a pregnancy announcement picnic in Toront
 h1: "A pregnancy announcement picnic for your big news"
 lede: "A pregnancy announcement picnic in Toronto or anywhere in the GTA: your due date on the letter board, florals, soft cushions, and the people you can't wait to tell sitting right across from you."
 heroImage: "../../assets/photos/occasion-announcement.jpg"
-heroAlt: "Placeholder photo for a pregnancy announcement picnic in Toronto with a letter board message, florals and cushions"
+heroAlt: "AI illustration: golden-hour park picnic for a pregnancy announcement, with tiny white baby shoes beside pink peonies on a low table, blush balloons and velvet cushions"
 highlights:
   - title: "The board says it first"
     text: "“Baby Okafor, arriving spring 2027”, or a line only your family would decode. It's waiting on the letter board when they sit down."

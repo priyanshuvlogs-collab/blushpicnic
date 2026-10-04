@@ -314,6 +314,23 @@ if (!dryRun) {
   for (const f of deleteFiles) unlinkSync(f);
   for (const a of added) writeAtomic(path.join(PHOTOS, a.file), a.job.data);
   if (newYaml !== yamlText) writeAtomic(GALLERY_YAML, newYaml);
+  // Real photos take over from AI illustrations: drop them from src/assets/photos/ai-photos.json
+  // (so their "AI illustration" labels disappear) and list them in real-photos.json, which
+  // `npm run ai-photos` never overwrites.
+  const real = [...done.filter((d) => d.kind === 'slot').map((j) => `${j.slot}.jpg`), ...added.map((a) => a.file)];
+  const aiLog = path.join(PHOTOS, 'ai-photos.json');
+  if (existsSync(aiLog)) {
+    const ai = JSON.parse(readFileSync(aiLog, 'utf8'));
+    const gone = [...real, ...deleteFiles.map((f) => path.basename(f))].filter((f) => f in ai);
+    for (const f of gone) delete ai[f];
+    if (gone.length) writeAtomic(aiLog, JSON.stringify(ai, null, 2) + '\n');
+  }
+  if (real.length) {
+    const realList = path.join(PHOTOS, 'real-photos.json');
+    const known = new Set(existsSync(realList) ? JSON.parse(readFileSync(realList, 'utf8')) : []);
+    for (const f of real) known.add(f);
+    writeAtomic(realList, JSON.stringify([...known].sort(), null, 2) + '\n');
+  }
 }
 
 // ── Report ───────────────────────────────────────────────────────────────────
@@ -370,7 +387,7 @@ for (const j of slotJobs) {
 }
 for (const a of added) todo.push(`src/content/gallery.yaml → ${a.id} → alt (marked "# TODO: describe this photo")`);
 if (todo.length) {
-  say('Next: describe what each new photo shows (its "alt text"). Replace any text that says "Placeholder".');
+  say('Next: describe what each new photo shows (its "alt text"). Replace any text that says "Placeholder" or "AI illustration".');
   say('Say what’s in it, e.g. "Low picnic table with pink roses and candles under a willow tree at sunset".');
   for (const t of todo) say(`  • ${t}`);
   say();

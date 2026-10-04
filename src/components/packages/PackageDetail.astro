@@ -4,6 +4,7 @@
 import Icon from '../Icon.astro';
 import PriceTag from '../PriceTag.astro';
 import PackagePhoto from './PackagePhoto.astro';
+import AiTag from '../AiTag.astro';
 import { getOccasions, occasionUrl, bookUrl, money, hours, smsUrl, getSettings, type Package, type Occasion } from '../../lib/site';
 
 interface Props {
@@ -30,13 +31,14 @@ const headingId = `pkg-${pkg.id}-title`;
 ---
 <section id={pkg.id} aria-labelledby={headingId} class:list={['section-y scroll-mt-20', tone === 'cream' && 'bg-cream']}>
   <div class="container-x grid items-start gap-x-14 gap-y-10 lg:grid-cols-12">
-    <div class:list={['lg:sticky lg:top-28 lg:col-span-6', reverse && 'lg:order-2 lg:col-start-7']}>
+    <div class:list={['relative lg:sticky lg:top-28 lg:col-span-6', reverse && 'lg:order-2 lg:col-start-7']}>
       <PackagePhoto
         src={d.image}
         alt={d.imageAlt}
         desktopSizes="(min-width: 1280px) 540px, 45vw"
         class="aspect-[4/3] w-full rounded-[var(--radius-card)] bg-petal-deep object-cover lg:aspect-[4/5]"
       />
+      <AiTag src={d.image} />
     </div>
 
     <div class:list={['lg:col-span-6', reverse ? 'lg:order-1 lg:pr-4' : 'lg:pl-4']}>

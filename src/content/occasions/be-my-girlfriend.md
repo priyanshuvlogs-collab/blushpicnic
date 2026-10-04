@@ -10,7 +10,7 @@ metaDescription: "Ask her to be your girlfriend with a styled picnic in Toronto 
 h1: "Make it official with a Be My Girlfriend picnic"
 lede: "You already know how you feel. Let the sign say it: a styled picnic in Toronto with “Be My Girlfriend?” in your words, rose petals, candles and flowers chosen with her in mind, ready before she arrives."
 heroImage: "../../assets/photos/occasion-be-my-girlfriend.jpg"
-heroAlt: "Placeholder photo for a Be My Girlfriend picnic in Toronto with a custom sign, rose petals and candles"
+heroAlt: "AI illustration: be-my-girlfriend picnic for two in a park, blush and red heart balloons over a low oak table with roses and chocolate-dipped strawberries"
 highlights:
   - title: "The sign does the talking"
     text: "“Be My Girlfriend?” or a line that sounds more like you. If the words get stuck, they're already written down."

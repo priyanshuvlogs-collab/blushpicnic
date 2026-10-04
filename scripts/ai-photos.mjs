@@ -16,6 +16,7 @@
 // These are illustrations, not photos of real Blush Picnic events: the site labels them as AI
 // illustrations (alt text, gallery note). Never generate the About photo (it must be the owner),
 // and replace these with real photos via `npm run photos` as soon as they exist.
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -27,12 +28,14 @@ const QUALITY = 82;
 const PARALLEL = 3;
 
 // Shared look for every image: the Logo Guide palette, no people (no invented clients),
-// no text (models garble it), nothing the policies rule out (alcohol, confetti in parks).
+// no text (models garble it), nothing the policies rule out (alcohol, confetti in parks). Drinks are
+// described positively (lemonade/water in tumblers or jugs): naming bottles or flutes tends to add them.
 const STYLE =
   'Photorealistic editorial lifestyle photograph for a luxury picnic styling company. ' +
   'Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. ' +
   'Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. ' +
-  'No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.';
+  'Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. ' +
+  'No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.';
 
 // [file, prompt] — the scene only; STYLE is appended.
 const HERO = [
@@ -48,7 +51,7 @@ const PACKAGES = [
 // occasion id → [occasion hero, gallery 1 (another setting), gallery 2 (close-up detail)]
 const OCCASIONS = {
   'picnic-date': [
-    'An intimate picnic date for two on a quiet sandy beach in Toronto at golden hour, calm lake behind. A low wooden table with cream linen, a small vase of blush peonies, plates of strawberries and macarons, a glass carafe of pink lemonade, two blush velvet cushions on a cream rug, a rattan basket and candle lanterns.',
+    'An intimate picnic date for two on a quiet sandy beach in Toronto at golden hour, calm lake behind. A low wooden table with cream linen, a small vase of blush peonies, exactly two place settings side by side, each a plate of strawberries and macarons, a clear glass jug of cloudy pink lemonade with lemon slices and two short tumblers of it, two blush velvet cushions on a cream rug, a rattan basket and candle lanterns.',
     'A picnic for two under a large maple tree in a city park, dappled afternoon light. A low table with blush florals, a cream parasol, two velvet cushions on a neutral rug, a woven basket and a light throw blanket.',
     'Close-up detail of a picnic table for two: blush napkins tied with silk ribbon, gold cutlery, ceramic plates with fresh berries, small bud vases with garden roses, soft bokeh of green grass behind.',
   ],
@@ -58,9 +61,9 @@ const OCCASIONS = {
     'Close-up of a small white birthday cake decorated with fresh blush roses and thin gold candles on a glass cake stand, macarons and pastel plates around it.',
   ],
   anniversary: [
-    'A romantic anniversary picnic in a backyard garden at dusk. A low table for two with a cream linen cloth, dusty-rose and blush roses, gold-rimmed glasses of sparkling juice, a box of chocolates, many candles in glass hurricanes, warm string lights overhead, blush velvet cushions on a cream rug, scattered rose petals.',
+    'A romantic anniversary picnic in a backyard garden at dusk. A low table for two with a cream linen cloth, dusty-rose and blush roses, two short gold-rimmed tumblers of pink strawberry lemonade beside a clear glass water jug with a handle, a box of chocolates, many candles in glass hurricanes, warm string lights overhead, blush velvet cushions on a cream rug, scattered rose petals.',
     'An anniversary picnic for two on a grassy bluff above Lake Ontario at sunset: a low table with deep rose and blush florals, candle lanterns, a cream throw and two velvet cushions.',
-    'Close-up of an anniversary table: two gold-rimmed glasses of sparkling juice, chocolates, rose petals and a sealed cream envelope with a wax seal, in warm candlelight.',
+    'Close-up of an anniversary table: two short gold-rimmed tumblers of still pale pink rose lemonade with ice, a thin lemon slice and mint, chocolates, rose petals and a sealed cream envelope with a plain wax seal, in warm candlelight.',
   ],
   'be-my-girlfriend': [
     'A sweet romantic picnic for two in a Toronto park: a low table with a bouquet of red and blush roses, a cluster of heart-shaped balloons in blush and red tied beside the table, chocolate-dipped strawberries, a cream rug and velvet cushions, soft golden light.',
@@ -75,7 +78,7 @@ const OCCASIONS = {
   'just-engaged': [
     'An engagement celebration picnic in a Toronto park: a balloon garland in cream, champagne gold and blush, a long low table for eight with white and blush florals, a small white cake, coupe glasses of sparkling juice, velvet floor cushions.',
     'A just-engaged celebration picnic in a garden: a round arch framed in white florals and greenery, a low table with gold accents, cream cushions and pampas grass.',
-    'Close-up of gold-rimmed coupe glasses of sparkling juice, a small white cake topped with fresh flowers, macarons and a cream linen napkin with a gold napkin ring.',
+    'Close-up of two short gold-rimmed tumblers of cloudy pink lemonade with a strawberry slice and mint beside a small glass jug of pink lemonade, a small white cake topped with fresh blush roses, macarons and a cream linen napkin with a gold napkin ring.',
   ],
   'newly-married': [
     'An elegant newlywed picnic in a Toronto garden: white and cream florals with soft greenery, a small two-tier white cake, gold cutlery, cream linen, sage and cream velvet cushions and a lace parasol.',
@@ -123,9 +126,9 @@ const OCCASIONS = {
     'Close-up of a bridal shower table: white garden roses, macarons, a tiered cake stand, gold cutlery and pearl details.',
   ],
   corporate: [
-    'A team picnic for twelve in a Toronto park with office towers softly in the background: a long low table with sage and cream linens, individually boxed gourmet lunches, fruit platters, glass dispensers of infused water and floor cushions, bright midday light.',
+    'A team picnic for twelve in a Toronto park with office towers softly in the background: a long low table with sage and cream linens, individually boxed gourmet lunches, fruit platters, three large clear glass jar dispensers of lemon-mint infused water with short clear tumblers, and floor cushions, bright midday light.',
     'A corporate picnic on a green lawn: two long low tables with sage linens and white flowers, rows of cushions and cream parasols.',
-    'Close-up of neatly arranged boxed gourmet lunches with sandwiches and salads on a sage linen runner, glass bottles of sparkling water.',
+    'Close-up of open, completely plain cream lunch boxes with the lids removed, holding gourmet sandwiches, with salads in blush bowls on a sage linen runner over a light oak table, and glass jugs of water with lemon slices.',
   ],
 };
 
@@ -160,7 +163,26 @@ const only = opt('--only')
   .map((g) => new RegExp(`^${g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`));
 
 const log = existsSync(LOG) ? JSON.parse(readFileSync(LOG, 'utf8')) : {};
-const todo = JOBS.filter((j) => (!only.length || only.some((r) => r.test(j.file))) && (force || only.length || !log[j.file]));
+// Real photos swapped in with `npm run photos` are listed here and are never overwritten, and a gallery
+// photo is only made while its entry's file still exists (real photos remove the stand-in entries).
+const REAL = path.join(DIR, 'real-photos.json');
+const real = new Set(existsSync(REAL) ? JSON.parse(readFileSync(REAL, 'utf8')) : []);
+const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
+// A logged file whose bytes changed was replaced by hand (e.g. uploaded on GitHub): it's real too.
+for (const [file, meta] of Object.entries(log)) {
+  const full = path.join(DIR, file);
+  if (meta.sha256 && existsSync(full) && sha256(full) !== meta.sha256) real.add(file);
+}
+const wanted = (j) => !only.length || only.some((r) => r.test(j.file));
+const protectedJobs = JOBS.filter((j) => wanted(j) && real.has(j.file));
+if (protectedJobs.length) console.log(`Skipping real photos: ${protectedJobs.map((j) => j.file).join(', ')}`);
+const todo = JOBS.filter(
+  (j) =>
+    wanted(j) &&
+    !real.has(j.file) &&
+    (!j.file.startsWith('gallery-') || existsSync(path.join(DIR, j.file))) &&
+    (force || only.length || !log[j.file]),
+);
 
 if (!todo.length) {
   console.log('Nothing to do: every photo is generated already (use --force or --only to redo some).');
@@ -275,7 +297,7 @@ async function worker() {
     try {
       const buf = await generate(model, job.prompt, nearestRatio(meta.width, meta.height));
       const [w, h, sw, sh] = await save(buf, job.file, meta.width, meta.height);
-      log[job.file] = { model, prompt: job.prompt, generated: new Date().toISOString().slice(0, 10) };
+      log[job.file] = { model, prompt: job.prompt, generated: new Date().toISOString().slice(0, 10), sha256: sha256(out) };
       writeFileSync(LOG, JSON.stringify(log, null, 2) + '\n');
       done++;
       console.log(`✓ ${job.file}  ${w}×${h} (from ${sw}×${sh})`);

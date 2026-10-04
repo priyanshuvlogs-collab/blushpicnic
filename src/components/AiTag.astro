@@ -1,0 +1,15 @@
+---
+// A small "AI illustration" tag in the corner of a photo that scripts/ai-photos.mjs generated
+// (see src/lib/photos.ts). Renders nothing for real photos, so it disappears by itself once
+// `npm run photos` swaps a real one in. The parent must be position: relative. The tag is only
+// visual (aria-hidden): the photo's alt text already starts with "AI illustration:".
+import type { ImageMetadata } from 'astro';
+import { isAiPhoto } from '../lib/photos';
+
+interface Props {
+  src: ImageMetadata;
+  class?: string;
+}
+const { src, class: className } = Astro.props;
+---
+{isAiPhoto(src) && <span class:list={['ai-tag', className]} aria-hidden="true">AI illustration</span>}
