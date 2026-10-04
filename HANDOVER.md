@@ -198,10 +198,12 @@ The server checks every request against this same file, so there's never any cod
 ### Photos
 
 For now, the photos on the site are **AI illustrations** made with Grok (xAI) to show the style of
-your setups. They are not photos of real Blush Picnic events, and the site says so: each one has a
-small "AI illustration" tag, its description starts with "AI illustration:", and the gallery and
-the footer explain it. Replace them with your own photos as soon as you can (below): a real photo
-takes over its spot and the AI label disappears by itself. The About photo is still a placeholder,
+your setups. They are not photos of real Blush Picnic events, and the site says so: the larger ones
+carry a small "AI illustration" tag, every description starts with "AI illustration:", the gallery,
+occasion pages and /occasions explain it, and the footer covers the small thumbnails. Link previews
+(WhatsApp, Facebook…) and Google get your logo image instead of an AI one. Replace them with your
+own photos as soon as you can (below): a real photo takes over its spot, the AI label disappears by
+itself, and it's used in link previews and for Google too. The About photo is still a placeholder,
 because it should be you.
 
 **The easy way: the photo tool (on a computer with the project).**

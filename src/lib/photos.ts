@@ -28,3 +28,14 @@ export const isAiPhoto = (img: ImageMetadata) => stems.has(stem(img));
 
 /** True when any AI illustration is still in use, for site-wide notes. */
 export const anyAiPhotos = () => stems.size > 0;
+
+// Real photos so far: those `npm run photos` swapped in (real-photos.json), and generated files
+// replaced any other way.
+const REAL = join(DIR, 'real-photos.json');
+const realPhotos = [
+  ...(existsSync(REAL) ? (JSON.parse(readFileSync(REAL, 'utf8')) as string[]) : []),
+  ...Object.keys(log).filter((file) => !stems.has(file.replace(/\.[^.]+$/, ''))),
+].filter((file) => existsSync(join(DIR, file)));
+
+/** True while AI illustrations are in use and no real photo has replaced one yet ("the photos on this site are AI"). */
+export const onlyAiPhotos = () => stems.size > 0 && realPhotos.length === 0;

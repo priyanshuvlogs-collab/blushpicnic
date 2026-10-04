@@ -5,6 +5,7 @@
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
+import AiTag from '../components/AiTag.astro';
 import { getSettings, getOccasions, money, smsUrl, telUrl, mailUrl } from '../lib/site';
 import { picnicPhrase } from '../components/occasion/text';
 import hero from '../assets/photos/hero.jpg';
@@ -88,6 +89,7 @@ const heroSources = await Promise.all(
             class="arch aspect-[4/5] h-full w-full bg-petal-deep object-cover"
           />
         </picture>
+        <AiTag src={hero} />
       </div>
     </div>
   </section>

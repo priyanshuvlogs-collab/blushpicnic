@@ -15,6 +15,10 @@ interface Props {
 const { entry, pkg } = Astro.props;
 const s = await getSettings();
 const items = (await getGallery()).filter((g) => g.data.occasions.includes(entry.id)).slice(0, 4);
+// Two photos fill a landscape (4:3) slot, then a portrait (4:5) one: the wider photo goes first, so
+// neither crop cuts away its subject.
+const ratio = (g: (typeof items)[number]) => g.data.image.width / g.data.image.height;
+if (items.length === 2 && ratio(items[1]) > ratio(items[0])) items.reverse();
 const anyAi = items.some((g) => isAiPhoto(g.data.image));
 const anyPlaceholder = items.some((g) => g.data.placeholder && !isAiPhoto(g.data.image));
 const plural = picnicPhrasePlural(entry);

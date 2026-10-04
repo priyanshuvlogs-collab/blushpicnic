@@ -9,7 +9,8 @@ import CompareTable from '../components/packages/CompareTable.astro';
 import AddOns from '../components/packages/AddOns.astro';
 import DepositInfo from '../components/packages/DepositInfo.astro';
 import PricingFaq from '../components/packages/PricingFaq.astro';
-import { getSettings, getPackages, money, bookUrl } from '../lib/site';
+import { getSettings, getPackages, money, bookUrl, type Package } from '../lib/site';
+import { isAiPhoto } from '../lib/photos';
 import { NOT_SURE_PACKAGE } from '../lib/form';
 import { service, breadcrumbs } from '../lib/schema';
 
@@ -22,15 +23,16 @@ const crumbs = [{ name: 'Packages', path: '/packages' }];
 const title = 'Luxury Picnic Packages & Prices in Toronto | Blush Picnic';
 const description = `Compare luxury picnic packages in Toronto & the GTA, starting at ${money(entry.data.priceFrom)} ${entry.data.guestsLabel}, ${s.taxNote}. Guests, time and what’s included, all spelled out.`;
 
-// Stand-in photos (alt text starts "Placeholder") stay out of share cards and structured data:
-// the page falls back to /og.jpg and the Service entries carry no image until real photos land.
-const isPlaceholder = (alt: string) => /^placeholder\b/i.test(alt.trim());
-const share = isPlaceholder(featured.data.imageAlt) ? {} : { image: featured.data.image, imageAlt: featured.data.imageAlt };
+// Stand-in photos (alt text starts "Placeholder") and AI illustrations (src/lib/photos.ts) stay out
+// of share cards and structured data, where their labels don't travel: the page falls back to
+// /og.jpg and the Service entries carry no image until real photos land.
+const isPlaceholder = (p: Package) => /^placeholder\b/i.test(p.data.imageAlt.trim()) || isAiPhoto(p.data.image);
+const share = isPlaceholder(featured) ? {} : { image: featured.data.image, imageAlt: featured.data.imageAlt };
 
 const jsonLd = [
   ...(await Promise.all(
     pkgs.map(async (p) => {
-      if (isPlaceholder(p.data.imageAlt)) return service(s, p);
+      if (isPlaceholder(p)) return service(s, p);
       const img = await getImage({ src: p.data.image, width: 1200, format: 'jpg' });
       return service(s, p, { image: new URL(img.src, s.url).href });
     }),

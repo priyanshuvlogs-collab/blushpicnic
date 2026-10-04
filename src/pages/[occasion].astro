@@ -16,6 +16,7 @@ import { picnicPhrase, picnicPhrasePlural, capitalize } from '../components/occa
 import { getSettings, getOccasions, getPackage, occasionUrl, type Occasion } from '../lib/site';
 import { occasionService, breadcrumbs, faqPage } from '../lib/schema';
 import { fillTokensHtml } from '../lib/tokens';
+import { isAiPhoto } from '../lib/photos';
 
 export async function getStaticPaths() {
   const occasions = await getOccasions();
@@ -32,8 +33,9 @@ const pkg = await getPackage(d.recommendedPackage);
 // Body copy may contain {tokens} (prices, deposit…) — filled from the data files at build time.
 const storyHtml = await fillTokensHtml(entry.rendered?.html ?? '');
 // A placeholder hero cropped to 1200×630 loses its label and reads as an empty pink frame in link
-// previews, so share the branded /og.jpg (BaseLayout's default) until a real photo is in.
-const heroIsPlaceholder = /^placeholder\b/i.test(d.heroAlt);
+// previews, and an AI illustration (src/lib/photos.ts) would pass for a real setup there without its
+// tag, so both share the branded /og.jpg (BaseLayout's default) until a real photo is in.
+const heroIsPlaceholder = /^placeholder\b/i.test(d.heroAlt) || isAiPhoto(d.heroImage);
 const heroOg = heroIsPlaceholder
   ? undefined
   : await getImage({ src: d.heroImage, width: 1200, height: 630, fit: 'cover', format: 'jpg' });

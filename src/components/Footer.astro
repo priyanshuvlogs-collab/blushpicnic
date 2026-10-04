@@ -1,7 +1,7 @@
 ---
 import Wordmark from './Wordmark.astro';
 import Icon from './Icon.astro';
-import { anyAiPhotos } from '../lib/photos';
+import { anyAiPhotos, onlyAiPhotos } from '../lib/photos';
 import { getSettings, getOccasions, telUrl, smsUrl, mailUrl, occasionUrl } from '../lib/site';
 
 const s = await getSettings();
@@ -65,7 +65,14 @@ const year = new Date().getFullYear();
     <div class="container-x flex flex-col gap-2 py-6 text-sm text-cream/75 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p>© {year} {s.name}. All prices are starting prices, {s.taxNote}.</p>
-        {anyAiPhotos() && <p class="mt-1">Photos marked “AI illustration” were created with AI to show the style of our setups.</p>}
+        {/* Not "photos marked…": thumbnails too small for the tag are AI illustrations as well. */}
+        {anyAiPhotos() && (
+          <p class="mt-1">
+            {onlyAiPhotos()
+              ? 'The photos on this site are AI illustrations, created to show the style of our setups. Real photos are coming soon.'
+              : 'Some photos on this site are AI illustrations, created to show the style of our setups.'}
+          </p>
+        )}
       </div>
       <p><button type="button" class="inline-flex min-h-11 items-center underline underline-offset-4" data-consent-open>Cookie settings</button></p>
     </div>
