@@ -145,10 +145,12 @@ live_checks() {
   expect "Booking questions (api/form-schema.json)" 200 "$SITE_URL/api/form-schema.json"
   expect "Private booking code is hidden (api/lib)" 403 "$SITE_URL/api/lib/Config.php"
   expect "Old .html address redirects" 301 "$SITE_URL/packages.html"
-  local loc
-  loc="$(curl -s -o /dev/null -m 20 -w '%{redirect_url}' "http://www.$SITE_HOST/packages" 2>/dev/null || true)"
-  if [[ "$loc" == "$SITE_URL/packages" ]]; then ok "http://www.$SITE_HOST → $loc (one redirect)"
-  else warn "http://www.$SITE_HOST/packages should redirect to $SITE_URL/packages (got \"${loc:-no redirect}\")"; CHECK_FAILS=$((CHECK_FAILS + 1)); fi
+  # www → apex. Hostinger's CDN may switch http → https before our .htaccess runs, which makes
+  # it two hops (http://www → https://www → https://apex); that's fine as long as it ends here.
+  local final hops
+  read -r final hops < <(curl -s -o /dev/null -L --max-redirs 5 -m 20 -w '%{url_effective} %{num_redirects}' "http://www.$SITE_HOST/packages" 2>/dev/null || true)
+  if [[ "$final" == "$SITE_URL/packages" ]]; then ok "http://www.$SITE_HOST/packages → $final (${hops:-?} redirect(s))"
+  else warn "http://www.$SITE_HOST/packages should end at $SITE_URL/packages (ended at \"${final:-nothing}\")"; CHECK_FAILS=$((CHECK_FAILS + 1)); fi
   local headers
   headers="$(curl -sI -m 20 "$SITE_URL/" 2>/dev/null | tr -d '\r' || true)"
   if grep -qi '^strict-transport-security:' <<<"$headers" && grep -qi '^content-security-policy:' <<<"$headers"; then

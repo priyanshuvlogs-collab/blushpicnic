@@ -96,6 +96,8 @@ jobs:
             echo "$url  $line  $title"
             echo "- \`$url\` → $line $title" >> "$GITHUB_STEP_SUMMARY"
           done
+          echo "Redirect chain for http://www.$SITE/packages:"
+          curl -sSIL --max-redirs 5 --max-time 20 "http://www.$SITE/packages" | tr -d '\r' | grep -iE '^(HTTP/|location:)' | sed 's/^/  /' || true
           echo "SSL certificate for $SITE:"
           timeout 20 openssl s_client -connect "$SITE:443" -servername "$SITE" </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -enddate 2>/dev/null \
             || echo "  (no valid HTTPS certificate yet — switch on SSL in hPanel → Security → SSL)"
