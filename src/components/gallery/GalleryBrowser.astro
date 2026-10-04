@@ -50,7 +50,8 @@ const items = await Promise.all(
   }),
 );
 // AI illustrations (src/lib/photos.ts) get their own note; any other stand-in keeps the placeholder note.
-const anyAi = gallery.some((g) => isAiPhoto(g.data.image));
+const aiCount = gallery.filter((g) => isAiPhoto(g.data.image)).length;
+const anyAi = aiCount > 0;
 const anyPlaceholder = gallery.some((g) => g.data.placeholder && !isAiPhoto(g.data.image));
 const total = items.length;
 
@@ -94,9 +95,11 @@ const eager = new Set([0, ...[320, 360, 390, 430, 640, 767].flatMap(phone), ...[
     <p class="gallery-status" role="status" data-gallery-status>Showing all {total} photos</p>
   </div>
 
+  {/* Worded for the whole gallery; the filter script hides it, or switches "these" / "some of these",
+      to match the photos on screen (data-ai on each item). */}
   {anyAi && (
-    <p class="placeholder-note gallery-note">
-      <strong>AI illustrations —</strong> these images were created with AI to show the style of our setups. Photos from real Blush Picnic picnics are coming soon.
+    <p class="placeholder-note gallery-note" data-gallery-ai>
+      <strong>AI illustrations —</strong> <span data-ai-all hidden={aiCount < total}>these images were</span><span data-ai-some hidden={aiCount === total}>some of these images were</span> created with AI to show the style of our setups. Photos from real Blush Picnic picnics are coming soon.
     </p>
   )}
   {anyPlaceholder && (
@@ -107,7 +110,7 @@ const eager = new Set([0, ...[320, 360, 390, 430, 640, 767].flatMap(phone), ...[
 
   <ul class="gallery-grid" data-gallery-grid data-count={total} aria-label="Picnic photos">
     {items.map(({ g, occ, m, large, book }, i) => (
-      <li class="gallery-item" data-gallery-item data-occasions={g.data.occasions.join(' ')} data-placeholder={g.data.placeholder ? 'true' : 'false'}>
+      <li class="gallery-item" data-gallery-item data-occasions={g.data.occasions.join(' ')} data-placeholder={g.data.placeholder ? 'true' : 'false'} data-ai={isAiPhoto(g.data.image) ? 'true' : 'false'}>
         <a
           href={large.src}
           class="gallery-trigger"

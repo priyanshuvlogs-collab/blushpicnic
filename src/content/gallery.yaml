@@ -15,22 +15,6 @@
   showOnHome: true
   placeholder: true
 
-- id: birthday-1
-  image: "../assets/photos/gallery-birthday-1.jpg"
-  alt: "Backyard birthday picnic under a wooden arch with a blush, cream and gold balloon garland, low table set for six with cupcakes, gifts and floor cushions"
-  occasions: ["birthday"]
-  order: 2
-  showOnHome: true
-  placeholder: true
-
-- id: anniversary-1
-  image: "../assets/photos/gallery-anniversary-1.jpg"
-  alt: "Anniversary picnic for two on a grassy bluff above Lake Ontario at sunset, oak table with peonies, gold lanterns and rose velvet cushions"
-  occasions: ["anniversary"]
-  order: 3
-  showOnHome: true
-  placeholder: true
-
 - id: be-my-girlfriend-1
   image: "../assets/photos/gallery-be-my-girlfriend-1.jpg"
   alt: "Be-my-girlfriend picnic at sunset with pink and red heart balloons, a cream teddy bear, roses in a vase and candles on a low oak table"
@@ -143,22 +127,6 @@
   showOnHome: false
   placeholder: true
 
-- id: birthday-2
-  image: "../assets/photos/gallery-birthday-2.jpg"
-  alt: "Birthday cake detail, a small white cake with blush roses and gold candles on a glass stand, with pastel pink, green and cream macarons around it"
-  occasions: ["birthday"]
-  order: 18
-  showOnHome: false
-  placeholder: true
-
-- id: anniversary-2
-  image: "../assets/photos/gallery-anniversary-2.jpg"
-  alt: "Anniversary table detail with two gold-rimmed glasses of pink lemonade, chocolates, rose petals and a cream envelope with a wax seal"
-  occasions: ["anniversary"]
-  order: 19
-  showOnHome: false
-  placeholder: true
-
 - id: be-my-girlfriend-2
   image: "../assets/photos/gallery-be-my-girlfriend-2.jpg"
   alt: "Be-my-girlfriend details, red and blush rose bouquet on cream linen beside chocolate-dipped strawberries and a gift box with a pink satin bow"
@@ -263,3 +231,34 @@
   showOnHome: false
   placeholder: true
 
+- id: anniversary-3
+  image: "../assets/photos/gallery-anniversary-3.jpg"
+  alt: "Romantic lakeside table at moonrise with red and white roses, candles, gold candlesticks and a gold heart on a red runner, beside a lace parasol"
+  occasions: ["anniversary"]
+  order: 3
+  showOnHome: true
+  placeholder: false
+
+- id: birthday-3
+  image: "../assets/photos/gallery-birthday-3.jpg"
+  alt: "Sunset birthday picnic on the Toronto Island shore with the CN Tower lit up behind, a Happy Birthday neon sign, red and white roses and a white teepee"
+  occasions: ["birthday"]
+  order: 2
+  showOnHome: true
+  placeholder: false
+
+- id: birthday-4
+  image: "../assets/photos/gallery-birthday-4.jpg"
+  alt: "Lakeside birthday picnic with pink peonies and white roses, marquee Happy Birthday letters on the grass, a lace parasol and pink and white cushions"
+  occasions: ["birthday"]
+  order: 18
+  showOnHome: false
+  placeholder: false
+
+- id: birthday-5
+  image: "../assets/photos/gallery-birthday-5.jpg"
+  alt: "Birthday picnic on Toronto Island facing the CN Tower and skyline, with a white teepee, cream fringed parasol, pink peonies and pink and white cushions"
+  occasions: ["birthday"]
+  order: 33
+  showOnHome: false
+  placeholder: false

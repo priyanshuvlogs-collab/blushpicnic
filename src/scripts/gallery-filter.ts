@@ -3,7 +3,8 @@
 //   • The choice is kept in the URL (?occasion=<id>) with history.replaceState, and read on load,
 //     so occasion pages can link to /gallery?occasion=proposal.
 //   • The result count is announced politely ([data-gallery-status] is role="status").
-//   • The placeholder note shows only while a visible photo is a placeholder.
+//   • The placeholder note shows only while a visible photo is a placeholder; the AI-illustrations
+//     note only while a visible photo is AI ('these images' when all of them are, else 'some of these').
 //   • The "book" link under the grid follows the filter: /book?occasion=<id>.
 //   • On phones the chips scroll sideways; a focused or pressed chip is scrolled fully into view.
 // The page's head script sets html[data-gallery-occasion] before first paint (no flash of every
@@ -17,6 +18,7 @@ function init(root: HTMLElement) {
   const grid = root.querySelector<HTMLElement>('[data-gallery-grid]');
   const status = root.querySelector<HTMLElement>('[data-gallery-status]');
   const note = root.querySelector<HTMLElement>('[data-gallery-placeholder]');
+  const aiNote = root.querySelector<HTMLElement>('[data-gallery-ai]');
   const book = root.querySelector<HTMLAnchorElement>('[data-gallery-book]');
   const page = root.querySelector<HTMLAnchorElement>('[data-gallery-page]');
   const pageLabel = page?.querySelector<HTMLElement>('[data-gallery-page-label]');
@@ -40,6 +42,7 @@ function init(root: HTMLElement) {
     current = id;
 
     let count = 0;
+    let ai = 0;
     let placeholders = false;
     for (const item of items) {
       const tags = (item.dataset.occasions ?? '').split(/\s+/);
@@ -47,7 +50,8 @@ function init(root: HTMLElement) {
       item.hidden = !show;
       if (show) {
         count++;
-        if (item.dataset.placeholder === 'true') placeholders = true;
+        if (item.dataset.placeholder === 'true' && item.dataset.ai !== 'true') placeholders = true;
+        if (item.dataset.ai === 'true') ai++;
       }
     }
 
@@ -60,6 +64,11 @@ function init(root: HTMLElement) {
 
     if (grid) grid.dataset.count = String(count);
     if (note) note.hidden = !placeholders;
+    if (aiNote) {
+      aiNote.hidden = ai === 0;
+      aiNote.querySelector<HTMLElement>('[data-ai-all]')?.toggleAttribute('hidden', ai < count);
+      aiNote.querySelector<HTMLElement>('[data-ai-some]')?.toggleAttribute('hidden', ai === 0 || ai === count);
+    }
     if (status) {
       status.textContent = id === 'all' ? `Showing all ${plural(count)}` : `Showing ${plural(count)}: ${active?.textContent?.trim() ?? ''}`;
     }

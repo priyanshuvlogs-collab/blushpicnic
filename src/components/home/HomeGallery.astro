@@ -16,7 +16,8 @@ import { getSettings, getGallery, getOccasions, bookUrl, type GalleryItem } from
 
 const s = await getSettings();
 const items = (await getGallery()).filter((g) => g.data.showOnHome);
-const anyAi = items.some((g) => isAiPhoto(g.data.image));
+const aiCount = items.filter((g) => isAiPhoto(g.data.image)).length;
+const anyAi = aiCount > 0;
 const anyPlaceholder = items.some((g) => g.data.placeholder && !isAiPhoto(g.data.image));
 const occasions = new Map((await getOccasions()).map((o) => [o.id, o]));
 // Fallback while an occasion page doesn't exist yet: "be-my-girlfriend" → "Be my girlfriend"
@@ -119,7 +120,7 @@ const pairs = [
 
       {anyAi && (
         <p class="placeholder-note mt-10 max-w-2xl">
-          <strong>AI illustrations —</strong> these images were created with AI to show the style of our setups. Photos from real Blush Picnic picnics are coming soon.
+          <strong>AI illustrations —</strong> {aiCount === items.length ? 'these images were' : 'some of these images were'} created with AI to show the style of our setups. Photos from real Blush Picnic picnics are coming soon.
         </p>
       )}
       {anyPlaceholder && (

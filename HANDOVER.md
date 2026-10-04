@@ -197,8 +197,10 @@ The server checks every request against this same file, so there's never any cod
 
 ### Photos
 
-For now, the photos on the site are **AI illustrations** made with Grok (xAI) to show the style of
-your setups. They are not photos of real Blush Picnic events. The photos themselves carry no label,
+Your own photos so far: the home page photo, the top photos of the Birthday and Anniversary pages,
+and four in the gallery (Birthdays and Anniversaries). Client names on the letter boards are blurred.
+The rest are still **AI illustrations** made with Grok (xAI) to show the style of your setups. They
+are not photos of real Blush Picnic events. The photos themselves carry no label,
 but the site says so in one place each: a short note on the gallery, the home gallery, the occasion
 pages and /occasions, and one line in the footer. Link previews (WhatsApp, Facebook…) and Google get
 your logo image instead of an AI one. Replace them with your own photos as soon as you can (below):
@@ -407,7 +409,7 @@ https://blushpicnic.com/policies once and confirm every line is right.**
 - [ ] **Alcohol**: your stance (still a placeholder on /policies).
 - [ ] **Accepted payment methods** (still a placeholder on /policies).
 - [ ] **About page**: your story in your own words (3–4 short paragraphs) and a photo of you (`about.jpg`).
-- [ ] **All real photos**: home, packages, each occasion, gallery. Use `npm run photos` (see [Photos](#photos)).
+- [ ] **More real photos**: packages, the other occasions, gallery (home, Birthday and Anniversary are done). Use `npm run photos` (see [Photos](#photos)).
 - [ ] **Add-on prices**: rose bouquets, neon signs, balloon garlands, flower arch, custom cakes, grazing boards, photographer (`addons.yaml`).
 - [ ] **Reviews**: real ones only, with the client's permission (`reviews.yaml`).
 - [ ] **GA4 Measurement ID** (`settings.yaml` → `ga4Id`).
