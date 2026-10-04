@@ -10,7 +10,7 @@ metaDescription: "Corporate and team picnics in Toronto and the GTA, styled, set
 h1: "Take the team outside with a corporate picnic"
 lede: "A corporate picnic in Toronto or anywhere in the GTA for a summer social, a project wrap-up or a welcome for new hires: a full themed setup, custom signage for the occasion, and a clean-up nobody has to volunteer for."
 heroImage: "../../assets/photos/occasion-corporate.jpg"
-heroAlt: "Placeholder photo for a corporate team picnic in Toronto with a themed setup, custom signage and games"
+heroAlt: "AI illustration: long low oak table in a park with city towers behind, sage runners, twine-tied lunch boxes, fruit platters, infused water jars and pink cushions"
 highlights:
   - title: "Booking through work"
     text: "Add your company name and tell us if you need an invoice. We'll confirm the details with your quote."
