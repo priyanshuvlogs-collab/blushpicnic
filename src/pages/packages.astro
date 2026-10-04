@@ -24,7 +24,7 @@ const title = 'Luxury Picnic Packages & Prices in Toronto | Blush Picnic';
 const description = `Compare luxury picnic packages in Toronto & the GTA, starting at ${money(entry.data.priceFrom)} ${entry.data.guestsLabel}, ${s.taxNote}. Guests, time and what’s included, all spelled out.`;
 
 // Stand-in photos (alt text starts "Placeholder") and AI illustrations (src/lib/photos.ts) stay out
-// of share cards and structured data, where their labels don't travel: the page falls back to
+// of share cards and structured data, where the site's notes don't travel: the page falls back to
 // /og.jpg and the Service entries carry no image until real photos land.
 const isPlaceholder = (p: Package) => /^placeholder\b/i.test(p.data.imageAlt.trim()) || isAiPhoto(p.data.image);
 const share = isPlaceholder(featured) ? {} : { image: featured.data.image, imageAlt: featured.data.imageAlt };

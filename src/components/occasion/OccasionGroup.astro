@@ -4,11 +4,8 @@
 //   stagger — portrait photos in columns, the middle column dropped
 //   feature — one large lead photo beside smaller landscape crops
 //   rows    — compact rows with a thumbnail, for scanning
-// AI illustrations get the "AI illustration" tag, except the row thumbnails (too small for it):
-// /occasions says so in a note under its intro.
 import { Picture } from 'astro:assets';
 import Icon from '../Icon.astro';
-import AiTag from '../AiTag.astro';
 import { getSettings, money, occasionUrl, type Occasion, type Package } from '../../lib/site';
 import { picnicPhrasePlural, capitalize, excerpt } from './text';
 
@@ -45,19 +42,16 @@ const w = (o: Occasion, list: number[]) => list.filter((x) => x <= o.data.heroIm
       <ul class="stagger mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:mt-14 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-14" role="list">
         {items.map((o) => (
           <li class="occ group relative">
-            <div class="relative">
-              <Picture
-                src={o.data.heroImage}
-                alt=""
-                widths={w(o, [240, 360, 480, 640, 800])}
-                sizes="(min-width: 1280px) 360px, (min-width: 1024px) 29vw, 46vw"
-                formats={['avif', 'webp']}
-                fallbackFormat="jpg"
-                loading="lazy"
-                class="occ-img aspect-[4/5] w-full rounded-[var(--radius-card)] bg-petal-deep object-cover"
-              />
-              <AiTag src={o.data.heroImage} class="ai-tag-sm" />
-            </div>
+            <Picture
+              src={o.data.heroImage}
+              alt=""
+              widths={w(o, [240, 360, 480, 640, 800])}
+              sizes="(min-width: 1280px) 360px, (min-width: 1024px) 29vw, 46vw"
+              formats={['avif', 'webp']}
+              fallbackFormat="jpg"
+              loading="lazy"
+              class="occ-img aspect-[4/5] w-full rounded-[var(--radius-card)] bg-petal-deep object-cover"
+            />
             <h3 class="mt-4 text-[1.4rem] sm:text-[1.55rem] lg:text-[1.7rem]">
               <a href={occasionUrl(o)} class="occ-link no-underline">{label(o)}</a>
             </h3>
@@ -72,19 +66,16 @@ const w = (o: Occasion, list: number[]) => list.filter((x) => x <= o.data.heroIm
       <ul class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:mt-14 lg:grid-cols-12 lg:gap-x-10 lg:gap-y-12" role="list">
         {items.map((o, i) => (
           <li class:list={['occ group relative', i === 0 ? 'col-span-2 lg:col-span-6 lg:row-span-2' : 'lg:col-span-3']}>
-            <div class="relative">
-              <Picture
-                src={o.data.heroImage}
-                alt=""
-                widths={i === 0 ? w(o, [480, 640, 800, 1000, 1200]) : w(o, [240, 360, 480, 640])}
-                sizes={i === 0 ? '(min-width: 1280px) 560px, (min-width: 1024px) 46vw, 100vw' : '(min-width: 1280px) 260px, (min-width: 1024px) 21vw, 46vw'}
-                formats={['avif', 'webp']}
-                fallbackFormat="jpg"
-                loading="lazy"
-                class:list={['occ-img w-full rounded-[var(--radius-card)] bg-petal-deep object-cover', i === 0 ? 'aspect-[4/3] lg:aspect-[5/6]' : 'aspect-square']}
-              />
-              <AiTag src={o.data.heroImage} class={i === 0 ? undefined : 'ai-tag-sm'} />
-            </div>
+            <Picture
+              src={o.data.heroImage}
+              alt=""
+              widths={i === 0 ? w(o, [480, 640, 800, 1000, 1200]) : w(o, [240, 360, 480, 640])}
+              sizes={i === 0 ? '(min-width: 1280px) 560px, (min-width: 1024px) 46vw, 100vw' : '(min-width: 1280px) 260px, (min-width: 1024px) 21vw, 46vw'}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpg"
+              loading="lazy"
+              class:list={['occ-img w-full rounded-[var(--radius-card)] bg-petal-deep object-cover', i === 0 ? 'aspect-[4/3] lg:aspect-[5/6]' : 'aspect-square']}
+            />
             <h3 class:list={['mt-4', i === 0 ? 'text-[1.75rem] md:text-[2.1rem]' : 'text-[1.4rem] sm:text-[1.5rem]']}>
               <a href={occasionUrl(o)} class="occ-link no-underline">{label(o)}</a>
             </h3>

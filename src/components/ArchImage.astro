@@ -3,7 +3,6 @@
 // Use for hero images and at most one other place per page.
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
-import AiTag from './AiTag.astro';
 
 interface Props {
   src: ImageMetadata;
@@ -49,5 +48,4 @@ const urgent = priority && fetchpriority === 'high';
     class="arch h-full w-full object-cover"
     style={`aspect-ratio:${aspect}`}
   />
-  <AiTag src={src} />
 </div>

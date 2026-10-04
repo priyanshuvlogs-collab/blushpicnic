@@ -10,7 +10,7 @@ metaDescription: "Just engaged? Celebrate with an engagement picnic in Toronto o
 h1: "Just engaged? Celebrate with an engagement picnic"
 lede: "An engagement picnic in Toronto or across the GTA, for the two of you or for the friends and family who can't wait to hug you. Your message on the board, florals, games, and nothing to clean up."
 heroImage: "../../assets/photos/occasion-just-engaged.jpg"
-heroAlt: "AI illustration: engagement picnic in a park with a cream, gold and blush balloon garland over a long low table set with peonies, a white cake and velvet cushions"
+heroAlt: "Engagement picnic in a park with a cream, gold and blush balloon garland over a long low table set with peonies, a white cake and velvet cushions"
 highlights:
   - title: "Both names, front and centre"
     text: "Share your names and the date it happened. The letter board carries whatever you'd like it to say, from “Just engaged” to an inside joke."

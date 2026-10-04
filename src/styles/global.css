@@ -262,36 +262,6 @@
     font-size: 0.95rem;
   }
   .placeholder-note strong { color: var(--color-gold-ink); letter-spacing: 0.02em; }
-
-  /* "AI illustration" tag on photos made by scripts/ai-photos.mjs (AiTag.astro). Bottom-left, where
-     the arch frame is square, small enough not to compete with the photo. Cocoa on Linen ≥ 12:1. */
-  .ai-tag {
-    position: absolute;
-    left: 0.6rem;
-    bottom: 0.6rem;
-    z-index: 1;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    background: rgb(251 246 240 / 0.9);
-    color: var(--color-cocoa);
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    font-weight: 500;
-    line-height: 1.3;
-    letter-spacing: 0.02em;
-    pointer-events: none;
-  }
-  /* Two-column photo grids on phones (tiles ~140px wide): a tighter tag, so it stays clear of the
-     gallery's zoom icon and covers less of the photo. <AiTag class="ai-tag-sm" />. */
-  @media (width < 40rem) {
-    .ai-tag-sm {
-      left: 0.4rem;
-      bottom: 0.4rem;
-      padding: 0.1rem 0.45rem;
-      font-size: 0.66rem;
-      letter-spacing: 0;
-    }
-  }
 }
 
 /* ───────────────────────── Site chrome (unlayered: overrides utility classes) ─────────────────────────

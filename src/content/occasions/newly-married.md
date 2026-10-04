@@ -10,7 +10,7 @@ metaDescription: "A newlywed picnic in Toronto or the GTA: a Just Married sign, 
 h1: "A newlywed picnic, finally just the two of you"
 lede: "After the vows, the photos and the hugs, a newlywed picnic in Toronto gives you {hours:proposal-romance} together with nowhere else to be: candles, rose petals, fresh flowers and a sign that says it all."
 heroImage: "../../assets/photos/occasion-newly-married.jpg"
-heroAlt: "AI illustration: newlywed garden picnic on a cream blanket with a two-tier white cake, pink and ivory peonies, gold cutlery and a white lace parasol"
+heroAlt: "Newlywed garden picnic on a cream blanket with a two-tier white cake, pink and ivory peonies, gold cutlery and a white lace parasol"
 highlights:
   - title: "“Just Married”, in writing"
     text: "Or both your names and the date. The custom sign is yours to word."
