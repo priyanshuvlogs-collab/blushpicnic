@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Show the Hostinger folder layout — read-only, changes nothing.
+#
+#  Lists the FTP login folder and the likely website folders, so the Deploy
+#  workflow's target folder (the FTP_REMOTE_DIR variable, default public_html)
+#  can be set right. Uses the same FTP secrets and certificate check as Deploy.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Show Hostinger folders
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: List folders over FTPS
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ vars.FTP_PORT || 21 }}
+          FTP_CERT_DOMAIN: ${{ vars.FTP_CERT_DOMAIN || 'hstgr.io' }}
+        run: |
+          host="$(printf '%s' "$FTP_SERVER" | tr -d '[:space:]')"
+          host="${host#ftp://}"; host="${host#ftps://}"; host="${host%%/*}"; host="${host%%:*}"
+          if [[ ! "$host" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then host="$(getent ahostsv4 "$host" | awk 'NR==1{print $1}')"; fi
+          user="$(printf '%s' "$FTP_USERNAME" | tr -d '[:space:]')"
+          pass="$FTP_PASSWORD"; while [[ "$pass" == *$'\n' || "$pass" == *$'\r' ]]; do pass="${pass%?}"; done
+          echo "::add-mask::$pass"
+          name="deploy-check.$FTP_CERT_DOMAIN"
+          umask 077; work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT
+          printf 'machine %s\nlogin "%s"\npassword "%s"\n' "$name" "$user" "$pass" > "$work/netrc"
+          ftp() { curl -sS --ssl-reqd --netrc-file "$work/netrc" --connect-to "$name:$FTP_PORT:$host:$FTP_PORT" "$@"; }
+
+          echo "== Login folder (PWD) =="
+          ftp -v --list-only "ftp://$name:$FTP_PORT/" 2>&1 | grep -E '^< 257' | sed 's/^< //' || true
+          for dir in "" "public_html/" "public_html/public_html/" "domains/" "domains/blushpicnic.com/" "domains/blushpicnic.com/public_html/"; do
+            echo ""
+            echo "== /$dir =="
+            ftp --list-only "ftp://$name:$FTP_PORT/$dir" 2>/dev/null | tr -d '\r' | sort | head -40 || echo "(not found)"
+          done
+
+      - name: What the website serves
+        run: |
+          for url in https://blushpicnic.com/ https://blushpicnic.com/packages https://blushpicnic.com/api/form-schema.json; do
+            code="$(curl -s -o /tmp/b -w '%{http_code}' --max-time 20 "$url" || true)"
+            echo "$url → $code $(grep -o '<title>[^<]*</title>' /tmp/b 2>/dev/null | head -1)"
+          done
