@@ -98,7 +98,7 @@ PROTOCOL="${PROTOCOL:-ftps}"
 FTP_HOST="${FTP_HOST:-}"
 FTP_USER="${FTP_USER:-}"
 FTP_PASS="${FTP_PASS:-}"
-REMOTE_DIR="${REMOTE_DIR:-public_html}"
+REMOTE_DIR="${REMOTE_DIR:-/domains/blushpicnic.com/public_html}"
 FTP_VERIFY_CERT="${FTP_VERIFY_CERT:-yes}"
 FTP_CERT_FINGERPRINT="${FTP_CERT_FINGERPRINT:-}"
 SSH_KEY="${SSH_KEY:-}"
@@ -188,7 +188,7 @@ if (( CHECK_ONLY )); then live_checks; (( CHECK_FAILS == 0 )); exit; fi
 [[ "$PARALLEL" =~ ^[1-9][0-9]?$ ]] || die "PARALLEL must be a number from 1 to 99"
 [[ "$FTP_PORT" =~ ^[0-9]+$ ]] || die "FTP_PORT must be a number"
 case "$REMOTE_DIR" in
-  ""|"."|"/"|"~"|*..*) die "REMOTE_DIR \"$REMOTE_DIR\" is not a safe upload folder (expected public_html)" ;;
+  ""|"."|"/"|"~"|*..*) die "REMOTE_DIR \"$REMOTE_DIR\" is not a safe upload folder (expected /domains/blushpicnic.com/public_html)" ;;
 esac
 [[ "$REMOTE_DIR" =~ ^[A-Za-z0-9._/~-]+$ ]] || die "REMOTE_DIR may only contain letters, digits, . _ - / ~"
 [[ "$CONFIG_REMOTE_DIR" =~ ^[A-Za-z0-9._/~-]+$ ]] || die "CONFIG_REMOTE_DIR may only contain letters, digits, . _ - / ~"

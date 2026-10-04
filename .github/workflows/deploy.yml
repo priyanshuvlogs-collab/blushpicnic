@@ -182,7 +182,7 @@ jobs:
           npm run test:api
 
       # Uploads only what changed since the last run of this workflow (it keeps a list in
-      # public_html/.ftp-deploy-sync-state.json, which .htaccess hides from the web). Files
+      # <website folder>/.ftp-deploy-sync-state.json, which .htaccess hides from the web). Files
       # that were removed from the site are deleted from the server; anything else already
       # on the server (and blush-config.php, which lives above public_html) is left alone.
       # Pinned to the exact commit of v4.3.5 (a tag can be moved; this action gets the password).
@@ -197,7 +197,10 @@ jobs:
           protocol: ftps
           security: ${{ vars.FTP_TLS_SECURITY || steps.tls.outputs.security }}
           local-dir: ./dist/
-          server-dir: ./public_html/
+          # Absolute path from the top of the FTP account. On this Hostinger plan FTP logs in to a
+          # separate /public_html that no website serves; blushpicnic.com is served from
+          # /domains/blushpicnic.com/public_html. Override with the FTP_REMOTE_DIR variable.
+          server-dir: ${{ vars.FTP_REMOTE_DIR || '/domains/blushpicnic.com/public_html/' }}
           dangerous-clean-slate: false
           exclude: |
             **/.git*
@@ -218,6 +221,7 @@ jobs:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_PORT: ${{ vars.FTP_PORT || 21 }}
           FTP_CERT_DOMAIN: ${{ vars.FTP_CERT_DOMAIN || 'hstgr.io' }}
+          REMOTE_DIR: ${{ vars.FTP_REMOTE_DIR || '/domains/blushpicnic.com/public_html/' }}
         run: |
           while [[ "$SMTP_PASSWORD" == *$'\n' || "$SMTP_PASSWORD" == *$'\r' ]]; do SMTP_PASSWORD="${SMTP_PASSWORD%?}"; done
           export SMTP_PASSWORD
@@ -232,17 +236,20 @@ jobs:
           name="deploy-check.$FTP_CERT_DOMAIN"
           printf 'machine %s\nlogin "%s"\npassword "%s"\n' "$name" "$FTP_USER_CLEAN" "$FTP_PASS_CLEAN" > "$work/netrc"
           ftp() { curl -sS --ssl-reqd --netrc-file "$work/netrc" --connect-to "$name:$FTP_PORT:$host:$FTP_PORT" "$@"; }
-          # Only write the file next to public_html, never anywhere else.
-          if ! ftp --list-only "ftp://$name:$FTP_PORT/" | tr -d '\r' | grep -qx 'public_html'; then
-            echo "::error::public_html isn't in the FTP login folder, so the right place for blush-config.php is unclear. Create it by hand in File Manager (domains/blushpicnic.com/blush-config.php)."
+          # The config goes in the folder that holds the website folder (REMOTE_DIR's parent), never
+          # anywhere else: check the website folder really is in it first. "//" = absolute FTP path.
+          web="${REMOTE_DIR%/}"; web="/${web#/}"; parent="${web%/*}"; leaf="${web##*/}"
+          [ -n "$parent" ] || { echo "::error::FTP_REMOTE_DIR has no parent folder for blush-config.php."; exit 1; }
+          if ! ftp --list-only "ftp://$name:$FTP_PORT/$parent/" | tr -d '\r' | grep -qx "$leaf"; then
+            echo "::error::$leaf isn't in $parent, so the right place for blush-config.php is unclear. Create it by hand in File Manager ($parent/blush-config.php)."
             exit 1
           fi
           php -r 'echo "<?php\n// Written by the Deploy workflow from the SMTP_PASSWORD secret. Other settings: defaults.\nreturn ", var_export(["smtp_password" => getenv("SMTP_PASSWORD")], true), ";\n";' > "$work/blush-config.php"
           php -l "$work/blush-config.php" >/dev/null
-          ftp -T "$work/blush-config.php" "ftp://$name:$FTP_PORT/blush-config.php"
-          ftp -Q "SITE CHMOD 600 blush-config.php" --list-only "ftp://$name:$FTP_PORT/" >/dev/null 2>&1 \
-            || echo "(couldn't set file permissions to 600; the file is outside public_html either way)"
-          echo "blush-config.php uploaded next to public_html."
+          ftp -T "$work/blush-config.php" "ftp://$name:$FTP_PORT/$parent/blush-config.php"
+          ftp -Q "SITE CHMOD 600 $parent/blush-config.php" --list-only "ftp://$name:$FTP_PORT/$parent/" >/dev/null 2>&1 \
+            || echo "(couldn't set file permissions to 600; the file is outside the website folder either way)"
+          echo "blush-config.php uploaded to $parent (next to the website folder)."
 
       - name: Check the live site
         if: ${{ inputs.check_live_site }}
