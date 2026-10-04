@@ -277,7 +277,7 @@ GitHub → the repository → **Settings** → **Secrets and variables** → **A
 
 | Name | Secret |
 | --- | --- |
-| `FTP_SERVER` | the "FTP IP (hostname)" from hPanel → Files → FTP Accounts |
+| `FTP_SERVER` | the name on Hostinger's FTP certificate — run **Actions → "Check Hostinger connection"** with your FTP IP and copy the name it prints (the IP alone fails the security check) |
 | `FTP_USERNAME` | the "FTP username" from the same page |
 | `FTP_PASSWORD` | your new FTP password |
 

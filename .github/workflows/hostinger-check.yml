@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Check the Hostinger connection — changes nothing, needs no secrets.
+#
+#  GitHub → Actions → "Check Hostinger connection" → Run workflow, and enter the
+#  "FTP IP (hostname)" from hPanel → Files → FTP Accounts.
+#
+#  It prints:
+#    • the name on the FTP server's encryption certificate — that name (not the IP)
+#      is what the FTP_SERVER secret needs, because the deploy checks the certificate;
+#    • whether blushpicnic.com answers over HTTP and HTTPS (is SSL switched on?).
+# ─────────────────────────────────────────────────────────────────────────────
+name: Check Hostinger connection
+
+on:
+  workflow_dispatch:
+    inputs:
+      ftp_host:
+        description: FTP IP or host name from hPanel → Files → FTP Accounts
+        required: true
+        type: string
+      site:
+        description: Website address to check
+        required: false
+        default: blushpicnic.com
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: FTP server certificate (FTPS, port 21)
+        env:
+          HOST: ${{ inputs.ftp_host }}
+        run: |
+          HOST="${HOST#ftp://}"; HOST="${HOST%%/*}"
+          echo "Connecting to $HOST:21 with explicit TLS…"
+          cert="$(timeout 30 openssl s_client -starttls ftp -connect "$HOST:21" -servername "$HOST" </dev/null 2>/dev/null | openssl x509 2>/dev/null || true)"
+          if [ -z "$cert" ]; then
+            echo "::error::Couldn't read a certificate from $HOST:21 (FTPS not offered, or the host/IP is wrong)."
+            exit 1
+          fi
+          echo "$cert" | openssl x509 -noout -subject -issuer -enddate
+          echo "$cert" | openssl x509 -noout -ext subjectAltName 2>/dev/null || true
+          echo "$cert" | openssl x509 -noout -fingerprint -sha256
+          names="$( (echo "$cert" | openssl x509 -noout -subject -nameopt multiline | sed -n 's/.*commonName *= *//p'; \
+                     echo "$cert" | openssl x509 -noout -ext subjectAltName 2>/dev/null | grep -o 'DNS:[^,]*' | sed 's/DNS://') | sort -u)"
+          {
+            echo "### FTP certificate for $HOST"
+            echo ""
+            echo "Use one of these names as the **FTP_SERVER** secret (not the IP address):"
+            echo ""
+            for n in $names; do echo "- \`$n\`"; done
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Names on the certificate:"; for n in $names; do echo "  $n"; done
+
+      - name: Website status
+        env:
+          SITE: ${{ inputs.site }}
+        run: |
+          for url in "http://$SITE/" "https://$SITE/" "https://www.$SITE/"; do
+            line="$(curl -sS -o /tmp/body -w '%{http_code} → %{redirect_url}' --max-time 20 "$url" 2>&1 || true)"
+            title="$(grep -o '<title>[^<]*</title>' /tmp/body 2>/dev/null | head -1 || true)"
+            echo "$url  $line  $title"
+            echo "- \`$url\` → $line $title" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "SSL certificate for $SITE:"
+          timeout 20 openssl s_client -connect "$SITE:443" -servername "$SITE" </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -enddate 2>/dev/null \
+            || echo "  (no valid HTTPS certificate yet — switch on SSL in hPanel → Security → SSL)"
