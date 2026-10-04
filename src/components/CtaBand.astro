@@ -19,7 +19,7 @@ const {
 } = Astro.props;
 ---
 <section class="container-x section-y" aria-labelledby="cta-title">
-  <div class="on-dark relative isolate overflow-hidden rounded-[var(--radius-card)] bg-plum px-6 pb-14 pt-10 text-center text-cream sm:px-12 md:pb-20 md:pt-14">
+  <div class="on-dark relative isolate overflow-hidden rounded-[var(--radius-card)] bg-cocoa px-6 pb-14 pt-10 text-center text-cream sm:px-12 md:pb-20 md:pt-14">
     {/* The arch motif: a soft, lighter window the words sit in (a fill, so no line runs through the
         text), crowned by a small gold arch. */}
     <div aria-hidden="true" class="pointer-events-none absolute inset-x-3 bottom-0 top-3 -z-10 mx-auto max-w-[56rem] rounded-t-full bg-cream/[0.05] sm:inset-x-10 sm:top-5"></div>
@@ -31,7 +31,7 @@ const {
       <p class="mx-auto mt-4 max-w-xl text-cream/85">{smartQuotes(text)}</p>
       <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
         <a href={bookUrl({ occasion, package: pkg })} class="btn btn-light btn-lg w-full sm:w-auto" data-track="booking_cta" data-track-location="cta_band" data-astro-prefetch>{buttonLabel}</a>
-        <a href={smsUrl(s)} class="btn btn-lg w-full whitespace-nowrap border-cream/60 px-4 text-cream hover:bg-cream hover:text-plum sm:w-auto sm:px-[1.9rem]" data-track="click_text"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
+        <a href={smsUrl(s)} class="btn btn-lg w-full whitespace-nowrap border-cream/60 px-4 text-cream hover:bg-cream hover:text-cocoa sm:w-auto sm:px-[1.9rem]" data-track="click_text"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
       </div>
       <p class="mt-6 text-sm text-cream/75">Starting prices are {s.taxNote}. {s.locationNote}</p>
     </div>

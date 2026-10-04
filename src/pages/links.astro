@@ -1,7 +1,7 @@
 ---
 // Instagram link-in-bio (/links). Not indexed. Big, thumb-sized buttons; every tap is tracked.
 // Occasion links come from occasion data and are skipped if that page doesn't exist yet.
-// It opens on the basket mark (public/brand/logo-mark-small.svg, the mark of the app icon) in a
+// It opens on the basket mark (public/brand/logo-mark.svg, the guide's "Basket mark") in a
 // linen arch — the arch echoing the basket's handle — so visitors arriving from the profile
 // recognise the brand at once. The mark is used as-is: never recoloured, stretched or cropped.
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -70,10 +70,10 @@ const trackAttrs = (l: LinkItem) => ({
   <section aria-labelledby="links-title" class="container-x pb-16 pt-6 md:pb-24 md:pt-10">
     <div class="hero-enter mx-auto max-w-[29rem]">
       <div class="text-center">
-        <div class="arch-outline mx-auto mt-3 w-[8rem]">
-          <div class="arch flex aspect-[4/5] items-end justify-center bg-cream pb-[1.35rem]">
-            {/* viewBox 18.76 × 14.91 */}
-            <img src="/brand/logo-mark-small.svg" alt="" width="88" height="70" loading="eager" decoding="async" class="w-[5.5rem]" />
+        <div class="arch-outline mx-auto mt-3 w-[9rem]">
+          <div class="arch flex aspect-[4/5] items-end justify-center bg-cream pb-[1.4rem]">
+            {/* viewBox 108.36 × 84.65; side clear space ≈ the width of the heart tag */}
+            <img src="/brand/logo-mark.svg" alt="" width="104" height="81" loading="eager" decoding="async" class="w-[6.5rem]" />
           </div>
         </div>
         <h1 id="links-title" class="mx-auto mt-7 max-w-[18ch] text-[2.1rem] leading-[1.08] sm:text-[2.4rem]">{s.tagline}</h1>

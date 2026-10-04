@@ -82,7 +82,7 @@ function svg(w, h, label, [a, b]) {
       <stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.35" r="0.6">
-      <stop offset="0" stop-color="#FFFDFC" stop-opacity="0.55"/><stop offset="1" stop-color="#FFFDFC" stop-opacity="0"/>
+      <stop offset="0" stop-color="#FBF6F0" stop-opacity="0.55"/><stop offset="1" stop-color="#FBF6F0" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="100%" height="100%" fill="url(#g)"/>

@@ -27,6 +27,7 @@
   --color-sage-wash: #e8ede6;
   --color-gold: #c49a5a;        /* Gold 500 — decorative */
   --color-gold-ink: #7a5c22;
+  --color-note: #fbf3e4;        /* gold-tinted Linen — .placeholder-note background */
   --color-line: #ead0ca;
   --color-error: #9b2335;
 
@@ -67,7 +68,7 @@
 
   body {
     background: var(--color-petal);
-    color: var(--color-plum);
+    color: var(--color-cocoa);
     font-family: var(--font-sans);
     font-size: var(--text-base);
     line-height: 1.6;
@@ -86,7 +87,7 @@
     /* Cormorant's default figures are old-style; prices and step numbers read better lining. */
     font-variant-numeric: lining-nums;
     text-wrap: balance;
-    color: var(--color-plum);
+    color: var(--color-cocoa);
   }
   h1 { font-size: clamp(2.65rem, 1.75rem + 4vw, 5rem); line-height: 1.04; }
   h2 { font-size: clamp(2.1rem, 1.55rem + 2.2vw, 3.35rem); line-height: 1.08; }
@@ -99,7 +100,7 @@
   ::selection { background: var(--color-blush-300); color: var(--color-cocoa); }
 
   :focus-visible {
-    outline: 3px solid var(--color-plum);
+    outline: 3px solid var(--color-cocoa);
     outline-offset: 3px;
     border-radius: 6px;
   }
@@ -126,7 +127,7 @@
     left: 1rem;
     top: -4rem;
     z-index: 100;
-    background: var(--color-plum);
+    background: var(--color-cocoa);
     color: var(--color-cream);
     padding: 0.75rem 1.1rem;
     border-radius: var(--radius-btn);
@@ -162,9 +163,9 @@
   }
   .btn-primary { background: var(--color-rose); color: var(--color-cream); }
   .btn-primary:hover { background: var(--color-rose-hover); }
-  .btn-secondary { background: transparent; color: var(--color-plum); border-color: var(--color-plum); }
-  .btn-secondary:hover { background: var(--color-plum); color: var(--color-cream); }
-  .btn-light { background: var(--color-cream); color: var(--color-plum); }
+  .btn-secondary { background: transparent; color: var(--color-cocoa); border-color: var(--color-cocoa); }
+  .btn-secondary:hover { background: var(--color-cocoa); color: var(--color-cream); }
+  .btn-light { background: var(--color-cream); color: var(--color-cocoa); }
   .btn-light:hover { background: var(--color-blush-300); }
   .btn-lg { min-height: 3.5rem; padding: 1rem 1.9rem; font-size: 1.0625rem; }
 
@@ -254,8 +255,8 @@
   /* Clearly marked owner-content placeholder */
   .placeholder-note {
     border: 1.5px dashed var(--color-gold);
-    background: #fbf3e4;
-    color: var(--color-plum);
+    background: var(--color-note);
+    color: var(--color-cocoa);
     border-radius: 12px;
     padding: 1rem 1.15rem;
     font-size: 0.95rem;
