@@ -49,7 +49,7 @@ If your plans change, text us at {text} as soon as you can.
 
 If unsafe weather — such as heavy rain, thunderstorms or high winds — stops your picnic from going ahead, we'll gladly reschedule it to another available date. Your booking deposit is non-refundable, but it's applied to the rescheduled picnic. Refunds aren't provided for weather-related cancellations.
 
-The booking form asks for a backup date, and we also set up in homes and indoor venues.
+The booking form asks for a backup date. If you'd rather not depend on the weather at all, we also set up indoors — in your home or a venue you've arranged.
 
 <h2 id="arrival">Setup, pickup &amp; arriving late</h2>
 

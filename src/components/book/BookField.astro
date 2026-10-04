@@ -67,7 +67,7 @@ const Wrap = isGroup ? 'fieldset' : 'div';
       placeholder={f.placeholder}
       autocomplete={autocomplete}
       spellcheck={noSpell ? 'false' : undefined}
-      autocapitalize={f.type === 'email' || noSpell ? 'off' : f.id === 'name' ? 'words' : undefined}
+      autocapitalize={f.type === 'email' ? undefined : noSpell ? 'off' : f.id === 'name' ? 'words' : undefined}
       aria-describedby={describedBy}
     />
   )}

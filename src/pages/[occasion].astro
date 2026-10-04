@@ -31,16 +31,32 @@ const s = await getSettings();
 const pkg = await getPackage(d.recommendedPackage);
 // Body copy may contain {tokens} (prices, deposit…) — filled from the data files at build time.
 const storyHtml = await fillTokensHtml(entry.rendered?.html ?? '');
-const heroOg = await getImage({ src: d.heroImage, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+// A placeholder hero cropped to 1200×630 loses its label and reads as an empty pink frame in link
+// previews, so share the branded /og.jpg (BaseLayout's default) until a real photo is in.
+const heroIsPlaceholder = /^placeholder\b/i.test(d.heroAlt);
+const heroOg = heroIsPlaceholder
+  ? undefined
+  : await getImage({ src: d.heroImage, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 
 const crumbs = [
   { name: 'Occasions', path: '/occasions' },
   { name: capitalize(picnicPhrasePlural(entry)), path: occasionUrl(entry) },
 ];
-const jsonLd = [occasionService(s, entry, pkg, { image: new URL(heroOg.src, s.url).href }), breadcrumbs(s, crumbs), faqPage(d.faqs)];
+const jsonLd = [
+  occasionService(s, entry, pkg, heroOg ? { image: new URL(heroOg.src, s.url).href } : {}),
+  breadcrumbs(s, crumbs),
+  faqPage(d.faqs),
+];
 const phrase = picnicPhrase(entry);
 ---
-<BaseLayout title={d.metaTitle} description={d.metaDescription} image={d.heroImage} imageAlt={d.heroAlt} {jsonLd} book={{ occasion: entry.id, package: pkg.id }}>
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  image={heroIsPlaceholder ? undefined : d.heroImage}
+  imageAlt={heroIsPlaceholder ? undefined : d.heroAlt}
+  {jsonLd}
+  book={{ occasion: entry.id, package: pkg.id }}
+>
   <OccasionHero {entry} {pkg} {crumbs} />
   <OccasionHighlights {entry} />
   <OccasionStory>

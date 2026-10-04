@@ -220,7 +220,9 @@ export function initBooking(root: HTMLElement): void {
     }
     const ctrls = controlsOf(id);
     for (const c of ctrls) has ? c.setAttribute('aria-invalid', 'true') : c.removeAttribute('aria-invalid');
-    const describers: HTMLElement[] = wrap.tagName === 'FIELDSET' ? [wrap] : ctrls;
+    // Radio/checkbox groups: describe the fieldset and every control in it, because screen readers
+    // usually don't read a fieldset's description when focus lands on one of its radios.
+    const describers: HTMLElement[] = wrap.tagName === 'FIELDSET' ? [wrap, ...ctrls] : ctrls;
     for (const d of describers) {
       if (d.dataset.describedby === undefined) d.dataset.describedby = d.getAttribute('aria-describedby') ?? '';
       const ids = [has && box ? box.id : '', d.dataset.describedby].filter(Boolean).join(' ');
@@ -289,6 +291,14 @@ export function initBooking(root: HTMLElement): void {
     }
     box.append(h('p', { class: 'bk-summary-title' }, summaryTitle(errs.length)), list);
     box.hidden = false;
+    // Focus goes to the first field (which reads its own error); this tells screen-reader users how many
+    // there are. Cleared first so the same count is announced again after another attempt.
+    if (liveStatus) {
+      liveStatus.textContent = '';
+      window.setTimeout(() => {
+        liveStatus.textContent = `${summaryTitle(errs.length)}.`;
+      }, 150);
+    }
   }
   const summaryTitle = (n: number) => (n === 1 ? 'One thing to fix before you continue' : `${n} things to fix before you continue`);
 
@@ -561,6 +571,7 @@ export function initBooking(root: HTMLElement): void {
 
   // ───────────────────────── Letter board word counter ─────────────────────────
   const wordTimers = new Map<string, number>();
+  const wordAnnounced = new Map<string, string>();
   function updateWordCount(f: ResolvedField, announce = false) {
     const max = wordLimit(f);
     if (!max) return;
@@ -577,7 +588,10 @@ export function initBooking(root: HTMLElement): void {
     wordTimers.set(
       f.id,
       window.setTimeout(() => {
-        live.textContent = n > max ? `${n} words — that’s ${n - max} over the ${max}-word limit` : `${max - n} ${max - n === 1 ? 'word' : 'words'} left`;
+        const text = n > max ? `${n} words — that’s ${n - max} over the ${max}-word limit` : `${max - n} ${max - n === 1 ? 'word' : 'words'} left`;
+        if (wordAnnounced.get(f.id) === text) return; // same count as last time: stay quiet
+        wordAnnounced.set(f.id, text);
+        live.textContent = text;
       }, 900),
     );
   }
@@ -825,7 +839,7 @@ export function initBooking(root: HTMLElement): void {
     }
     if (id === 'package' && ev.type === 'change') track('package_select', { package: textOf('package') });
     if (estimateSources.has(id)) updateEstimate(true);
-    if (wordLimit(e.field)) updateWordCount(e.field, true);
+    if (wordLimit(e.field)) updateWordCount(e.field, ev.type === 'input');
     persist();
   }
   form.addEventListener('input', onEdit);

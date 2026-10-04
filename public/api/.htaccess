@@ -9,7 +9,9 @@ Options -Indexes
 DirectoryIndex disabled
 
 # Every .php except book.php, plus dotfiles, docs and anything a handler could leave behind.
-<FilesMatch "(\.(php[0-9]?|phtml|phar|inc|md|txt|log|eml|lock|dist|bak|sw[op])$)|(^\.)|(^(LICENSE|VERSION|composer\.(json|lock))$)">
+# book.php is left out by the pattern itself (the (?!book\.php$) part), so nothing depends on
+# how a server merges a later "allow" section over an earlier "deny" one.
+<FilesMatch "^(?!book\.php$).*(\.(php[0-9]?|phtml|phar|inc|md|txt|log|eml|lock|dist|bak|sw[op])$)|(^\.)|(^(LICENSE|VERSION|composer\.(json|lock))$)">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
@@ -19,16 +21,9 @@ DirectoryIndex disabled
   </IfModule>
 </FilesMatch>
 
-# Later sections win: re-open the handler itself.
-<Files "book.php">
-  <IfModule mod_authz_core.c>
-    Require all granted
-  </IfModule>
-  <IfModule !mod_authz_core.c>
-    Order allow,deny
-    Allow from all
-  </IfModule>
-</Files>
+# Booking requests are a few KB; refuse anything over 128 KB before PHP reads it
+# (book.php also checks, but PHP parses multipart and chunked bodies first).
+LimitRequestBody 131072
 
 # The validator's question list — public by design (the booking form already shows it).
 <Files "form-schema.json">

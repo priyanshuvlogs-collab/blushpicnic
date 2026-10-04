@@ -6,14 +6,14 @@
 # ─────────────────────────────────────────────────────────────
 - id: how-to-book
   question: "How do I book a picnic?"
-  answer: "Send us a booking request through our [booking form](/book) — it takes about three minutes — or text us at {phone}. We reply within 24 hours to confirm your date and your quote. A deposit then holds your date."
+  answer: "Send us a booking request through our [booking form](/book) — it takes about three minutes — or text us at {phone}. We reply {replyTime} to confirm your date and your quote. A booking deposit then holds your date."
   category: booking
   order: 1
   showOnHome: true
 
 - id: deposit
   question: "How much is the deposit?"
-  answer: "A **{deposit} booking deposit** (or **{depositPercent}** for larger events) holds your date. It's non-refundable. There's also a **{securityDeposit} refundable security deposit**, returned within 24–48 hours after your event once all rental items are collected and checked. The balance is due before your event."
+  answer: "A **{deposit} booking deposit** (or **{depositPercent}** for larger events) holds your date. It's non-refundable. There's also a **{securityDeposit} refundable security deposit**, returned within {securityReturned} after your event once all rental items are collected and checked. The balance is due before your event."
   category: booking
   order: 2
   showOnHome: true
@@ -52,7 +52,7 @@
 
 - id: extra-guests
   question: "Can I add more guests?"
-  answer: "Yes. The Signature Picnic is {extraGuest:signature} per extra guest. The Celebration package covers {guests:celebration}, and we'll quote larger groups. For the Proposal & Romance package, tell us who's joining and we'll include them in your quote."
+  answer: "Yes. The Signature Picnic is {extraGuest:signature} per extra guest, before HST. The Celebration package covers {guests:celebration}, and we'll quote larger groups. For the Proposal & Romance package, tell us who's joining and we'll include them in your quote."
   category: pricing
   order: 4
 
@@ -98,6 +98,12 @@
   answer: "Parks, beaches, backyards, homes and indoor venues across Toronto and the GTA. Not sure where to go? Choose “Not sure yet” in the booking form and we'll suggest a spot."
   category: locations
   order: 1
+
+- id: areas
+  question: "Which areas do you serve?"
+  answer: "We come to you anywhere in {serviceArea}, including North York, Scarborough, Etobicoke, East York, Mississauga, Brampton, Vaughan, Markham, Richmond Hill, Oakville, Pickering and Ajax. Prices vary by location, so tell us where you'd like your picnic and we'll confirm your quote."
+  category: locations
+  order: 1.5
 
 - id: permits
   question: "Do I need a park permit?"

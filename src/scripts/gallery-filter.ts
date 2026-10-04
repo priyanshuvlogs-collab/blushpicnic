@@ -5,6 +5,7 @@
 //   • The result count is announced politely ([data-gallery-status] is role="status").
 //   • The placeholder note shows only while a visible photo is a placeholder.
 //   • The "book" link under the grid follows the filter: /book?occasion=<id>.
+//   • On phones the chips scroll sideways; a focused or pressed chip is scrolled fully into view.
 // The page's head script sets html[data-gallery-occasion] before first paint (no flash of every
 // photo when arriving filtered); this script takes over and removes it.
 
@@ -95,6 +96,13 @@ function init(root: HTMLElement) {
     }
     if (active) revealChip(active);
   }
+
+  // Tabbing through the strip on phones: bring the focused chip fully into view (the list's
+  // scroll-padding keeps it clear of the fade on the right edge).
+  scroller?.addEventListener('focusin', (e) => {
+    const chip = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-filter]');
+    if (chip && scroller.scrollWidth > scroller.clientWidth) chip.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  });
 
   for (const b of buttons) {
     b.addEventListener('click', () => {

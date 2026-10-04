@@ -2,11 +2,13 @@
 // Everything comes from the form schema (packages.yaml / addons.yaml); nothing is hard-coded here.
 //
 //   total = package priceFrom
-//         + (adults + kids − guestsIncluded) × extraGuestPrice   (only when extraGuestPrice is known)
+//         + (adults − guestsIncluded) × extraGuestPrice   (only when extraGuestPrice is known)
 //         + known add-on prices
 //
-// Unknown amounts are never guessed: extra guests without a price become a "quoted" note and add-ons
-// with a null price are listed as "price on request".
+// Unknown amounts are never guessed: extra guests without a price become a "quoted" note, add-ons
+// with a null price are listed as "price on request", and kids beyond the included guests get a
+// "we'll confirm" note (no published price for kids yet — packages.yaml only has extraGuestPrice).
+// Kids still count towards a package's guest range (guestsMax).
 
 export interface EstimatePackage {
   id: string;
@@ -75,7 +77,9 @@ export function computeEstimate(
     .map((a) => ({ label: a.name, amount: a.price as number }));
   const onRequest = chosenAddons.filter((a) => a.price === null).map((a) => a.name);
 
-  const given = Math.max(0, input.adults ?? 0) + Math.max(0, input.kids ?? 0);
+  const adults = Math.max(0, input.adults ?? 0);
+  const kids = Math.max(0, input.kids ?? 0);
+  const given = adults + kids;
   const pkg = data.packages.find((p) => p.id === input.packageId);
 
   if (!pkg) {
@@ -95,10 +99,16 @@ export function computeEstimate(
   const extra = Math.max(0, guests - included);
   if (extra > 0) {
     if (pkg.extraGuestPrice !== null) {
-      lines.push({
-        label: `${plural(extra, 'extra guest', 'extra guests')} × ${money(pkg.extraGuestPrice)}`,
-        amount: extra * pkg.extraGuestPrice,
-      });
+      // Only adults are priced; kids past the included guests are confirmed in the quote.
+      const extraAdults = Math.max(0, adults - included);
+      if (extraAdults > 0) {
+        lines.push({
+          label: `${plural(extraAdults, 'extra guest', 'extra guests')} × ${money(pkg.extraGuestPrice)}`,
+          amount: extraAdults * pkg.extraGuestPrice,
+        });
+      }
+      const extraKids = Math.min(kids, extra);
+      if (extraKids > 0) notes.push(`${plural(extraKids, 'kid', 'kids')}: we’ll confirm pricing in your quote`);
     } else if (pkg.guestsMax !== null) {
       if (guests > pkg.guestsMax) notes.push(`${guests} guests: larger groups quoted`);
     } else {

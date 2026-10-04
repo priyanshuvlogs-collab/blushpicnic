@@ -39,7 +39,7 @@ const summary = [
     href: '#deposit',
     label: 'Security deposit',
     value: `${money(s.securityDeposit.amount)}, refundable`,
-    note: `returned within ${s.securityDeposit.returnedWithin} after your event`,
+    note: `returned within ${s.securityDeposit.returnedWithin} once items are collected and checked`,
   },
   { href: '#payment', label: 'Payment', value: 'In full before your event', note: 'we start setting up once paid' },
   { href: '#weather', label: 'Weather', value: 'Unsafe weather? We reschedule', note: 'your booking deposit carries over' },
@@ -94,7 +94,7 @@ const lede = d.lede ? await fillTokensText(d.lede) : undefined;
 
   <ContactStrip
     title="Questions about a policy?"
-    text={`Text us before you book — we reply ${s.replyTime}. We'd rather explain now than surprise you later.`}
+    text={`Text us before you book — we reply ${s.replyTime}. We’d rather explain now than surprise you later.`}
   />
 
   <CtaBand title="Ready when you are" />

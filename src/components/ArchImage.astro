@@ -13,10 +13,26 @@ interface Props {
   outline?: boolean;
   /** Above-the-fold images: load eagerly with high priority (LCP). */
   priority?: boolean;
+  /**
+   * With `priority`: pass "auto" when the image is eager but not the first thing seen on phones
+   * (e.g. a hero photo that sits below the copy), so it doesn't compete with the CSS and fonts.
+   */
+  fetchpriority?: 'high' | 'auto';
   class?: string;
   aspect?: string; // e.g. "4/5"
 }
-const { src, alt, sizes, widths = [360, 540, 720, 960, 1280], outline = false, priority = false, class: className = '', aspect = '4/5' } = Astro.props;
+const {
+  src,
+  alt,
+  sizes,
+  widths = [360, 540, 720, 960, 1280],
+  outline = false,
+  priority = false,
+  fetchpriority = priority ? 'high' : 'auto',
+  class: className = '',
+  aspect = '4/5',
+} = Astro.props;
+const urgent = priority && fetchpriority === 'high';
 ---
 <div class:list={['relative', outline && 'arch-outline', className]}>
   <Picture
@@ -27,8 +43,8 @@ const { src, alt, sizes, widths = [360, 540, 720, 960, 1280], outline = false, p
     formats={['avif', 'webp']}
     fallbackFormat="jpg"
     loading={priority ? 'eager' : 'lazy'}
-    fetchpriority={priority ? 'high' : 'auto'}
-    decoding={priority ? 'sync' : 'async'}
+    fetchpriority={urgent ? 'high' : 'auto'}
+    decoding={urgent ? 'sync' : 'async'}
     class="arch h-full w-full object-cover"
     style={`aspect-ratio:${aspect}`}
   />

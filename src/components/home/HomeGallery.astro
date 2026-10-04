@@ -3,26 +3,64 @@
 // each photo's own proportions (so real photos of any shape drop straight in).
 // Every photo carries a "Book this look" link that pre-selects its occasion in the form.
 //
-// Layout: photos are balanced into 4 columns at build time (shortest column first, using each
-// image's real aspect ratio). Columns pair up as [0,2] and [1,3]: two columns on phones,
-// four on tablets and up — no client-side JS, no reflow.
+// Layout: 4 columns on tablets and up; on phones they pair up as [0,2] and [1,3] into two
+// columns — no client-side JS, no reflow. Photos are assigned to columns at build time so the
+// columns end as evenly as possible on both layouts (using each image's real aspect ratio and
+// the staggered column offsets). The first four photos always start the four columns, with the
+// first one top left.
 import { Picture } from 'astro:assets';
 import Icon from '../Icon.astro';
+import { picnicPhrase } from '../occasion/text';
 import { getSettings, getGallery, getOccasions, bookUrl, type GalleryItem } from '../../lib/site';
 
 const s = await getSettings();
 const items = (await getGallery()).filter((g) => g.data.showOnHome);
-const names = new Map((await getOccasions()).map((o) => [o.id, o.data.name]));
+const anyPlaceholder = items.some((g) => g.data.placeholder);
+const occasions = new Map((await getOccasions()).map((o) => [o.id, o]));
 // Fallback while an occasion page doesn't exist yet: "be-my-girlfriend" → "Be my girlfriend"
-const nameFor = (id: string) => names.get(id) ?? id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+const nameFor = (id: string) => occasions.get(id)?.data.name ?? id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+// For screen readers: "Book this look: picnic date" / "…: corporate picnic"
+const phraseFor = (id: string) => {
+  const o = occasions.get(id);
+  return o ? picnicPhrase(o) : `${nameFor(id).toLowerCase()} picnic`;
+};
 
+// Heights below are in column widths.
 const COLS = 4;
-const CAPTION = 0.2; // caption height, in column widths
-const cols: { items: GalleryItem[]; h: number }[] = Array.from({ length: COLS }, () => ({ items: [], h: 0 }));
-for (const g of items) {
-  const col = cols.reduce((a, b) => (b.h < a.h - 0.001 ? b : a));
-  col.items.push(g);
-  col.h += g.data.image.height / g.data.image.width + CAPTION;
+const CAPTION = { wide: 0.25, phone: 0.45 }; // caption + link under each photo
+const GAP = 0.12; // between photos in a column
+const OFFSET = [0, 0, 0.24, 0.24]; // cols[2] and cols[3] start lower on tablets and up (md:mt-16)
+const PAIR_OFFSET = 0.28; // on phones the [1,3] column starts lower (mt-12)
+const ratio = (g: GalleryItem) => g.data.image.height / g.data.image.width;
+const height = (list: GalleryItem[], caption: number) =>
+  list.reduce((h, g) => h + ratio(g) + caption, 0) + GAP * Math.max(0, list.length - 1);
+// How ragged the bottom edge is: spread of the 4 columns + difference of the 2 phone columns.
+const unevenness = (c: GalleryItem[][]) => {
+  const wide = c.map((col, i) => height(col, CAPTION.wide) + (col.length ? OFFSET[i] : 0));
+  const phone = height([...c[0], ...c[2]], CAPTION.phone) - height([...c[1], ...c[3]], CAPTION.phone) - PAIR_OFFSET;
+  return Math.max(...wide) - Math.min(...wide) + Math.abs(phone);
+};
+
+let cols: GalleryItem[][] = Array.from({ length: COLS }, () => []);
+if (items.length <= 9) {
+  // Few enough photos to try every arrangement (≤ 4^9) and keep the most even one.
+  let best = Infinity;
+  for (let code = 0; code < COLS ** items.length; code++) {
+    const c: GalleryItem[][] = Array.from({ length: COLS }, () => []);
+    for (let j = 0, k = code; j < items.length; j++, k = Math.floor(k / COLS)) c[k % COLS].push(items[j]);
+    const starts = c.map((col) => (col[0] ? items.indexOf(col[0]) : -1));
+    if (items.length >= COLS && (starts.some((i) => i < 0 || i >= COLS) || starts[0] !== 0)) continue;
+    const u = unevenness(c);
+    if (u < best - 1e-9) [best, cols] = [u, c];
+  }
+} else {
+  // Many photos: shortest column first.
+  const h = [...OFFSET];
+  for (const g of items) {
+    const i = h.indexOf(Math.min(...h));
+    cols[i].push(g);
+    h[i] += ratio(g) + CAPTION.wide + GAP;
+  }
 }
 const pairs = [
   [cols[0], cols[2]],
@@ -44,7 +82,7 @@ const pairs = [
           <div class:list={['grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:gap-x-6', pi === 1 && 'mt-12 md:mt-0']}>
             {pair.map((col, ci) => (
               <div class:list={['flex flex-col gap-6 md:gap-8', ci === 1 && 'md:mt-16']}>
-                {col.items.map((g) => {
+                {col.map((g) => {
                   const occ = g.data.occasions[0];
                   const name = nameFor(occ);
                   return (
@@ -53,7 +91,7 @@ const pairs = [
                         src={g.data.image}
                         alt={g.data.alt}
                         widths={[280, 420, 560, 720]}
-                        sizes="(min-width: 1280px) 290px, (min-width: 768px) 23vw, 47vw"
+                        sizes="(min-width: 1280px) 266px, (min-width: 768px) 22vw, 46vw"
                         formats={['avif', 'webp']}
                         fallbackFormat="jpg"
                         loading="lazy"
@@ -66,7 +104,7 @@ const pairs = [
                           class="inline-flex min-h-11 items-center gap-1 self-start font-semibold underline decoration-gold decoration-2 underline-offset-4 hover:decoration-plum lg:self-auto"
                           data-track="booking_cta"
                           data-track-location="home_gallery"
-                        >Book this look<span class="sr-only">: {name} picnic</span></a>
+                        >Book this look<span class="sr-only">: {phraseFor(occ)}</span></a>
                       </figcaption>
                     </figure>
                   );
@@ -76,6 +114,12 @@ const pairs = [
           </div>
         ))}
       </div>
+
+      {anyPlaceholder && (
+        <p class="placeholder-note mt-10 max-w-2xl">
+          <strong>Placeholder —</strong> these are stand-in images until real photos are added to the gallery.
+        </p>
+      )}
 
       <div class="mt-8 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-10">
         <a href="/gallery" class="link-arrow">See the full gallery<Icon name="arrow-right" size={18} /></a>

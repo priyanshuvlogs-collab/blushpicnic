@@ -74,8 +74,25 @@ final class Booking
 
     public function firstName(): string
     {
-        $parts = preg_split('/\s+/u', trim($this->clientName())) ?: [];
-        return $parts[0] ?? '';
+        return self::firstNameOf($this->clientName());
+    }
+
+    /** First word of a name, at most 40 characters (also used for spam-trap replies, so they match real ones). */
+    public static function firstNameOf(string $name): string
+    {
+        $parts = preg_split('/\s+/u', trim($name)) ?: [];
+        return mb_substr((string) ($parts[0] ?? ''), 0, 40);
+    }
+
+    /**
+     * The first name for the client's "Thank you, Priya." heading — only when it looks like a name
+     * (letters, apostrophes, hyphens; up to 30 characters), so the confirmation can never carry a
+     * stranger's link or message to whatever address was typed in.
+     */
+    public function greetingName(): string
+    {
+        $first = $this->firstName();
+        return preg_match("/^\\p{L}[\\p{L}\\p{M}'’-]{0,29}$/u", $first) ? $first : '';
     }
 
     /** "Priya S." */
@@ -140,10 +157,16 @@ final class Booking
         return implode(' · ', $out);
     }
 
-    /** "Park — Trinity Bellwoods Park" */
+    /** "Park · Trinity Bellwoods Park" (· because some location types already contain a dash). */
     public function locationLabel(): string
     {
-        return implode(' — ', array_filter([$this->display('location_type'), $this->answers->get('location')], 'strlen'));
+        return implode(' · ', array_filter([$this->display('location_type'), $this->answers->get('location')], 'strlen'));
+    }
+
+    /** "Text" / "Call" / "Email" / "Instagram DM", or '' when not answered. */
+    public function contactPref(): string
+    {
+        return $this->display('contact_pref');
     }
 
     public function receivedLabel(): string
@@ -163,27 +186,41 @@ final class Booking
         return self::oneLine(sprintf('We’ve received your picnic request (%s)', $this->ref));
     }
 
-    /** Short summary rows used at the top of both emails. @return list<array{0:string,1:string}> */
+    /** Answers the business email already shows in its summary rows, so sections() skips them. */
+    public const SUMMARY_FIELDS = [
+        'occasion', 'package', 'date', 'backup_date', 'start_time', 'guests_adults', 'guests_kids',
+        'location_type', 'location', 'budget', 'is_surprise', 'contact_pref',
+    ];
+
+    /**
+     * Short summary rows at the top of both emails. @return list<array{0:string,1:string}>
+     * The client's copy holds only answers chosen from our own lists (plus the date, time and guest
+     * count): no free text, so the confirmation can't be used to mail someone else's words.
+     */
     public function summaryRows(bool $forBusiness): array
     {
         $date = $this->dateLabel();
         $backup = $this->dateLabel('backup_date');
+        $notSure = $this->answers->get('package') === 'not-sure';
         $rows = [
             ['Occasion', $this->occasionName()],
-            ['Package', $forBusiness ? $this->packageWithPrice() : $this->packageName()],
+            ['Package', $forBusiness ? $this->packageWithPrice() : ($notSure ? 'Not sure yet — we’ll recommend one' : $this->packageName())],
             ['Date', $date . ($backup !== '' ? ($forBusiness ? " (backup: {$backup})" : " · backup {$backup}") : '')],
             ['Start time', $this->timeLabel()],
             ['Guests', $this->guestsLabel()],
-            ['Location', $this->locationLabel()],
+            ['Location', $forBusiness ? $this->locationLabel() : $this->display('location_type')],
         ];
         if ($forBusiness) {
             $rows[] = ['Budget', $this->display('budget')];
+            $rows[] = ['Surprise', $this->answers->get('is_surprise') === 'yes' ? 'Yes' : ''];
+            $rows[] = ['Prefers', $this->contactPref()];
         }
         return array_values(array_filter($rows, static fn ($r) => trim($r[1]) !== ''));
     }
 
     /**
-     * Every answered question, grouped under its form section title, with the form's own labels.
+     * Every other answered question, grouped under its form section title, with the form's own
+     * labels (a toggle uses its section title, e.g. "Is it a surprise?", as the form's review step does).
      *
      * @return list<array{title:string, rows:list<array{0:string,1:string}>}>
      */
@@ -194,10 +231,13 @@ final class Booking
             $rows = [];
             foreach ((array) ($group['fields'] ?? []) as $field) {
                 $id = (string) ($field['id'] ?? '');
-                if ($id === '' || !array_key_exists($id, $this->answers->values)) {
+                if ($id === '' || in_array($id, self::SUMMARY_FIELDS, true) || !array_key_exists($id, $this->answers->values)) {
                     continue;
                 }
-                $rows[] = [trim((string) ($field['label'] ?? $id)), $this->display($id)];
+                $label = ($field['type'] ?? '') === 'toggle' && trim((string) ($group['title'] ?? '')) !== ''
+                    ? (string) $group['title']
+                    : (string) ($field['label'] ?? $id);
+                $rows[] = [trim($label), $this->display($id)];
             }
             if ($rows !== []) {
                 $out[] = ['title' => (string) ($group['title'] ?? ''), 'rows' => $rows];

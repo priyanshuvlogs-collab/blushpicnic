@@ -6,10 +6,13 @@
 //   ?occasion=<id> pre-selects one (occasion pages link here that way); see src/scripts/gallery-filter.ts.
 // • Each photo links to its large (~1600px) WebP, so it works without JavaScript; with JS it opens
 //   the lightbox (src/scripts/lightbox.ts), which loads only the large image being viewed.
+// • The occasion name under each photo links to that occasion's page (real links for every
+//   occasion, with or without JavaScript).
 import { Picture, getImage } from 'astro:assets';
 import Icon from '../Icon.astro';
 import { getGallery, getOccasions, bookUrl, occasionUrl, type Occasion } from '../../lib/site';
 import { picnicPhrase, picnicPhrasePlural } from '../occasion/text';
+import { columnStarts } from './columns';
 
 const gallery = await getGallery();
 const occasions = await getOccasions();
@@ -47,8 +50,18 @@ const items = await Promise.all(
 );
 const anyPlaceholder = gallery.some((g) => g.data.placeholder);
 const total = items.length;
-// Above-the-fold photos load eagerly; the rest wait until they're near the viewport.
-const EAGER = 4;
+
+// Only the first photo of each column is on screen when the page opens (CSS columns fill top to
+// bottom), so those load eagerly and the rest lazily. columnStarts() re-runs the browser's column
+// balancing from each photo's shape; the numbers mirror the CSS below (caption row, gaps, columns).
+// On phones the two column tops are the likely LCP, so they also get fetchpriority="high".
+const ratios = gallery.map((g) => g.data.image.height / g.data.image.width);
+const CAPTION = 44; // .gallery-cap min-height (2.75rem)
+const phone = (viewport: number) => columnStarts(ratios, { cols: 2, viewport, colGap: viewport < 640 ? 12 : 20, rowGap: 12, below: CAPTION });
+const tablet = (viewport: number) => columnStarts(ratios, { cols: 3, viewport, colGap: 20, rowGap: 20, below: CAPTION });
+const desktop = (viewport: number) => columnStarts(ratios, { cols: 4, viewport, colGap: 24, rowGap: 20, below: CAPTION });
+const high = new Set([0, ...[360, 390, 430].flatMap(phone)]);
+const eager = new Set([...high, ...[320, 640, 767].flatMap(phone), ...[768, 1024, 1279].flatMap(tablet), ...[1280, 1440].flatMap(desktop)]);
 ---
 <div class="gallery" data-gallery>
   <div class="gallery-toolbar" data-gallery-filters>
@@ -106,10 +119,11 @@ const EAGER = 4;
             src={g.data.image}
             alt={g.data.alt}
             widths={[280, 420, 560, 720].filter((w) => w <= g.data.image.width)}
-            sizes="(min-width: 1280px) 290px, (min-width: 768px) 31vw, 47vw"
+            sizes="(min-width: 1280px) 266px, (min-width: 768px) 30vw, 46vw"
             formats={['avif', 'webp']}
             fallbackFormat="jpg"
-            loading={i < EAGER ? 'eager' : 'lazy'}
+            loading={eager.has(i) ? 'eager' : 'lazy'}
+            fetchpriority={high.has(i) ? 'high' : undefined}
             decoding="async"
             class="gallery-img"
           />
@@ -117,7 +131,13 @@ const EAGER = 4;
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" /></svg>
           </span>
         </a>
-        <p class="gallery-cap">{m.name}</p>
+        {m.page ? (
+          <a href={m.page} class="gallery-cap">
+            <span>{m.name}<span class="sr-only">: more about {m.plural}</span></span><Icon name="arrow-right" size={14} />
+          </a>
+        ) : (
+          <p class="gallery-cap">{m.name}</p>
+        )}
       </li>
     ))}
   </ul>
@@ -168,12 +188,13 @@ const EAGER = 4;
     gap: 0.5rem;
     overflow-x: auto;
     padding: 0.15rem var(--gutter) 0.5rem;
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: var(--gutter);
+    /* No scroll-snap: it would pull a focused chip back under the fade. The end padding keeps a
+       focused or pressed chip clear of the fade (gallery-filter.ts scrolls it into view). */
+    scroll-padding-inline: var(--gutter) calc(var(--gutter) + 2.5rem);
     scrollbar-width: none;
   }
   .filter-list::-webkit-scrollbar { display: none; }
-  .filter-list li { flex-shrink: 0; scroll-snap-align: start; }
+  .filter-list li { flex-shrink: 0; }
   .filter-list li:last-child { padding-right: 1.5rem; }
   @media (min-width: 1024px) {
     .filter-scroller { margin-inline: 0; }
@@ -203,6 +224,15 @@ const EAGER = 4;
     border-color: var(--color-plum);
     color: var(--color-cream);
   }
+  /* High Contrast / forced colours drop the plum fill, so mark the active filter with the system highlight. */
+  @media (forced-colors: active) {
+    .filter-chip[aria-pressed="true"] {
+      forced-color-adjust: none;
+      background: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+    }
+  }
 
   .gallery-status {
     font-size: 0.95rem;
@@ -229,11 +259,12 @@ const EAGER = 4;
     .gallery-grid[data-count="3"] { columns: 3; max-width: 64rem; margin-inline: auto; }
   }
 
+  /* Spacing here and the caption height are mirrored in columnStarts() above — keep them in step. */
   .gallery-item {
     break-inside: avoid;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
   }
-  @media (min-width: 768px) { .gallery-item { margin-bottom: 1.75rem; } }
+  @media (min-width: 768px) { .gallery-item { margin-bottom: 1.25rem; } }
 
   .gallery-trigger {
     position: relative;
@@ -270,11 +301,32 @@ const EAGER = 4;
   .gallery-trigger:focus-visible .gallery-zoom { opacity: 1; }
   @media (hover: none) { .gallery-zoom { opacity: 1; width: 2rem; height: 2rem; } }
 
+  /* Occasion name under each photo; a link to that occasion's page when there is one. */
   .gallery-cap {
-    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
     font-size: 0.92rem;
-    line-height: 1.35;
+    line-height: 1.3;
     color: var(--color-plum-soft);
+  }
+  a.gallery-cap {
+    width: fit-content;
+    max-width: 100%;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  a.gallery-cap :global(svg) { flex-shrink: 0; transition: transform 0.25s var(--ease-out-soft); }
+  a.gallery-cap:hover { color: var(--color-plum); }
+  a.gallery-cap:hover > span:first-child {
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a.gallery-cap:hover :global(svg) { transform: translateX(3px); }
   }
 
   .gallery-next {

@@ -35,10 +35,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      # Hostinger runs PHP 8.1+; test the booking handler on 8.2.
+      # The booking handler's declared minimum is PHP 8.1, so lint and test it on exactly that
+      # (the browser tests below run on 8.3, and the Apache step uses Ubuntu's own PHP module).
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.1'
           extensions: mbstring
           coverage: none
           tools: none
@@ -63,6 +64,8 @@ jobs:
           bash -n docs/htaccess-test.sh
           if command -v shellcheck >/dev/null; then shellcheck deploy.sh docs/htaccess-test.sh; fi
 
+      # No browser is installed in this job: the one API test that drives Chromium skips itself
+      # (the e2e job covers the real form in a browser).
       - name: Booking API tests
         if: ${{ hashFiles('tests/api-test.mjs') != '' }}
         env:
@@ -70,10 +73,15 @@ jobs:
           API_TEST_SKIP_BUILD: '1'
         run: npm run test:api
 
-      - name: Server rules (.htaccess) on Apache 2.4
+      # With mod_php, so book.php really runs behind the .htaccess rules (GET → 405 JSON, a
+      # foreign-origin POST → 403 JSON after the test config loads, the 128 KB body limit,
+      # no X-Powered-By); without it those checks would be skipped.
+      - name: Server rules (.htaccess) on Apache 2.4 + PHP
+        env:
+          HTACCESS_CONFIG: tests/fixtures/blush-config.test.php
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends apache2 >/dev/null
+          sudo apt-get install -y -qq --no-install-recommends apache2 libapache2-mod-php >/dev/null
           bash docs/htaccess-test.sh dist
 
   e2e:
@@ -91,7 +99,7 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           extensions: mbstring
           coverage: none
           tools: none

@@ -48,10 +48,25 @@ echo "# notes" > "$DOCROOT/README.md"
 echo "PHP Warning: something" > "$DOCROOT/error_log"
 echo "{}" > "$DOCROOT/composer.json"
 echo "google-site-verification: google1234567890abcdef.html" > "$DOCROOT/google1234567890abcdef.html"
-first() { local f=("$DOCROOT"/_astro/*."$1"); [[ -e "${f[0]}" ]] || { echo "no .$1 file in _astro/" >&2; exit 2; }; echo "${f[0]##*/}"; }
+echo "PK" > "$DOCROOT/site-backup.zip"
+echo "name,email" > "$DOCROOT/export.csv"
+echo "a: 1" > "$DOCROOT/settings.yaml"
+echo "Subject: x" > "$DOCROOT/BP-20260101-ABCD.eml"
+echo "<?php echo 'stray';" > "$DOCROOT/api/info.php"
+head -c 200000 /dev/zero | tr '\0' 'x' > "$WORK/big-body.txt"
+# first <ext> → a build file of that type, as a path inside _astro/ (fonts may sit in _astro/fonts/)
+first() { local f; f="$(cd "$DOCROOT/_astro" && find . -type f -name "*.$1" | sort | head -1)"; [[ -n "$f" ]] || { echo "no .$1 file in _astro/" >&2; exit 2; }; echo "${f#./}"; }
 CSS="$(first css)"; JS="$(first js)"; AVIF="$(first avif)"; WOFF2="$(first woff2)"
 # HTACCESS_CONFIG=path/to/blush-config.php puts a booking config next to public_html, like Hostinger.
-if [[ -n "${HTACCESS_CONFIG:-}" ]]; then cp "$HTACCESS_CONFIG" "$WORK/blush-config.php"; mkdir -p "$WORK/blush-data"; fi
+# Its data and mail folders are pointed at $WORK/blush-data, so nothing outside $WORK is written.
+if [[ -n "${HTACCESS_CONFIG:-}" ]]; then
+  cp "$HTACCESS_CONFIG" "$WORK/blush-config.source.php"; mkdir -p "$WORK/blush-data"
+  cat > "$WORK/blush-config.php" <<'PHP'
+<?php
+$c = require __DIR__ . '/blush-config.source.php';
+return ['data_dir' => __DIR__ . '/blush-data', 'mail_dir' => __DIR__ . '/blush-data/mail'] + $c;
+PHP
+fi
 chmod -R a+rX "$WORK"
 [[ -d "$WORK/blush-data" ]] && chmod 777 "$WORK/blush-data"
 
@@ -118,6 +133,8 @@ for _ in $(seq 1 50); do curl -s -o /dev/null "http://127.0.0.1:$HTTP_PORT/" && 
 # ── Checks ───────────────────────────────────────────────────────────────────
 pass=0; fail=0
 # check <label> <scheme> <host> <path> <status> [location] [-- header-regex|!header-regex...] [@body body-regex...]
+# METHOD=HEAD|POST before "check" changes the method; POST sends BODY (default "x=1"; "@file" reads a file)
+# with ORIGIN as the Origin header if set.
 check() {
   local label="$1" scheme="$2" host="$3" path="$4" want="$5"; shift 5
   local want_loc="" ; if [[ $# -gt 0 && "$1" != "--" && "$1" != "@body" ]]; then want_loc="$1"; shift; fi
@@ -126,6 +143,8 @@ check() {
   [[ -n "${XFP:-}" ]] && extra+=(-H "X-Forwarded-Proto: $XFP")
   [[ -n "${AE:-}" ]] && extra+=(-H "Accept-Encoding: $AE")
   [[ "${METHOD:-}" == HEAD ]] && extra+=(--head)
+  [[ "${METHOD:-}" == POST ]] && extra+=(-X POST -H 'Accept: application/json' -H 'Content-Type: application/x-www-form-urlencoded' --data-binary "${BODY:-x=1}")
+  [[ -n "${ORIGIN:-}" ]] && extra+=(-H "Origin: $ORIGIN")
   local code
   code="$(curl -sk --path-as-is -o "$body" -D "$hdr" -w '%{http_code}' -H "Host: $host" "${extra[@]}" \
     "$scheme://127.0.0.1:$port$path" || true)"
@@ -170,7 +189,10 @@ check "http apex → https"                       http  "$HOST"       /         
 check "http www → https apex (one hop)"         http  "www.$HOST"   /                  301 "$A/"
 check "https www → https apex"                  https "www.$HOST"   /packages          301 "$A/packages"
 check "http www keeps the query string"         http  "www.$HOST"   "/book?occasion=proposal" 301 "$A/book?occasion=proposal"
-check "http api is upgraded too"                http  "$HOST"       /api/book.php      301 "$A/api/book.php"
+check "http api is upgraded too"                http  "$HOST"       /api/book.php      307 "$A/api/book.php"
+METHOD=POST check "POST http api: 307 keeps the POST" http "$HOST"   /api/book.php      307 "$A/api/book.php"
+METHOD=POST check "POST http www api: one 307 hop"    http "www.$HOST" /api/book.php    307 "$A/api/book.php"
+METHOD=POST check "POST https www api: 307"      https "www.$HOST" /api/book.php      307 "$A/api/book.php"
 XFP=https check "proxy already on https: no loop" http "$HOST"      /packages          200
 hops  "http://www…/packages/ → canonical"       /packages/ http "www.$HOST" "$A/packages" 2
 hops  "http://www…/packages.html → canonical"   /packages.html http "www.$HOST" "$A/packages" 2
@@ -215,7 +237,12 @@ AE=br check "images are not recompressed"       https "$HOST" "/_astro/$AVIF"   
 echo "Booking API (never rewritten)"
 check "form-schema.json"                        https "$HOST" /api/form-schema.json    200 -- 'max-age=300' '^content-type: application/json'
 if [[ -n "$PHP_MOD" ]]; then
-check "book.php runs (GET → 405 JSON)"          https "$HOST" /api/book.php            405 -- '^content-type: application/json'
+check "book.php runs (GET → 405 JSON)"          https "$HOST" /api/book.php            405 -- '^content-type: application/json' @body '"ok":false'
+BODY="@$WORK/big-body.txt" METHOD=POST check "book.php: body over 128 KB refused" https "$HOST" /api/book.php 413
+check "other .php in /api blocked"              https "$HOST" /api/info.php            403
+if [[ -n "${HTACCESS_CONFIG:-}" ]]; then
+ORIGIN=https://evil.example METHOD=POST check "book.php POST: config found, foreign origin → 403 JSON" https "$HOST" /api/book.php 403 -- '^content-type: application/json' @body '"ok":false'
+fi
 fi
 check "api lib code blocked"                    https "$HOST" /api/lib/Config.php      403
 check "PHPMailer licence blocked"               https "$HOST" /api/lib/PHPMailer/LICENSE 403
@@ -233,12 +260,16 @@ check "stray PHP (Hostinger default.php)"       https "$HOST" /default.php      
 check "markdown"                                https "$HOST" /README.md               403
 check "PHP error_log"                           https "$HOST" /error_log               403
 check "composer.json"                           https "$HOST" /composer.json           403
+check "archive (.zip)"                          https "$HOST" /site-backup.zip         403
+check "data export (.csv)"                      https "$HOST" /export.csv              403
+check "YAML"                                    https "$HOST" /settings.yaml           403
+check "saved email (.eml)"                      https "$HOST" /BP-20260101-ABCD.eml    403
 
 echo "Security headers"
 check "headers on pages"                        https "$HOST" /packages 200 -- \
   '^x-content-type-options: nosniff' '^referrer-policy: strict-origin-when-cross-origin' \
   '^x-frame-options: SAMEORIGIN' '^permissions-policy: camera=\(\)' '^strict-transport-security: max-age=31536000$' \
-  "^content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com"
+  "^content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://\*\.googletagmanager\.com"
 check "headers on 404s too"                     https "$HOST" /no-such-page 404 -- '^x-content-type-options: nosniff' '^content-security-policy:'
 check "headers on redirects too"                http  "$HOST" /packages 301 -- '^strict-transport-security:'
 if [[ -n "$PHP_MOD" ]]; then

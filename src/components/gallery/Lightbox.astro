@@ -2,6 +2,8 @@
 // Accessible photo lightbox (native <dialog>), driven by src/scripts/lightbox.ts.
 // Opens from any [data-lightbox-item] link on the page; see GalleryBrowser.astro for the data
 // attributes each photo carries. Without JavaScript the links simply open the large image.
+// The <img> itself is created by the script on first use, so the static page has no image
+// without a src; the title and occasion link carry real default text for the same reason.
 import Icon from '../Icon.astro';
 ---
 <dialog class="lightbox on-dark" aria-labelledby="lb-title" aria-describedby="lb-desc" data-lightbox>
@@ -14,7 +16,6 @@ import Icon from '../Icon.astro';
     </div>
 
     <div class="lb-stage" data-lb-stage data-lb-dismiss>
-      <img class="lb-img" alt="" data-lb-img decoding="async" />
       <button type="button" class="lb-btn lb-nav lb-prev" data-lb-prev>
         <Icon name="arrow-left" size={22} label="Previous photo" />
       </button>
@@ -25,12 +26,12 @@ import Icon from '../Icon.astro';
 
     <div class="lb-bottom" data-lb-dismiss>
       <div class="lb-text">
-        <h2 id="lb-title" class="lb-title" data-lb-title></h2>
+        <h2 id="lb-title" class="lb-title" data-lb-title>Photo</h2>
         <p id="lb-desc" class="lb-desc" data-lb-desc></p>
       </div>
       <div class="lb-actions">
         <a href="/book" class="btn btn-light" data-lb-book data-track="booking_cta" data-track-location="gallery_lightbox">Book this look</a>
-        <a href="/occasions" class="lb-link" data-lb-page></a>
+        <a href="/occasions" class="lb-link" data-lb-page hidden>Explore every occasion</a>
       </div>
     </div>
 
@@ -53,13 +54,15 @@ import Icon from '../Icon.astro';
     margin: 0;
     padding: 0;
     border: 0;
-    background: transparent;
+    /* The dark scrim lives on the dialog itself (not ::backdrop) so its colour is the real,
+       measurable background of the text; the backdrop only blurs the page behind. */
+    background: rgb(33 10 26 / 0.96);
     color: var(--color-cream);
     overflow: hidden;
     overscroll-behavior: contain;
   }
   .lightbox::backdrop {
-    background: rgb(33 10 26 / 0.96);
+    background: transparent;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
@@ -118,7 +121,8 @@ import Icon from '../Icon.astro';
   @media (min-width: 768px) {
     .lb-stage { padding-inline: 4.75rem; }
   }
-  .lb-img {
+  /* .lb-img is added by lightbox.ts, hence :global (scoped styles only reach markup in this file). */
+  .lb-stage :global(.lb-img) {
     display: block;
     width: auto;
     height: auto;
@@ -131,10 +135,10 @@ import Icon from '../Icon.astro';
     -webkit-user-drag: none;
   }
   @media (prefers-reduced-motion: no-preference) {
-    .lb-img { transition: opacity 0.25s ease-out, filter 0.35s ease-out; }
+    .lb-stage :global(.lb-img) { transition: opacity 0.25s ease-out, filter 0.35s ease-out; }
   }
   /* While the large file loads, the (already cached) grid image stands in, softly. */
-  .lb-stage[data-loading="true"] .lb-img { filter: blur(6px); opacity: 0.85; }
+  .lb-stage[data-loading="true"] :global(.lb-img) { filter: blur(6px); opacity: 0.85; }
 
   .lb-nav {
     position: absolute;
@@ -193,10 +197,31 @@ import Icon from '../Icon.astro';
     text-underline-offset: 0.3em;
   }
   .lb-link:hover { text-decoration-color: var(--color-cream); }
-  .lb-link:empty { display: none; }
+  .lb-link[hidden] { display: none; }
 
-  @media (max-height: 520px) {
-    .lb-desc { display: none; }
-    .lb-bottom { gap: 0.5rem; }
+  /* Short screens (landscape phones, a zoomed-in browser): the photo must never shrink to a
+     thumbnail under the title and buttons. */
+  @media (max-height: 30rem) and (max-width: 39.99rem) {
+    /* Narrow too (e.g. 400% zoom): stack at full size and let the dialog scroll. */
+    .lightbox { overflow-y: auto; }
+    .lb-inner { height: auto; min-height: 100%; grid-template-rows: auto auto auto; }
+    .lb-stage { height: auto; }
+    .lb-stage :global(.lb-img) { max-height: 78vh; max-height: 78dvh; }
+  }
+  @media (max-height: 30rem) and (min-width: 40rem) {
+    /* Wide (landscape phones): the photo on the left, its words and actions beside it. */
+    .lb-inner {
+      grid-template-columns: minmax(0, 1fr) minmax(13rem, 17rem);
+      grid-template-rows: auto minmax(0, 1fr);
+      column-gap: 1.5rem;
+    }
+    .lb-top { grid-column: 1 / -1; }
+    .lb-bottom {
+      grid-template-columns: minmax(0, 1fr);
+      align-content: center;
+      gap: 1rem;
+      padding-top: 0;
+      overflow-y: auto;
+    }
   }
 </style>

@@ -83,8 +83,9 @@
       type: text
       required: true
       maxLength: 200
-      autocomplete: "street-address"
-      placeholder: "e.g. Trinity Bellwoods Park, or Mississauga"
+      # "off": this is where the picnic happens (often a park), not the visitor's own address.
+      autocomplete: "off"
+      placeholder: "e.g. High Park, or Mississauga"
       help: "Prices vary by location across the GTA, so this helps us quote accurately."
     - id: budget
       label: "Budget range"
@@ -173,13 +174,11 @@
     - id: romance_extras
       label: "Extras you’re considering"
       type: checkboxes
+      # Flower arch, neon sign, photographer etc. are in "Add-ons" (style section) — don't repeat them here.
       options:
-        - "Flower arch"
         - "Rose petals and candles"
-        - "Neon sign"
-        - "Photographer"
         - "Family or friends join after"
-      help: "No commitment — we’ll include these in your quote."
+      help: "No commitment — we’ll include these in your quote. Rose petals and candles come with Proposal & Romance; more add-ons are further down."
 
 - id: sign
   title: "Your sign"
@@ -191,7 +190,7 @@
       label: "Sign wording"
       type: text
       maxLength: 60
-      placeholder: "e.g. Marry Me?, Happy 10 Years, or Just Married"
+      placeholder: "e.g. Marry Me? or Just Married"
       help: "Included with the Proposal & Romance package. Leave blank if you’re not sure yet."
 
 - id: couple
@@ -227,7 +226,7 @@
       label: "Activities the kids would love"
       type: text
       maxLength: 200
-      placeholder: "e.g. colouring, bubbles, lawn games"
+      placeholder: "e.g. colouring, bubbles, games"
 
 - id: honour
   title: "Who we’re celebrating"
@@ -252,7 +251,7 @@
       label: "Message or years of service"
       type: text
       maxLength: 200
-      placeholder: "e.g. Thank you for 25 years, Linda!"
+      placeholder: "e.g. Thanks for 25 years, Linda!"
     - id: invoice_needed
       label: "Do you need an invoice?"
       type: radio
@@ -346,13 +345,13 @@
       type: text
       maxLength: 120
       half: true
-      placeholder: "e.g. her sister, my best friend"
+      placeholder: "e.g. their sister, my best friend"
       showIf: { field: "is_surprise", equals: "yes" }
     - id: arrival_plan
       label: "How will they arrive?"
       type: textarea
       maxLength: 500
-      placeholder: "e.g. I’ll suggest a walk and bring her to the spot at 5:30"
+      placeholder: "e.g. I’ll suggest a walk and we’ll arrive at 5:30"
       showIf: { field: "is_surprise", equals: "yes" }
     - id: team_presence
       label: "Once it’s set up, should our team…"
@@ -367,11 +366,20 @@
   appliesTo: ["*"]
   order: 3
   fields:
+    # Only for "Something else" (it has no details section of its own), so we know what to style and quote.
+    - id: other_occasion
+      label: "What’s the occasion?"
+      type: text
+      required: true
+      maxLength: 120
+      onlyFor: ["other"]
+      placeholder: "e.g. a graduation or a farewell"
+      help: "Tell us what you’re celebrating so we can style it and quote accurately."
     - id: colours_vibe
       label: "Colours and vibe"
       type: text
       maxLength: 200
-      placeholder: "e.g. blush and ivory, soft and romantic"
+      placeholder: "e.g. blush and ivory, romantic"
     - id: letter_board
       label: "Letter board message"
       type: text
@@ -417,7 +425,7 @@
       maxLength: 30
       half: true
       autocomplete: "tel"
-      help: "We usually reply by text."
+      help: "For questions about your booking."
     - id: email
       label: "Email"
       type: email

@@ -25,13 +25,16 @@ Nothing outside a temporary folder is touched.
 
 - `HTACCESS_LOGLEVEL="warn rewrite:trace3"` prints mod_rewrite's step-by-step log.
 - `HTACCESS_HOLD=1` keeps Apache running afterwards, for browser checks.
-- `HTACCESS_CONFIG=path/blush-config.php` puts a booking config next to the document root, as on Hostinger.
+- `HTACCESS_CONFIG=path/blush-config.php` puts a booking config next to the document root, as on
+  Hostinger (its data and mail folders are redirected into the temporary folder). CI uses
+  `tests/fixtures/blush-config.test.php`, so the POST checks below run too.
 
 The document root is the build plus files a real `public_html` might hold: a `.git/` folder,
 `.env`, Hostinger's `default.php`, an `error_log`, a `README.md`, a `composer.json`, a Google
-verification file, an ACME challenge in `.well-known/`, and FTP-Deploy-Action's state file.
+verification file, an ACME challenge in `.well-known/`, FTP-Deploy-Action's state file, an
+archive, a CSV export, a YAML file, a saved `.eml`, and a stray `api/info.php`.
 
-**Last run: 61 passed, 0 failed (Apache/2.4.58, Ubuntu), 2026-10-03**, on a full build of the site.
+**Last run: 71 passed, 0 failed (Apache/2.4.58 + mod_php 8.3, Ubuntu, with `HTACCESS_CONFIG`), 2026-10-03**, on a full build of the site.
 
 ## Rule by rule
 
@@ -52,6 +55,26 @@ Without this guard, the error page for the folder `/_astro/` was redirected to `
 Apache's folder handling sent it back to `/_astro/`: a redirect loop. (The test suite caught
 this; see below.) LiteSpeed sets `REDIRECT_STATUS` the same way, and WordPress-style rules
 rely on it there.
+
+### 1a. The booking API: the same moves, but with 307
+
+```apache
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^api(?:/|$) https://%1%{REQUEST_URI} [R=307,L]
+RewriteCond %{HTTPS} !^on$ [NC]
+RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+RewriteRule ^api(?:/|$) https://%{HTTP_HOST}%{REQUEST_URI} [R=307,L]
+```
+
+After a 301, browsers re-send a POST as a GET, so a booking posted to `http://` or `www.` would
+be lost. A 307 keeps the method and the body. (307 rather than 308: both keep the POST, and 307
+is the one every server and client has supported for longest.)
+
+| Request | Result |
+| --- | --- |
+| `POST http://blushpicnic.com/api/book.php` | 307 → `https://blushpicnic.com/api/book.php` |
+| `POST http://www.blushpicnic.com/api/book.php` | 307 → `https://blushpicnic.com/api/book.php` (one hop) |
+| `POST https://www.blushpicnic.com/api/book.php` | 307 → `https://blushpicnic.com/api/book.php` |
 
 ### 1. `www` → apex, straight to https
 
@@ -80,7 +103,7 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 | Request | Result |
 | --- | --- |
 | `http://blushpicnic.com/` | → `https://blushpicnic.com/` |
-| `http://blushpicnic.com/api/book.php` | → https (bookings are never accepted over plain http) |
+| `http://blushpicnic.com/api/book.php` | 307 → https by rule 1a (bookings are never accepted over plain http) |
 | http, with `X-Forwarded-Proto: https` (a CDN in front) | 200, no loop |
 
 `!^on$` is a regex on purpose. The `!=on` comparison form isn't parsed the same way everywhere,
@@ -107,6 +130,15 @@ RewriteRule ^api(?:/|$) - [L]
 `/api/book.php` runs as PHP, `/api/form-schema.json` is a plain file, and `/api/.htaccess`
 handles the rest (`lib/` denied, only `book.php` and the schema reachable). `/api` without a
 slash gets Apache's own folder redirect to `/api/`, which answers 403 (no listing).
+
+`api/.htaccess` denies every `.php` file **except** `book.php` with one pattern,
+`^(?!book\.php$).*\.(php…)$`, rather than a deny followed by a later `<Files "book.php">` allow:
+how a server merges two such sections is Apache behaviour LiteSpeed may not copy, and a deny
+that won would block every booking. It also sets `LimitRequestBody 131072`, so a body over
+128 KB gets a 413 before PHP parses it (book.php has its own 64 KB limit too). Tested: GET
+`/api/book.php` → 405 JSON, a stray `/api/info.php` → 403, a 200 KB POST → 413, and with a
+config a foreign-origin POST → 403 JSON from PHP. `./deploy.sh --check` checks the first and
+the last on the live server, where a server-level 403 page would show as a failure.
 
 ### 5. No PHP outside `/api` → 403
 
@@ -199,7 +231,7 @@ so no real page has a dot. `DOCUMENT_ROOT` isn't used: it isn't always the site 
 | `ErrorDocument 403 /404.html` | `/_astro/` | 403 status, our page instead of the server's default |
 | `Options -Indexes` | `/_astro/`, `/api/` | 403, no listings |
 | `Options -MultiViews` (guarded) | — | only these rules decide which file answers a URL |
-| `<FilesMatch>` deny list | `/.htaccess`, `/README.md`, `/error_log`, `/composer.json`, `*.example.php`, logs, backups | 403 |
+| `<FilesMatch>` deny list | `/.htaccess`, `/README.md`, `/error_log`, `/composer.json`, `*.example.php`, logs, backups, archives (`.zip`, `.tar`, `.gz`, `.tgz`, `.7z`, `.rar`), `.yml`/`.yaml`, `.eml`, `.csv` | 403 |
 | `AddType` | `.avif`, `.webp`, `.woff2`, `.webmanifest`, `.js` | `image/avif`, `font/woff2`, `application/manifest+json`, `text/javascript` |
 
 ### Caching
@@ -207,7 +239,7 @@ so no real page has a dot. `DOCUMENT_ROOT` isn't used: it isn't always the site 
 | Files | `Cache-Control` | Why |
 | --- | --- | --- |
 | `*.html` | `no-cache` | Browsers revalidate each time (a cheap `304`), so a deploy shows up immediately |
-| `/_astro/*`: `name.HASH.ext` / `name.HASH_VARIANT.ext` | `public, max-age=31536000, immutable` | The name changes whenever the content does |
+| `/_astro/*`: `name.HASH.ext` / `name.HASH_VARIANT.ext`, and Astro's fonts `/_astro/fonts/HASH.woff2` (16 hex characters, a hash of the file) | `public, max-age=31536000, immutable` | The name changes whenever the content does |
 | Other images and fonts (`og.jpg`, logo, favicons) | `public, max-age=2592000` (30 days) | Not fingerprinted, so they need to be able to change |
 | `*.css`, `*.js` outside `/_astro/` (none today) | 1 day | |
 | `*.webmanifest`, `*.json` | 1 day (`/api/form-schema.json`: 5 minutes, set in `api/.htaccess`) | |
@@ -216,7 +248,10 @@ so no real page has a dot. `DOCUMENT_ROOT` isn't used: it isn't always the site 
 `.htaccess` can't match a folder, so `/_astro/` is recognised by Astro's fingerprint pattern:
 8 characters between dots (`BaseLayout.CRCVGkb8.css`, `about.gc9TmKJL_18yIe1.webp`). All 1,537
 files in `/_astro/` of the current build match it, and no file outside it does. **Don't name
-your own files in `public/` like `photo.abcdefgh.jpg`**, or they'd be cached for a year.
+your own files in `public/` like `photo.abcdefgh.jpg`**, or they'd be cached for a year:
+`deploy.sh` and the GitHub deploy refuse a build with such a name outside `/_astro/`. (Scoping
+the rule to the folder would need `<If>` or a `public/_astro/.htaccess`; the first isn't
+reliable on LiteSpeed, so the guard sits in the deploy instead.)
 Later `<FilesMatch>` sections win, which is why the fingerprint rule comes last.
 
 ### Compression
@@ -245,11 +280,11 @@ Sent with `Header always`, so they also go out on redirects, 404s and 403s (test
 
 ```
 default-src 'self';
-script-src  'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net;
+script-src  'self' 'unsafe-inline' https://*.googletagmanager.com https://connect.facebook.net;
 style-src   'self' 'unsafe-inline';
-img-src     'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com;
+img-src     'self' data: blob: https://*.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com;
 font-src    'self' data:;
-connect-src 'self' https://api.web3forms.com https://www.googletagmanager.com https://www.google-analytics.com
+connect-src 'self' https://api.web3forms.com https://*.googletagmanager.com https://www.google-analytics.com
             https://*.google-analytics.com https://*.analytics.google.com https://connect.facebook.net https://www.facebook.com;
 media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://api.web3forms.com;
 frame-ancestors 'self'; upgrade-insecure-requests
@@ -277,6 +312,15 @@ hash-only. That's left for a later, separately tested change.
   `facebook.com/tr`: **allowed** (0 violations).
 - Control: a script and a `fetch` to `evil.example.com`: **blocked**.
 
+`https://*.googletagmanager.com` follows Google's published CSP guidance for GA4 (it also covers
+regional tag servers such as `region1.googletagmanager.com`).
+
+**Google signals or Ads features** are off today (`src/scripts/analytics.ts` disables signals).
+If they're ever switched on, GA also loads from `stats.g.doubleclick.net`,
+`www.google.com/ads/ga-audiences` and `www.google.com/ccm`, which this policy blocks. Then add
+`https://*.g.doubleclick.net https://www.google.com https://www.google.ca` to **img-src** and
+**connect-src**, rerun the tests, and check the browser console on the live site.
+
 **Adding a service later** (a Google Map, a YouTube video, a chat widget, Calendly) means adding
 its domains to the right directive: usually `frame-src` for embeds (add `frame-src 'self'
 https://www.google.com` and similar), `script-src` and `connect-src` for widgets. Then rerun the
@@ -289,8 +333,12 @@ console warnings.
 What the Apache tests can't prove, and why the rules should still hold on LiteSpeed:
 
 - **mod_rewrite**: LiteSpeed implements Apache's rewrite engine, including `THE_REQUEST`,
-  `%{ENV:…}`, `[NC,NE,L,F,R=301]`, `-f`/`-d` tests and PCRE (`(?:…)`, `(?!…)`). Only those
+  `%{ENV:…}`, `[NC,NE,L,F,R=301|307]`, `-f`/`-d` tests and PCRE (`(?:…)`, `(?!…)`). Only those
   features are used. No `[END]`, no `<If>` expressions, no `RewriteMap`.
+- **`<FilesMatch>` with a lookahead** (`api/.htaccess`): PCRE, as in Apache. If LiteSpeed ever
+  read it differently, `./deploy.sh --check` would report that `book.php` doesn't answer.
+- **`LimitRequestBody`** (`api/.htaccess`): honoured by Apache; LiteSpeed has its own request
+  body limit in the server configuration. `book.php` checks the size either way.
 - **Inheritance**: `api/.htaccess` and `api/lib/.htaccess` contain no rewrite rules. On Apache
   the parent's rules then apply to `/api` (and rule 4 stops them). If LiteSpeed doesn't
   inherit them, `/api` simply isn't rewritten at all, which is the same result.
@@ -330,5 +378,5 @@ curl -sI -H 'Accept-Encoding: br, gzip' https://blushpicnic.com/ | grep -i -E 'c
 ## Trade-offs, on purpose
 
 - `/404` (no `.html`) serves the 404 page with status 200. Nothing links to it, and it's `noindex`.
-- Plain-http requests to `/api/book.php` are redirected to https, so a POST over http would turn
-  into a GET (405). The form always posts from an https page, so this never happens in practice.
+- Plain-http and `www.` requests to `/api/` get a 307 (rule 1a), not a 301, so a POST keeps
+  its body. Everything else uses 301, which search engines treat as the permanent address.

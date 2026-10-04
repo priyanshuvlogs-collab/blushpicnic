@@ -50,6 +50,15 @@ ErrorDocument 403 /404.html
   RewriteCond %{ENV:REDIRECT_STATUS} !^$
   RewriteRule ^ - [L]
 
+  # 1a. The booking API on www. or http:// gets the same one-hop move, but with 307,
+  #     which keeps the method and body (after a 301, browsers re-send a POST as a GET
+  #     and the booking would be lost).
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^api(?:/|$) https://%1%{REQUEST_URI} [R=307,L]
+  RewriteCond %{HTTPS} !^on$ [NC]
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+  RewriteRule ^api(?:/|$) https://%{HTTP_HOST}%{REQUEST_URI} [R=307,L]
+
   # 1. www.blushpicnic.com → https://blushpicnic.com, straight to https (one hop).
   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
   RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
@@ -100,8 +109,9 @@ ErrorDocument 403 /404.html
 </IfModule>
 
 # ── Files that must never be served ──────────────────────────────────────────
-# Dotfiles, notes, config templates, dependency manifests, logs and backups.
-<FilesMatch "(?:^\.|\.(?:md|markdown|log|bak|backup|old|orig|sql|sqlite|sh|env|ini|dist|lock|sw[op]|tmp)$|\.example\.php$|^(?:composer|package|package-lock)\.json$|^(?:error_log|php_errorlog)$)">
+# Dotfiles, notes, config templates, dependency manifests, logs, backups, archives,
+# data exports and saved emails.
+<FilesMatch "(?:^\.|\.(?:md|markdown|log|bak|backup|old|orig|sql|sqlite|sh|env|ini|dist|lock|sw[op]|tmp|zip|tar|t?gz|7z|rar|ya?ml|eml|csv)$|\.example\.php$|^(?:composer|package|package-lock)\.json$|^(?:error_log|php_errorlog)$)">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
@@ -140,7 +150,11 @@ ErrorDocument 403 /404.html
   </FilesMatch>
 
   # Fingerprinted build files: name.HASH.ext or name.HASH_VARIANT.ext (HASH = 8 characters).
-  <FilesMatch "\.[A-Za-z0-9_-]{8}(?:_[A-Za-z0-9_-]+)?\.(?:css|m?js|avif|webp|jpe?g|png|gif|svg|woff2?|ttf|otf)$">
+  # The pattern can't see folders, so only /_astro/ files may be named like that: deploy.sh
+  # and the deploy workflow refuse a build with such a name anywhere else.
+  # Fonts from Astro's font pipeline: /_astro/fonts/HASH.woff2 (HASH = 16 hex characters of the
+  # file's content) are fingerprinted the same way.
+  <FilesMatch "(?:\.[A-Za-z0-9_-]{8}(?:_[A-Za-z0-9_-]+)?\.(?:css|m?js|avif|webp|jpe?g|png|gif|svg|woff2?|ttf|otf)|^[0-9a-f]{16}\.(?:woff2?|ttf|otf))$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 </IfModule>
@@ -174,14 +188,16 @@ ErrorDocument 403 /404.html
 # needed for the small inline scripts and styles Astro writes into every page;
 # everything else (plugins, framing by other sites, posting forms elsewhere,
 # <base> tricks) stays locked. Adding a new outside service (a map, a video, a
-# chat widget) means adding its domain here — see docs/htaccess-tests.md.
+# chat widget) means adding its domain here — see docs/htaccess-tests.md (which also
+# lists the extra Google domains needed if Google signals or Ads features are ever
+# switched on).
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
   Header always set Strict-Transport-Security "max-age=31536000"
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.web3forms.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://connect.facebook.net https://www.facebook.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.web3forms.com https://*.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://connect.facebook.net https://www.facebook.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'self'; upgrade-insecure-requests"
   Header always unset X-Powered-By
   Header unset X-Powered-By
 </IfModule>

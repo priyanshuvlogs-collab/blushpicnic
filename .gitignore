@@ -7,18 +7,31 @@ node_modules/
 # secrets — never commit
 .env
 .env.*
+*.env
 !.env.example
 blush-config.php
 **/blush-config.php
 !api-config/blush-config.example.php
 deploy.env
+deploy*.env
+deploy.env.*
+!deploy.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
 backups/
 
-# local test artefacts
+# booking data: the handler's data_dir when run from the repo (unsent .eml copies with customer
+# details, logs, the salt) and any saved email
+blush-data/
+*.eml
+
+# local test artefacts (tests/.mail-live, tests/.tmp-live and per-run copies included)
 test-results/
 playwright-report/
-tests/.mail/
-tests/.tmp/
+tests/.mail*/
+tests/.tmp*/
 .lighthouseci/
 *.log
 .DS_Store

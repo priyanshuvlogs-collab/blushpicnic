@@ -7,33 +7,34 @@ import { getSettings, smsUrl, telUrl } from '../../lib/site';
 
 const s = await getSettings();
 
-const facts = [
+const facts: { icon: 'map-pin' | 'sparkle' | 'clock' | 'calendar' | 'check'; title: string; text: string[] }[] = [
   {
     icon: 'map-pin',
     title: 'Where we set up',
-    text: `Parks, beaches, backyards, homes and indoor venues across ${s.serviceArea}. Not sure where yet? We can suggest a spot.`,
+    text: [`Parks, beaches, backyards, homes and indoor venues across ${s.serviceArea}. Not sure where yet? We can suggest a spot.`],
   },
   {
     icon: 'sparkle',
     title: 'What we handle',
-    text: 'Delivery, setup, styling and clean-up. Everything arrives with us and leaves with us.',
+    text: ['Delivery, setup, styling and clean-up. Everything arrives with us and leaves with us.'],
   },
   {
     icon: 'clock',
     title: 'Hearing back',
-    text: `We reply ${s.replyTime} with availability and your quote.`,
+    text: [`We reply ${s.replyTime} with availability and your quote.`],
   },
   {
     icon: 'calendar',
-    title: 'Holding your date',
-    text: s.deposit.summary,
+    title: 'Deposits',
+    // Both deposits, so the refundable security deposit is never a surprise.
+    text: [s.deposit.summary, s.securityDeposit.summary],
   },
   {
     icon: 'check',
     title: 'Prices',
-    text: `Every price is a starting price, ${s.taxNote}. ${s.locationNote}`,
+    text: [`Every price is a starting price, ${s.taxNote}. ${s.locationNote}`],
   },
-] as const;
+];
 ---
 <section class="section-y">
   <div class="container-x grid gap-x-16 gap-y-14 lg:grid-cols-12">
@@ -42,15 +43,16 @@ const facts = [
     </div>
 
     <aside aria-labelledby="good-to-know" class="lg:col-span-5">
-      <div class="rounded-[var(--radius-card)] border border-line bg-cream p-6 sm:p-8 lg:sticky lg:top-28">
+      {/* Sticky only where the whole panel fits on screen: a sticky panel taller than the viewport hides its own links. */}
+      <div class="rounded-[var(--radius-card)] border border-line bg-cream p-6 sm:p-8 lg:top-24 lg:[@media(min-height:66rem)]:sticky">
         <h2 id="good-to-know" class="text-[1.65rem] md:text-[1.9rem]">Good to know</h2>
-        <dl class="mt-5 grid gap-5">
+        <dl class="mt-5 grid gap-4">
           {facts.map((f) => (
             <div class="relative pl-[2.1rem]">
               <dt class="font-semibold">
                 <Icon name={f.icon} size={20} class="absolute left-0 top-[0.2em] text-sage-ink" />{f.title}
               </dt>
-              <dd class="mt-0.5 text-[0.98rem] text-plum-soft">{f.text}</dd>
+              {f.text.map((t, i) => <dd class:list={['text-[0.95rem] leading-normal text-plum-soft', i === 0 ? 'mt-1' : 'mt-1.5']}>{t}</dd>)}
             </div>
           ))}
         </dl>

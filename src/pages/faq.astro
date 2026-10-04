@@ -30,7 +30,7 @@ const groups = CATEGORIES.map((c) => ({
 
 const crumbs = [{ name: 'FAQ', path: '/faq' }];
 const title = 'Picnic FAQs | Booking, Prices & Policies | Blush Picnic';
-const description = `Answers about booking a luxury picnic in ${s.serviceArea}: the deposit, prices ${s.taxNote}, what's included, food, locations, weather and policies.`;
+const description = `Answers about booking a luxury picnic in ${s.serviceArea}: the deposit, prices ${s.taxNote}, what’s included, food, locations, weather and policies.`;
 const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)];
 ---
 <BaseLayout {title} {description} {jsonLd}>
@@ -60,19 +60,16 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
                 </span>
               </li>
             ))}
-            <li class="glance-row">
-              <span>
-                <span class="block font-semibold">Booking deposit</span>
-                <span class="block text-[0.95rem] text-plum-soft">Holds your date, or {s.deposit.largeEventPercent}% for larger events</span>
-              </span>
-              <span class="block text-right font-display text-[1.5rem] leading-none">{money(s.deposit.standard)}</span>
+            {/* Deposit notes run the full width under the name and amount, so they don't squeeze into a narrow column on phones. */}
+            <li class="glance-row glance-row--note">
+              <span class="font-semibold">Booking deposit</span>
+              <span class="text-right font-display text-[1.5rem] leading-none">{money(s.deposit.standard)}</span>
+              <span class="glance-note">Holds your date, or {s.deposit.largeEventPercent}% for larger events · <span class="whitespace-nowrap">non-refundable</span></span>
             </li>
-            <li class="glance-row">
-              <span>
-                <span class="block font-semibold">Security deposit</span>
-                <span class="block text-[0.95rem] text-plum-soft">Refundable, returned within {s.securityDeposit.returnedWithin}</span>
-              </span>
-              <span class="block text-right font-display text-[1.5rem] leading-none">{money(s.securityDeposit.amount)}</span>
+            <li class="glance-row glance-row--note">
+              <span class="font-semibold">Security deposit</span>
+              <span class="text-right font-display text-[1.5rem] leading-none">{money(s.securityDeposit.amount)}</span>
+              <span class="glance-note">Refundable, returned within {s.securityDeposit.returnedWithin} once items are collected and checked</span>
             </li>
           </ul>
           <p class="mt-3 text-[0.92rem] leading-relaxed text-plum-soft">
@@ -117,5 +114,11 @@ const jsonLd = [faqPage(groups.flatMap((g) => g.items)), breadcrumbs(s, crumbs)]
     align-items: end;
     gap: 1rem;
     padding-block: 0.8rem;
+  }
+  .glance-row--note { align-items: baseline; row-gap: 0.15rem; }
+  .glance-note {
+    grid-column: 1 / -1;
+    font-size: 0.95rem;
+    color: var(--color-plum-soft);
   }
 </style>

@@ -32,6 +32,12 @@ function analyticsId(envValue: unknown, yamlValue: string, pattern: RegExp, labe
 const ga4 = analyticsId(env.PUBLIC_GA4_ID, s.analytics.ga4Id, GA4_ID, 'GA4 ID (expected G-XXXXXXXXXX)');
 const pixel = analyticsId(env.PUBLIC_META_PIXEL_ID, s.analytics.metaPixelId, PIXEL_ID, 'Meta Pixel ID (expected digits only)');
 const enabled = Boolean(ga4 || pixel);
+// Say exactly what's being asked for: with the Meta Pixel the purpose includes measuring ads (PIPEDA).
+const services = [ga4 && 'Google Analytics', pixel && 'Meta'].filter(Boolean).join(' and ');
+const message = pixel
+  ? `We’d like to use optional cookies from ${services} to see which pages help people plan their picnic and whether our Instagram and Facebook ads are working. You can change this any time.`
+  : 'We use optional analytics cookies to understand which pages help people plan their picnic. You can change this any time.';
+const cookieLabel = pixel ? 'Optional cookies' : 'Analytics cookies';
 const linkClass =
   'consent-link font-semibold text-plum underline decoration-gold decoration-2 underline-offset-[0.2em] hover:decoration-plum';
 ---
@@ -45,9 +51,10 @@ const linkClass =
     data-consent="banner"
     data-ga4={ga4 || undefined}
     data-pixel={pixel || undefined}
+    data-cookie-label={cookieLabel}
   >
     <p class="consent-text">
-      We use optional analytics cookies to understand which pages help people plan their picnic. You can change this any time.
+      {message}
       <a href="/privacy#cookies" class={linkClass}>Privacy policy</a>
     </p>
     <p class="mt-2 text-[0.9rem] text-plum-soft" data-consent-current hidden></p>
@@ -123,6 +130,37 @@ const linkClass =
       margin-inline: 0;
       padding: 1.35rem 1.4rem 1.4rem;
     }
+  }
+
+  /* Short screens (phone landscape, 200–400% zoom): compact, never taller than the screen (it
+     scrolls inside instead), and the buttons sit beside the text when there's width for them. */
+  @media (height <= 30rem) {
+    .consent {
+      /* at most ~60% of the screen, so the page stays readable; the panel scrolls if it needs more */
+      max-height: min(62dvh, calc(100dvh - var(--consent-dock, 0px) - 1.5rem));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.75rem 0.9rem 0.8rem;
+    }
+    .consent-text { font-size: 0.9rem; line-height: 1.45; }
+    .consent-actions { margin-top: 0.6rem; }
+  }
+  @media (height <= 30rem) and (width >= 36rem) {
+    .consent {
+      left: var(--gutter);
+      right: var(--gutter);
+      bottom: calc(var(--consent-dock, 0px) + 0.75rem);
+      width: auto;
+      max-width: 46rem;
+      margin-inline: auto;
+      padding: 0.8rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: 1.25rem;
+    }
+    .consent > :not(.consent-actions) { grid-column: 1; }
+    .consent-actions { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -204,7 +242,14 @@ const linkClass =
     const ids = { ga4: panel.dataset.ga4 ?? '', pixel: panel.dataset.pixel ?? '' };
     const current = panel.querySelector<HTMLElement>('[data-consent-current]');
     const root = document.documentElement;
+    const label = panel.dataset.cookieLabel ?? 'Analytics cookies';
     let opener: HTMLElement | null = null;
+    // Where focus was before it moved into the panel, to hand it back when the panel closes.
+    let before: HTMLElement | null = null;
+    document.addEventListener('focusin', (e) => {
+      const target = e.target as HTMLElement;
+      if (!panel.contains(target)) before = target;
+    });
     let frame = 0;
     let started = false; // analytics started on this page
 
@@ -235,10 +280,14 @@ const linkClass =
       if (current) {
         const c = readConsent();
         current.hidden = !c;
-        if (c) current.textContent = `Analytics cookies are currently ${c.analytics ? 'on' : 'off'}.`;
+        if (c) current.textContent = `${label} are currently ${c.analytics ? 'on' : 'off'}.`;
       }
       panel.hidden = false;
-      if (spacer) spacer.hidden = false;
+      if (spacer) {
+        // The panel comes first in the page (for keyboard users); the spacer belongs after the footer.
+        if (document.body.lastElementChild !== spacer) document.body.append(spacer);
+        spacer.hidden = false;
+      }
       layout();
       window.addEventListener('scroll', schedule, { passive: true });
       window.addEventListener('resize', schedule, { passive: true });
@@ -258,7 +307,13 @@ const linkClass =
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
       resizeObserver?.disconnect();
-      if (hadFocus && opener?.isConnected) opener.focus();
+      // Never leave keyboard focus on the hidden panel (it would restart at the top of the page):
+      // return it to the button that opened the panel, or to wherever it was before, or to <main>.
+      if (hadFocus) {
+        const back = [opener, before].find((el) => el?.isConnected && el.getClientRects().length > 0);
+        if (back) back.focus();
+        else document.getElementById('main')?.focus({ preventScroll: true });
+      }
       opener = null;
     };
 
@@ -272,7 +327,7 @@ const linkClass =
       const accepted = choice === 'accept';
       saveConsent(accepted);
       hide();
-      announce(accepted ? 'Thank you. Analytics cookies are on.' : 'Analytics cookies are off.');
+      announce(accepted ? `Thank you. ${label} are on.` : `${label} are off.`);
       try {
         if (accepted) {
           (await analytics()).loadAnalytics(ids);
@@ -286,8 +341,12 @@ const linkClass =
       }
     });
 
-    panel.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') hide();
+    // Escape closes the panel from anywhere — for this page only, no choice is saved — unless it's
+    // meant for something else that's open (a dialog, the menu, an expanded panel).
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || panel.hidden) return;
+      const elsewhere = e.defaultPrevented || document.querySelector('dialog[open], [aria-expanded="true"]');
+      if (panel.contains(document.activeElement) || !elsewhere) hide();
     });
 
     document.addEventListener('click', (e) => {

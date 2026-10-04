@@ -18,6 +18,8 @@ const d = entry.data;
 const p = pkg.data;
 const phrase = picnicPhrase(entry);
 const pkgLabel = /picnic$/i.test(p.name) ? p.name : `${p.name} package`;
+// Long headlines step down a size on wide screens so every hero holds to about three lines.
+const longH1 = d.h1.length > 50 || /\S{12,}/.test(d.h1);
 ---
 <section aria-labelledby="occasion-title" class="relative">
   <div class="container-x pt-3 md:pt-5">
@@ -25,7 +27,7 @@ const pkgLabel = /picnic$/i.test(p.name) ? p.name : `${p.name} package`;
   </div>
   <div class="container-x grid items-center gap-x-12 gap-y-12 pb-16 pt-4 md:pb-20 md:pt-6 lg:grid-cols-12 lg:pb-24">
     <div class="hero-enter lg:col-span-7">
-      <h1 id="occasion-title" class="max-w-[16ch]">{d.h1}</h1>
+      <h1 id="occasion-title" class:list={['max-w-[16ch]', longH1 && 'lg:max-w-[18ch] lg:text-[3.5rem] xl:text-[3.9rem]']}>{d.h1}</h1>
       <p class="mt-5 max-w-[38rem] text-lg text-plum-soft md:mt-7 md:text-[1.25rem] md:leading-relaxed">{d.lede}</p>
 
       <div class="mt-7 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-7 md:mt-9">
@@ -38,7 +40,7 @@ const pkgLabel = /picnic$/i.test(p.name) ? p.name : `${p.name} package`;
           data-track-package={pkg.id}
         >Plan your {phrase}</a>
         <a href="#package" class="link-arrow self-start sm:self-auto">
-          See what's included<Icon name="arrow-right" size={18} class="rotate-90" />
+          See what’s included<Icon name="arrow-right" size={18} class="rotate-90" />
         </a>
       </div>
 
@@ -85,6 +87,7 @@ const pkgLabel = /picnic$/i.test(p.name) ? p.name : `${p.name} package`;
         alt={d.heroAlt}
         sizes="(min-width: 1280px) 440px, (min-width: 1024px) 36vw, (min-width: 640px) 26rem, 82vw"
         priority
+        fetchpriority="auto"
         outline
         class="mx-auto w-[82%] max-w-[26rem] sm:w-full lg:ml-auto lg:mr-3 lg:max-w-[28rem]"
       />

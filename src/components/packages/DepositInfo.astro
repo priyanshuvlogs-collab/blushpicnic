@@ -1,6 +1,7 @@
 ---
 // Deposit & payment + the notes Instagram visitors usually have to DM for (HST, location, food,
-// policies). Deposit wording comes from settings.deposit; food answer from faqs.yaml ("food").
+// policies). Amounts come from settings.deposit / settings.securityDeposit (same wording as the
+// /policies summary); food answer from faqs.yaml ("food").
 import Icon from '../Icon.astro';
 import { getSettings, getFaqs, money, inlineMd } from '../../lib/site';
 
@@ -17,17 +18,41 @@ const notes: { icon: 'sparkle' | 'map-pin' | 'clock' | 'heart' | 'calendar'; tit
     html: inlineMd('Weather, rescheduling and rented decor are covered in our [booking policies](/policies). Please read them before you pay your deposit.'),
   },
 ];
+
+const payment = [
+  {
+    figure: money(s.deposit.standard),
+    label: 'booking deposit',
+    text: `Holds your date (or ${s.deposit.largeEventPercent}% for larger events). It’s non-refundable.`,
+  },
+  {
+    figure: money(s.securityDeposit.amount),
+    label: 'refundable security deposit',
+    text: `Required for every booking. Returned within ${s.securityDeposit.returnedWithin} after your event, once all rental items are collected and checked.`,
+  },
+  {
+    figure: 'In full',
+    label: 'before your event begins',
+    text: 'We start setting up once payment is complete.',
+  },
+];
 ---
 <section id="deposit" aria-labelledby="deposit-title" class="section-y scroll-mt-20 bg-cream">
   <div class="container-x grid gap-12 lg:grid-cols-12 lg:gap-14">
     <div class="on-dark relative overflow-hidden rounded-[var(--radius-card)] bg-plum px-7 py-9 text-cream sm:px-10 sm:py-12 lg:col-span-5 lg:self-start">
       <h2 id="deposit-title" class="text-[1.9rem] text-cream md:text-[2.3rem]">Deposit &amp; payment</h2>
-      <p class="mt-6 flex items-baseline gap-3" aria-hidden="true">
-        <span class="font-display text-[3.4rem] leading-none text-cream">{money(s.deposit.standard)}</span>
-        <span class="text-cream/85">deposit</span>
-      </p>
-      <p class="mt-5 text-lg text-cream/90">{s.deposit.summary}</p>
-      <a href="/policies" class="mt-4 inline-flex min-h-11 items-center gap-1.5 font-semibold text-cream underline decoration-gold decoration-2 underline-offset-4 hover:decoration-cream">Read the booking policies<Icon name="arrow-right" size={16} /></a>
+      <dl class="mt-6 divide-y divide-cream/15">
+        {payment.map((row) => (
+          <div class="py-5 first:pt-0">
+            <dt class="flex flex-wrap items-baseline gap-x-3">
+              <span class="font-display text-[2.6rem] leading-none text-cream">{row.figure}</span>
+              <span class="text-cream/85">{row.label}</span>
+            </dt>
+            <dd class="mt-2.5 text-cream/90">{row.text}</dd>
+          </div>
+        ))}
+      </dl>
+      <a href="/policies" class="mt-2 inline-flex min-h-11 items-center gap-1.5 font-semibold text-cream underline decoration-gold decoration-2 underline-offset-4 hover:decoration-cream">Read the booking policies<Icon name="arrow-right" size={16} /></a>
     </div>
 
     <div class="lg:col-span-7">

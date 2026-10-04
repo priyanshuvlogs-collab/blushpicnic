@@ -1,6 +1,7 @@
 @import "tailwindcss";
-@import "@fontsource/gloock/400.css";
-@import "@fontsource-variable/figtree/wght.css";
+/* Fonts: Gloock + Figtree are self-hosted through Astro's Fonts API (astro.config.mjs → `fonts`,
+   rendered by <Font> in BaseLayout). It defines --font-gloock / --font-figtree, each followed by a
+   size-matched local fallback, so headings don't re-wrap when the web font arrives. */
 
 /* ───────────────────────── Design tokens ─────────────────────────
    Palette from the original site, refined for WCAG AA:
@@ -21,8 +22,8 @@
   --color-line: #e6cdc8;
   --color-error: #a1263f;
 
-  --font-display: "Gloock", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  --font-sans: "Figtree Variable", "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-gloock, Georgia, serif);
+  --font-sans: var(--font-figtree, system-ui, sans-serif);
 
   --text-base: 1.0625rem; /* 17px */
   --text-base--line-height: 1.6;
@@ -121,9 +122,11 @@
     border-radius: var(--radius-btn);
     font-weight: 600;
     text-decoration: none;
-    transition: top 0.15s;
   }
   .skip-link:focus { top: 1rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    .skip-link { transition: top 0.15s; }
+  }
 
   /* Buttons — 48px min tap target */
   .btn {
@@ -140,9 +143,12 @@
     text-decoration: none;
     border: 1.5px solid transparent;
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s var(--ease-out-soft);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
   }
-  .btn:active { transform: translateY(1px); }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn { transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s var(--ease-out-soft); }
+    .btn:active { transform: translateY(1px); }
+  }
   .btn-primary { background: var(--color-plum); color: var(--color-cream); }
   .btn-primary:hover { background: var(--color-plum-hover); }
   .btn-secondary { background: transparent; color: var(--color-plum); border-color: var(--color-plum); }
@@ -233,12 +239,32 @@
   .placeholder-note strong { color: var(--color-gold-ink); letter-spacing: 0.02em; }
 }
 
-/* One tasteful entrance animation (hero only). */
+/* ───────────────────────── Site chrome (unlayered: overrides utility classes) ─────────────────────────
+   Mobile Book / Text bar (StickyBar.astro; BaseLayout puts .has-sticky-bar on <html>). Shown on phones held
+   upright only — in landscape and at 200–400% zoom it would cover too much of a short screen. The
+   page gets room for it at the bottom, and keyboard focus is scrolled clear of it (WCAG 2.4.11). */
+[data-sticky-bar] { display: none; }
+@media (width < 48rem) and (height > 30rem) {
+  [data-sticky-bar] { display: block; }
+  /* the room goes inside the footer, so the page still ends in the footer's colour */
+  html.has-sticky-bar .site-footer { padding-bottom: calc(4.25rem + max(0.75rem, env(safe-area-inset-bottom))); }
+  html.has-sticky-bar { scroll-padding-bottom: calc(5.75rem + env(safe-area-inset-bottom)); }
+}
+
+/* Short screens (phone landscape, 200–400% zoom): the header scrolls away with the page instead of
+   covering it — except while its menu is open, so the menu is always on screen. */
+@media (height <= 30rem) {
+  .site-header:not([data-menu-open]) { position: relative; }
+  html { scroll-padding-top: 0.75rem; }
+}
+
+/* One tasteful entrance animation (hero only). It never starts invisible: the heading and photo
+   paint (and count as Largest Contentful Paint) on the first frame, then settle into place. */
 @media (prefers-reduced-motion: no-preference) {
   .hero-enter { animation: hero-enter 0.9s var(--ease-out-soft) both; }
   .hero-enter-delay { animation: hero-enter 0.9s 0.12s var(--ease-out-soft) both; }
   @keyframes hero-enter {
-    from { opacity: 0; transform: translateY(14px); }
+    from { opacity: 0.7; transform: translateY(14px); }
     to { opacity: 1; transform: none; }
   }
 }

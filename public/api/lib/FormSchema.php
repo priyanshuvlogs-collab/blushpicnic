@@ -32,6 +32,12 @@ final class FormSchema
         if (!is_array($data) || !isset($data['groups'], $data['occasions']) || !is_array($data['groups'])) {
             throw new \RuntimeException('form-schema.json is not valid');
         }
+        foreach (self::REQUIRED_BUSINESS as $k) {
+            $v = $data['business'][$k] ?? null;
+            if (!is_string($v) || trim($v) === '') {
+                throw new \RuntimeException("form-schema.json has no business.{$k} (rebuild the site: src/lib/form.ts writes it from settings.yaml)");
+            }
+        }
         return new self($data);
     }
 
@@ -112,39 +118,36 @@ final class FormSchema
         return $values;
     }
 
+    /** Business facts form-schema.json must carry (from src/content/settings.yaml); load() refuses a schema without them. */
+    public const REQUIRED_BUSINESS = ['name', 'url', 'phoneDisplay', 'phoneE164', 'replyTime'];
+
     /**
-     * Business facts used in emails and error messages.
-     * Source of truth is src/content/settings.yaml; it reaches PHP through form-schema.json when the
-     * schema carries a "business" block. Until then these fallbacks mirror settings.yaml — keep in sync.
+     * Business facts used in emails and error messages. The only source is src/content/settings.yaml,
+     * which reaches PHP through the "business", "deposit" and "securityDeposit" blocks of
+     * form-schema.json, so nothing here can go stale (no typed phone numbers or prices).
      *
      * @return array{name:string, url:string, phoneDisplay:string, phoneE164:string, email:string,
-     *   instagramHandle:string, instagramUrl:string, replyTime:string, depositSummary:string, locationNote:string, taxNote:string}
+     *   instagramHandle:string, instagramUrl:string, replyTime:string, depositSummary:string,
+     *   bookingDepositSummary:string, securityDepositSummary:string, locationNote:string, taxNote:string}
      */
     public function business(): array
     {
-        $fallback = [
-            'name' => 'Blush Picnic',
-            'url' => 'https://blushpicnic.com',
-            'phoneDisplay' => '(647) 878-0539',
-            'phoneE164' => '+16478780539',
-            'email' => 'blush.picnic25@gmail.com',
-            'instagramHandle' => '@blush.picnic',
-            'instagramUrl' => 'https://instagram.com/blush.picnic',
-            'replyTime' => 'within 24 hours',
-            'depositSummary' => '',
-            'locationNote' => 'Prices vary by location across the GTA. We confirm your exact quote by message.',
-            'taxNote' => 'before HST',
-        ];
-        $fromSchema = is_array($this->data['business'] ?? null) ? $this->data['business'] : [];
-        $out = $fallback;
-        foreach ($fallback as $k => $_) {
-            $v = $fromSchema[$k] ?? ($k === 'taxNote' ? ($this->data['taxNote'] ?? null) : null);
-            if (is_string($v) && trim($v) !== '') {
-                $out[$k] = trim($v);
-            }
+        $b = is_array($this->data['business'] ?? null) ? $this->data['business'] : [];
+        $str = static fn ($v): string => is_string($v) ? trim($v) : '';
+        $out = [];
+        foreach (['name', 'url', 'phoneDisplay', 'phoneE164', 'email', 'instagramHandle', 'instagramUrl', 'replyTime', 'depositSummary', 'locationNote', 'taxNote'] as $k) {
+            $out[$k] = $str($b[$k] ?? null);
         }
+        if ($out['taxNote'] === '') {
+            $out['taxNote'] = $str($this->data['taxNote'] ?? null);
+        }
+        $out['bookingDepositSummary'] = $str($this->data['deposit']['summary'] ?? null);
+        if ($out['bookingDepositSummary'] === '') {
+            $out['bookingDepositSummary'] = $this->depositSentence();
+        }
+        $out['securityDepositSummary'] = $str($this->data['securityDeposit']['summary'] ?? null);
         if ($out['depositSummary'] === '') {
-            $out['depositSummary'] = $this->depositSentence() . ' The booking deposit is non-refundable, and the balance is due before your event.';
+            $out['depositSummary'] = trim($out['bookingDepositSummary'] . ' ' . $out['securityDepositSummary']);
         }
         return $out;
     }

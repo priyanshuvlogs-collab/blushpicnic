@@ -123,6 +123,8 @@ DIST="${DEPLOY_DIST:-$ROOT/dist}"; [[ "$DIST" == /* ]] || DIST="$ROOT/$DIST"
 # ── Live-site checks (also run after every upload) ───────────────────────────
 CHECK_FAILS=0
 http_status() { local c; c="$(curl -s -o /dev/null -m 20 -w '%{http_code}' "$@" 2>/dev/null || true)"; echo "${c:-000}"; }
+# http_probe <curl args…> → the body, then a last line "<status> <content-type>"
+http_probe() { curl -s -m 20 -w '\n%{http_code} %{content_type}' "$@" 2>/dev/null || true; }
 expect() { # expect <label> <want-status> <curl args…>
   local label="$1" want="$2"; shift 2
   local got; got="$(http_status "$@")"
@@ -154,14 +156,26 @@ live_checks() {
   else
     warn "Security headers missing: is public_html/.htaccess uploaded?"; CHECK_FAILS=$((CHECK_FAILS + 1))
   fi
-  # The booking handler runs PHP and can read blush-config.php: a request from a foreign
-  # origin is refused (403) only AFTER the config loaded; a missing config answers 500.
-  local code
-  code="$(http_status -X POST -H 'Accept: application/json' -H 'Origin: https://deploy-check.invalid' "$SITE_URL/api/book.php")"
+  # The booking handler. A 403 or 405 alone proves little (the server's own "forbidden" page is a
+  # 403 too), so the answer must be book.php's JSON:
+  #   GET  → 405 JSON: PHP runs book.php (the api/.htaccess rules let it through);
+  #   POST from a foreign origin → 403 JSON {"ok":false…}: and blush-config.php was found
+  #   (the origin check comes after loading it; a missing config answers 500).
+  local out meta code ctype body
+  out="$(http_probe -H 'Accept: application/json' "$SITE_URL/api/book.php")"
+  meta="${out##*$'\n'}"; code="${meta%% *}"; ctype="${meta#* }"
+  if [[ "$code" == 405 && "$ctype" == application/json* ]]; then ok "Booking handler runs (GET → 405 from book.php)"
+  else
+    warn "Booking handler: expected book.php's 405 JSON answer, got $code ${ctype:-no content type}. If it's 403, the server's api/.htaccess rules block book.php (docs/deployment.md → Troubleshooting)"
+    CHECK_FAILS=$((CHECK_FAILS + 1))
+  fi
+  out="$(http_probe -X POST -H 'Accept: application/json' -H 'Origin: https://deploy-check.invalid' "$SITE_URL/api/book.php")"
+  meta="${out##*$'\n'}"; code="${meta%% *}"; ctype="${meta#* }"; body="${out%$'\n'*}"
   case "$code" in
-    403) ok "Booking handler runs and found blush-config.php" ;;
-    500) warn "Booking handler can't read blush-config.php: upload it with ./deploy.sh --config <file> (see HANDOVER.md)"; CHECK_FAILS=$((CHECK_FAILS + 1)) ;;
-    *)   warn "Booking handler answered $code (expected 403 to this test request)"; CHECK_FAILS=$((CHECK_FAILS + 1)) ;;
+    403) if [[ "$ctype" == application/json* && "$body" == *'"ok":false'* ]]; then ok "Booking handler found blush-config.php"
+         else warn "Booking handler: got the server's own 403 page, not book.php's answer: the api/.htaccess rules block book.php on this server"; CHECK_FAILS=$((CHECK_FAILS + 1)); fi ;;
+    500) warn "Booking handler can't read blush-config.php (or PHP is older than 8.1): upload it with ./deploy.sh --config <file> (see HANDOVER.md); the PHP error log names the cause in a [blush-book] line"; CHECK_FAILS=$((CHECK_FAILS + 1)) ;;
+    *)   warn "Booking handler answered $code (expected 403 JSON to this test request)"; CHECK_FAILS=$((CHECK_FAILS + 1)) ;;
   esac
   if (( CHECK_FAILS == 0 )); then say "  All checks passed. Now send yourself a real test booking at $SITE_URL/book"
   else say "  $CHECK_FAILS check(s) need a look. If you just changed DNS or SSL, wait an hour and run ./deploy.sh --check"; fi
@@ -182,6 +196,15 @@ esac
 [[ "$FTP_USER" =~ ^[A-Za-z0-9._@-]+$ ]] || die "FTP_USER looks wrong: $FTP_USER"
 
 need() { command -v "$1" >/dev/null 2>&1; }
+# norm_dir <path> → the same folder written one way: no "./" parts, doubled or trailing slashes ("." = login folder)
+norm_dir() {
+  local p="$1" part joined="" parts=()
+  IFS=/ read -ra parts <<<"$p"
+  for part in ${parts[@]+"${parts[@]}"}; do
+    case "$part" in ""|.) ;; *) joined+="${joined:+/}$part" ;; esac
+  done
+  if [[ "$p" == /* ]]; then printf '/%s' "$joined"; else printf '%s' "${joined:-.}"; fi
+}
 if [[ "$PROTOCOL" == rsync ]]; then
   { need rsync && need ssh; } || die "rsync and ssh are needed for PROTOCOL=rsync (macOS: built in; Ubuntu: sudo apt install rsync openssh-client)"
   [[ -n "$SSH_KEY" ]] || die "PROTOCOL=rsync needs SSH_KEY (the path to your SSH private key). See docs/deployment.md."
@@ -315,15 +338,15 @@ remote_preflight() {
   ok "Logged in; found $REMOTE_DIR/"
 }
 
-remote_backup() { # remote_backup <local-dir>
+remote_backup() { # remote_backup <local-dir>   (called as `… || die`, so every step returns its status)
   local dest="$1"
-  mkdir -p "$dest"
+  mkdir -p "$dest" || return 1
   [[ -f "$BACKUP_DIR/.gitignore" ]] || printf '# Local copies of the live site (deploy.sh). Never commit them.\n*\n' > "$BACKUP_DIR/.gitignore"
   if [[ "$PROTOCOL" == rsync ]]; then
-    rsync_run "$(remote "$REMOTE_DIR/")" "$dest/"
+    rsync_run "$(remote "$REMOTE_DIR/")" "$dest/" || return 1
   else
     printf 'mirror --no-perms --parallel=%s %s %s\n' "$PARALLEL" "$(lq "$REMOTE_DIR")" "$(lq "$dest")" > "$TMP/cmd"
-    lftp_run "$TMP/cmd"
+    lftp_run "$TMP/cmd" || return 1
   fi
 }
 
@@ -331,7 +354,8 @@ remote_backup() { # remote_backup <local-dir>
 # search-engine verification files, the GitHub Actions state file, plus KEEP_REMOTE from deploy.env.
 PROTECT_RX=('^\.well-known/' '^\.ftp-deploy-sync-state\.json$' '^\.user\.ini$' '^cgi-bin/' '^google[0-9a-f]+\.html$' '^BingSiteAuth\.xml$' '^yandex_[0-9a-f]+\.html$')
 PROTECT_GLOB=('/.well-known/' '/.ftp-deploy-sync-state.json' '/.user.ini' '/cgi-bin/' '/google*.html' '/BingSiteAuth.xml' '/yandex_*.html')
-for p in $KEEP_REMOTE; do
+read -ra KEEP <<<"$KEEP_REMOTE"   # split on spaces only: a * in KEEP_REMOTE is never expanded here
+for p in ${KEEP[@]+"${KEEP[@]}"}; do
   p="${p#/}"
   rx="^$(printf '%s' "$p" | sed 's/[][\.*^$+?(){}|]/\\&/g')"; [[ "$p" == */ ]] || rx+='$'
   PROTECT_RX+=("$rx"); PROTECT_GLOB+=("/$p")
@@ -368,9 +392,10 @@ remote_upload() { # remote_upload <dry-run 0|1> <delete 0|1>
       while IFS= read -r line; do pages+=("$line"); done < <(protect_args)
     fi
     local astro=(--include=/_astro/*** --exclude=*)
-    rsync_run "${flags[@]}" "${astro[@]}" "$DIST/" "$(remote "$REMOTE_DIR/")"
-    rsync_run "${flags[@]}" "${pages[@]}" "$DIST/" "$(remote "$REMOTE_DIR/")"
-    if (( del )); then rsync_run "${flags[@]}" --delete-after "${astro[@]}" "$DIST/" "$(remote "$REMOTE_DIR/")"; fi
+    # Each pass must succeed: this runs as `remote_upload … || die`, where bash ignores set -e.
+    rsync_run "${flags[@]}" "${astro[@]}" "$DIST/" "$(remote "$REMOTE_DIR/")" || return 1
+    rsync_run "${flags[@]}" "${pages[@]}" "$DIST/" "$(remote "$REMOTE_DIR/")" || return 1
+    if (( del )); then rsync_run "${flags[@]}" --delete-after "${astro[@]}" "$DIST/" "$(remote "$REMOTE_DIR/")" || return 1; fi
     return 0
   fi
   local common="--reverse --no-perms --upload-older --parallel=$PARALLEL --verbose=1"
@@ -394,17 +419,32 @@ remote_upload() { # remote_upload <dry-run 0|1> <delete 0|1>
 # every file itself, so this is for FTPS/SFTP.
 remote_verify() {
   [[ "$PROTOCOL" == rsync ]] && return 0
-  local attempt bad=() line
+  local attempt bad=() line listed=0
   for attempt in 1 2 3 4 5; do
     printf 'mirror --reverse --no-perms --dry-run --ignore-time --upload-older %s %s\n' "$(lq "$DIST")" "$(lq "$REMOTE_DIR")" > "$TMP/cmd"
     bad=()
-    while IFS= read -r line; do bad+=("$line"); done < <(lftp_run "$TMP/cmd" 2>/dev/null | lftp_pretty | sed -n 's/^upload  //p')
-    (( ${#bad[@]} == 0 )) && { ok "Verified: every file on the server matches the build's size"; return 0; }
-    (( attempt == 5 )) && break
-    say "  ${#bad[@]} file(s) arrived incomplete or missing; sending them again (try $attempt of 4)"
-    printf 'mirror --reverse --no-perms --ignore-time --upload-older --parallel=%s %s %s\n' "$PARALLEL" "$(lq "$DIST")" "$(lq "$REMOTE_DIR")" > "$TMP/cmd"
-    lftp_run "$TMP/cmd" >/dev/null 2>&1 || true
+    # An empty listing only means "all good" when lftp itself succeeded.
+    if lftp_run "$TMP/cmd" > "$TMP/verify.txt" 2> "$TMP/verify.log"; then
+      listed=1
+      while IFS= read -r line; do bad+=("$line"); done < <(lftp_pretty < "$TMP/verify.txt" | sed -n 's/^upload  //p')
+      (( ${#bad[@]} == 0 )) && { ok "Verified: every file on the server matches the build's size"; return 0; }
+      (( attempt == 5 )) && break
+      say "  ${#bad[@]} file(s) arrived incomplete or missing; sending them again (try $attempt of 4)"
+      printf 'mirror --reverse --no-perms --ignore-time --upload-older --parallel=%s %s %s\n' "$PARALLEL" "$(lq "$DIST")" "$(lq "$REMOTE_DIR")" > "$TMP/cmd"
+      lftp_run "$TMP/cmd" >/dev/null 2>&1 || true
+    else
+      listed=0
+      (( attempt == 5 )) && break
+      say "  Couldn't list the server to check the upload; trying again (try $attempt of 4)"
+      sleep 3
+    fi
   done
+  if (( ! listed )); then
+    sed 's/^/  │ /' "$TMP/verify.log" | tail -5 >&2
+    warn "Couldn't verify the upload: listing the server failed 5 times. Run ./deploy.sh again to re-check (re-sending is safe)."
+    CHECK_FAILS=$((CHECK_FAILS + 1))
+    return 0
+  fi
   local others=() f
   for f in "${bad[@]}"; do [[ "${f##*/}" == .* ]] || others+=("$f"); done
   if (( ${#others[@]} == 0 )); then
@@ -439,7 +479,7 @@ lftp_pretty() {
 remote_put_config() { # remote_put_config <local-file>
   local src="$1" dest="$CONFIG_REMOTE_DIR/blush-config.php"
   if [[ "$PROTOCOL" == rsync ]]; then
-    rsync -z --chmod=F600 -e "${SSH_CMD[*]}" "$src" "$(remote "$dest")"
+    rsync -z --chmod=F600 -e "${SSH_CMD[*]}" "$src" "$(remote "$dest")" || return 1
   else
     {
       printf 'put %s -o %s\n' "$(lq "$src")" "$(lq "$dest")"
@@ -447,7 +487,7 @@ remote_put_config() { # remote_put_config <local-file>
       printf 'chmod 600 %s\n' "$(lq "$dest")"
       printf 'cls -l %s\n' "$(lq "$dest")"
     } > "$TMP/cmd"
-    lftp_run "$TMP/cmd"
+    lftp_run "$TMP/cmd" || return 1
   fi
 }
 
@@ -488,9 +528,15 @@ step "Checking the build"
 for f in index.html 404.html .htaccess sitemap-index.xml robots.txt api/book.php api/form-schema.json api/.htaccess api/lib/.htaccess; do
   [[ -f "$DIST/$f" ]] || die "dist/$f is missing: the build is incomplete. Run ./deploy.sh again (without --skip-build)."
 done
-leaks="$(cd "$DIST" && find . \( -name 'blush-config.php' -o -name 'deploy.env' -o -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' -o -name 'id_rsa*' -o -name 'id_ed25519*' \) -print)"
-[[ -z "$leaks" ]] || die "secret-looking files in dist/ (never upload these into public_html):
+leaks="$(cd "$DIST" && find . \( -name 'blush-config.php' -o -name 'deploy*.env' -o -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' -o -name 'id_rsa*' -o -name 'id_ed25519*' -o -name '*.eml' -o -path '*/.mail*' -o -path '*/blush-data*' \) -print)"
+[[ -z "$leaks" ]] || die "secret-looking files or saved emails in dist/ (never upload these into public_html):
 $leaks"
+# .htaccess caches name.HASH.ext files for a year; outside _astro/ such a name could never be updated.
+odd="$(cd "$DIST" && { find . -path ./_astro -prune -o -type f -print | grep -E '(^|/)([^/]*\.[A-Za-z0-9_-]{8}(_[A-Za-z0-9_-]+)?\.(css|m?js|avif|webp|jpe?g|png|gif|svg|woff2?|ttf|otf)|[0-9a-f]{16}\.(woff2?|ttf|otf))$' || true; })"
+[[ -z "$odd" ]] || die "these files outside _astro/ are named like fingerprinted build files (name.abcdefgh.ext), so browsers would keep them for a year and never see an update. Rename them (e.g. logo-wordmark.svg):
+$odd"
+grep -q '"phoneDisplay"' "$DIST/api/form-schema.json" \
+  || die "dist/api/form-schema.json has no business facts (phone, reply time…): the booking emails need them. Rebuild the site."
 if (( ${#FTP_PASS} >= 8 )) && grep -rqF -- "$FTP_PASS" "$DIST" 2>/dev/null; then
   die "the FTP password appears inside dist/ — something copied it into the site. Find and remove it before deploying."
 fi
@@ -505,7 +551,9 @@ if [[ -n "$CONFIG_FILE" ]]; then
   case "$(cd "$(dirname "$CONFIG_FILE")" && pwd)/" in "$DIST"/*|"$ROOT/public"/*) die "keep blush-config.php outside dist/ and public/ (it holds a password)";; esac
   if need php; then php -l "$CONFIG_FILE" >/dev/null || die "$CONFIG_FILE has a PHP syntax error (php -l)"; fi
   grep -qE "'smtp_password'[[:space:]]*=>[[:space:]]*''" "$CONFIG_FILE" && warn "smtp_password is empty in $CONFIG_FILE: booking emails won't send until it's filled in"
-  case "$CONFIG_REMOTE_DIR/" in "$REMOTE_DIR"/*) die "CONFIG_REMOTE_DIR must be OUTSIDE $REMOTE_DIR";; esac
+  case "/$CONFIG_REMOTE_DIR/" in */../*) die "CONFIG_REMOTE_DIR may not contain .. (give the folder next to $REMOTE_DIR)";; esac
+  cfg_dir="$(norm_dir "$CONFIG_REMOTE_DIR")"; web_dir="$(norm_dir "$REMOTE_DIR")"
+  case "/$cfg_dir/" in "/$web_dir/"*|*"/$web_dir/"*) die "CONFIG_REMOTE_DIR must be OUTSIDE $REMOTE_DIR (got $CONFIG_REMOTE_DIR)";; esac
 fi
 
 # ── 3. Connect, plan, confirm ────────────────────────────────────────────────

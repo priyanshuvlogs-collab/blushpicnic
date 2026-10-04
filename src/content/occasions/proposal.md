@@ -24,7 +24,7 @@ faqs:
   - q: "Can you keep the proposal a complete surprise?"
     a: "Yes. In the booking form, tell us who's being surprised, who else is in on it, how they'll arrive, and whether our team should stay hidden nearby or leave before you arrive."
   - q: "What's included in the Proposal & Romance package?"
-    a: "Everything in our Signature Picnic, plus a Marry Me or custom sign, rose petals, candles and a fresh flower arrangement. It starts at {price:proposal-romance} for {guests:proposal-romance} for {hours:proposal-romance}, before HST, and varies by location."
+    a: "Everything in our Signature Picnic, plus a Marry Me or custom sign, rose petals, candles and a fresh flower arrangement. It starts at {price:proposal-romance} for {guests:proposal-romance} and {hours:proposal-romance}, before HST, and varies by location."
   - q: "Can we add a flower arch, neon sign or photographer?"
     a: "Yes — tick them in the booking form and we'll include them in your quote."
   - q: "Can family or friends join us after the proposal?"
@@ -38,7 +38,7 @@ related: ["be-my-girlfriend", "just-engaged", "anniversary"]
 
 A proposal has enough nerves in it already. You shouldn't also be carrying cushions across a park, lighting candles in the wind, or worrying about who's going to pack it all up afterwards.
 
-With a Blush Picnic proposal, you choose the place and the time. We arrive ahead of you, set up a low table with rugs and cushions, real tableware and glassware, and add the romantic details: rose petals, candles, a fresh flower arrangement and your sign. When you're done celebrating, we come back and clear everything away.
+With a Blush Picnic proposal, you choose the place and the time. We arrive ahead of you, set up a low table with rugs and cushions, tableware and glassware, and add the romantic details: rose petals, candles, a fresh flower arrangement and your sign. When you're done celebrating, we come back and clear everything away.
 
 ## Planned around your person
 
@@ -49,5 +49,5 @@ If you'd like more, add a flower arch to frame the moment, a neon sign for an ev
 ## How to plan it
 
 1. **Send your request.** Choose your date, a backup date and the area you have in mind. It takes about three minutes.
-2. **We confirm the details.** We reply within 24 hours with availability and your quote. A {deposit} deposit holds your date.
+2. **We confirm the details.** We reply within 24 hours with availability and your quote. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
 3. **You arrive, they say yes.** Everything is ready when you get there. Afterwards, we pack up and clean up.

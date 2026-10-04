@@ -3,6 +3,8 @@
 //
 //   node tests/api-test.mjs                    build the site into dist-api/, then test
 //   API_TEST_SKIP_BUILD=1 node tests/api-test.mjs   reuse an existing dist-api/ (PHP is re-synced)
+//   API_TEST_DIST / API_TEST_CACHE_DIR / API_TEST_PORT / API_TEST_MAIL_DIR / API_TEST_TMP_DIR
+//                                              run beside another copy without sharing anything
 //
 // Runs api/book.php under `php -S 127.0.0.1:4406 -t dist-api tests/router.php` with
 // BLUSH_CONFIG=tests/fixtures/blush-config.test.php: emails become .eml files in tests/.mail/,
@@ -21,8 +23,8 @@ const DIST = path.resolve(ROOT, process.env.API_TEST_DIST || 'dist-api');
 const PORT = Number(process.env.API_TEST_PORT || 4406);
 const BASE = `http://127.0.0.1:${PORT}`;
 const ENDPOINT = `${BASE}/api/book.php`;
-const MAIL_DIR = path.join(ROOT, 'tests/.mail');
-const TMP_DIR = path.join(ROOT, 'tests/.tmp');
+const MAIL_DIR = path.resolve(ROOT, process.env.API_TEST_MAIL_DIR || 'tests/.mail');
+const TMP_DIR = path.resolve(ROOT, process.env.API_TEST_TMP_DIR || 'tests/.tmp');
 const CONFIG = path.join(ROOT, 'tests/fixtures/blush-config.test.php');
 const CFG = {
   to: 'owner-inbox@example.com',
@@ -42,7 +44,7 @@ if (!process.env.API_TEST_SKIP_BUILD || !existsSync(path.join(DIST, 'api/form-sc
   console.log(`# building the site into ${path.relative(ROOT, DIST)}/ (about a minute)…`);
   const b = spawnSync('npx', ['astro', 'build'], {
     cwd: ROOT,
-    env: { ...process.env, OUT_DIR: DIST, CACHE_DIR: path.join(ROOT, 'node_modules/.astro-api') },
+    env: { ...process.env, OUT_DIR: DIST, CACHE_DIR: path.resolve(ROOT, process.env.API_TEST_CACHE_DIR || 'node_modules/.astro-api') },
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
@@ -76,7 +78,7 @@ async function startServer(env = {}) {
   serverLog = '';
   const s = (server = spawn('php', ['-S', `127.0.0.1:${PORT}`, '-t', DIST, path.join(ROOT, 'tests/router.php')], {
     cwd: ROOT,
-    env: { ...process.env, BLUSH_CONFIG: CONFIG, ...env },
+    env: { ...process.env, BLUSH_CONFIG: CONFIG, TEST_MAIL_DIR: MAIL_DIR, TEST_DATA_DIR: TMP_DIR, ...env },
     stdio: ['ignore', 'pipe', 'pipe'],
   }));
   s.stdout.on('data', (d) => (serverLog += d));
@@ -193,7 +195,7 @@ function validPayload(occasion, { full = false, pkg } = {}) {
 }
 
 /** POST a payload. type: urlencoded (repeated keys for lists) | brackets (key[]) | multipart | json. */
-async function post(payload, { type = 'urlencoded', json = true, headers = {}, redirect = 'manual' } = {}) {
+async function post(payload, { type = 'urlencoded', json = true, headers = {}, redirect = 'manual', files = {} } = {}) {
   let body;
   const h = { ...headers };
   if (json) h.Accept = 'application/json';
@@ -206,6 +208,7 @@ async function post(payload, { type = 'urlencoded', json = true, headers = {}, r
       if (Array.isArray(v)) v.forEach((x) => body.append(`${k}[]`, x));
       else body.append(k, v);
     }
+    for (const [k, v] of Object.entries(files)) body.append(k, new Blob([v], { type: 'text/plain' }), `${k}.txt`);
   } else {
     const usp = new URLSearchParams();
     for (const [k, v] of Object.entries(payload)) {
@@ -271,6 +274,7 @@ function parseEml(raw) {
     const cte = (ph['content-transfer-encoding'] || '').toLowerCase();
     if (cte === 'quoted-printable') content = decodeQP(content);
     else if (cte === 'base64') content = Buffer.from(content.replace(/\s+/g, ''), 'base64').toString('utf8');
+    content = content.replace(/\r\n/g, '\n'); // MIME text is CRLF; compare as plain \n text
     if ((ph['content-type'] || '').startsWith('text/html')) out.html = content;
     else if ((ph['content-type'] || '').startsWith('text/plain')) out.text = content;
   }
@@ -300,6 +304,7 @@ function assertEmails(ref, payload) {
   assert.ok(!/[\r\n]/.test(biz.headers.subject));
 
   assert.equal(addressOf(cli.headers.to), payload.email.toLowerCase(), 'client To');
+  assert.ok(!cli.headers.to.includes(payload.name.split(/\s+/)[0]), 'client To has no display name (none of the visitor’s words)');
   assert.equal(addressOf(cli.headers['reply-to']), CFG.replyToForClient, 'client Reply-To');
   assert.equal(addressOf(cli.headers.from), CFG.from, 'client From');
   assert.match(cli.headers.from, /Blush Picnic/);
@@ -307,13 +312,22 @@ function assertEmails(ref, payload) {
   assert.equal(cli.headers['auto-submitted'], 'auto-generated');
 
   for (const part of [biz.text, biz.html]) assert.ok(part.length > 200, 'business email has text and HTML parts');
-  // Every answered question appears with the form's label and the option LABEL (never the raw id).
+  for (const m of [biz, cli]) assert.ok(!m.raw.includes('=0A'), 'CRLF line ends (no quoted-printable =0A)');
+  // Every answered question appears once: in the summary rows (SUMMARY_ROWS), or with the form's
+  // label under its section — and select/radio/checkbox answers by option LABEL (never the raw id).
   for (const [id, value] of Object.entries(payload)) {
     if (!FIELDS.has(id) || !applicable(id, payload)) continue;
     const { field, group } = FIELDS.get(id);
-    assert.ok(biz.text.includes(field.label), `business text has label "${field.label}"`);
-    assert.ok(biz.html.includes(escHtml(field.label)), `business HTML has label "${field.label}"`);
-    assert.ok(biz.text.toUpperCase().includes(group.title.toUpperCase()), `business text has section "${group.title}"`);
+    if (id in SUMMARY_ROWS) {
+      if (field.type === 'toggle' && value !== 'yes' && value !== true) continue;
+      assert.ok(biz.text.includes(`\n${SUMMARY_ROWS[id]}: `), `business summary has "${SUMMARY_ROWS[id]}" for ${id}`);
+      assert.ok(!biz.text.includes(`\n${field.label}: `), `"${field.label}" is not repeated below the summary`);
+    } else {
+      const label = field.type === 'toggle' ? group.title : field.label;
+      assert.ok(biz.text.includes(`\n${label}: `), `business text has label "${label}"`);
+      assert.ok(biz.html.includes(escHtml(label)), `business HTML has label "${label}"`);
+      assert.ok(biz.text.toUpperCase().includes(group.title.toUpperCase()), `business text has section "${group.title}"`);
+    }
     if (['select', 'radio', 'checkboxes'].includes(field.type)) {
       for (const v of [].concat(value)) assert.ok(biz.text.includes(optionLabel(field, v)), `business text shows option label for ${id}=${v}`);
     }
@@ -327,14 +341,30 @@ function assertEmails(ref, payload) {
 
   assert.ok(cli.text.includes(`Thank you, ${CLIENT.first}.`));
   assert.ok(cli.text.includes(occ.name) && cli.text.includes(fmtDate(payload.date)) && cli.text.includes('5:30 PM'));
+  assert.ok(cli.text.includes('Here’s a summary:') && !cli.text.includes('copy of what you sent'), 'the client copy calls itself a summary');
   assert.match(cli.text, /within 24 hours/);
+  // The two deposits are separate steps, word for word from settings.yaml (via form-schema.json).
+  assert.ok(cli.text.includes(`Your booking deposit\n   ${SCHEMA.deposit.summary}`), 'booking deposit step');
+  assert.ok(cli.text.includes(`Your security deposit\n   ${SCHEMA.securityDeposit.summary}`), 'security deposit step');
+  assert.ok(cli.html.includes(escHtml(SCHEMA.deposit.summary)) && cli.html.includes(escHtml(SCHEMA.securityDeposit.summary)));
   assert.match(cli.text, /\$100 booking deposit \(or 50% for larger events\) holds your date[\s\S]*\$100 refundable security deposit/);
   assert.match(cli.text, /non-refundable/);
+  assert.ok(cli.text.includes(`${SCHEMA.business.url}/policies`) && cli.html.includes(`href="${SCHEMA.business.url}/policies"`), 'policies link');
   assert.match(cli.text, /\(647\) 878-0539/);
   assert.match(cli.text, /@blush\.picnic/);
   assert.ok(cli.html.includes(ref));
+  // Only answers from our own lists: the free-text location never reaches the client's inbox.
+  assert.ok(!cli.raw.includes(payload.location), 'client copy has no free-text location');
+  for (const s of ['Budget', 'Starting estimate', 'To quote', 'Possible spam']) assert.ok(!cli.text.includes(s), `client copy has no "${s}"`);
   return { biz, cli };
 }
+
+/** Answers the business email shows in its summary rows (Booking::SUMMARY_FIELDS) → the row label. */
+const SUMMARY_ROWS = {
+  occasion: 'Occasion', package: 'Package', date: 'Date', backup_date: 'Date', start_time: 'Start time',
+  guests_adults: 'Guests', guests_kids: 'Guests', location_type: 'Location', location: 'Location',
+  budget: 'Budget', is_surprise: 'Surprise', contact_pref: 'Prefers',
+};
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
@@ -397,7 +427,22 @@ describe('booking handler (file transport)', () => {
     assert.equal(r.status, 200, r.text);
     const biz = readMail(r.data.ref, 'business');
     assert.ok(biz.text.includes(`${FIELDS.get('surprise_for').field.label}: Maya`));
-    assert.ok(biz.text.includes('Adults: 2'));
+    assert.ok(biz.text.includes('Guests: 2 adults'));
+    assert.ok(biz.text.includes('Surprise: Yes'));
+  });
+
+  test('form-schema.json carries the business facts the emails use (no fallbacks in PHP)', () => {
+    for (const k of ['name', 'url', 'phoneDisplay', 'phoneE164', 'email', 'instagramHandle', 'instagramUrl', 'replyTime', 'depositSummary', 'taxNote'])
+      assert.ok(typeof SCHEMA.business?.[k] === 'string' && SCHEMA.business[k].trim(), `business.${k}`);
+    assert.ok(SCHEMA.deposit?.summary && SCHEMA.securityDeposit?.summary, 'deposit and securityDeposit summaries');
+    const php = `
+      require 'public/api/lib/FormSchema.php';
+      $f = tempnam(sys_get_temp_dir(), 'fs');
+      file_put_contents($f, json_encode(['groups' => [], 'occasions' => []]));
+      try { Blush\\FormSchema::load($f); echo 'loaded'; } catch (RuntimeException $e) { echo 'refused: ', $e->getMessage(); }
+      unlink($f);`;
+    const r = spawnSync('php', ['-r', php], { cwd: ROOT, encoding: 'utf8' });
+    assert.match(r.stdout, /^refused: .*business\.name/, r.stdout + r.stderr);
   });
 
   test('form-schema.json is served and lists every occasion including "other"', () => {
@@ -489,7 +534,7 @@ describe('booking handler (file transport)', () => {
     const r1 = await post({ ...validPayload('proposal'), letter_board: 'one two three four five six seven', date: TODAY, start_time: '5:30 pm', phone: '+44 20 7946 0958' });
     assert.equal(r1.status, 200, r1.text);
     const { biz } = { biz: readMail(r1.data.ref, 'business') };
-    assert.ok(biz.text.includes('Preferred start time: 5:30 PM'));
+    assert.ok(biz.text.includes('Start time: 5:30 PM'));
     const r2 = await post({ ...validPayload('just-engaged'), couple_date: '2024-05-04' });
     assert.equal(r2.status, 200, r2.text);
     assert.ok(readMail(r2.data.ref, 'business').text.includes('Sat May 4, 2024'));
@@ -587,32 +632,104 @@ describe('booking handler (file transport)', () => {
     }
   });
 
-  test('honeypot filled → fake 200, nothing sent, logged', async () => {
-    const before = mailFiles().length;
-    const r = await post({ ...validPayload('proposal'), company_website: 'https://spam.example' });
+  /** A spam-flagged request: same reply as a real one, business email flagged, no client confirmation. */
+  async function assertFlagged(r, why) {
     assert.equal(r.status, 200, r.text);
     assert.equal(r.data.ok, true);
-    assert.equal(mailFiles().length, before, 'no email written');
-    const logs = readdirSync(TMP_DIR).filter((f) => f.startsWith('booking-')).map((f) => readFileSync(path.join(TMP_DIR, f), 'utf8')).join('');
+    assert.match(r.data.ref, /^BP-\d{8}-[A-Z2-9]{4}$/);
+    assert.equal(r.data.message, `Thank you, ${CLIENT.first} — we’ve received your request and will reply ${SCHEMA.business.replyTime}.`, 'same reply as a real send');
+    assert.deepEqual(Object.keys(r.data).sort(), ['message', 'ok', 'ref']);
+    const biz = readMail(r.data.ref, 'business');
+    assert.ok(biz.headers.subject.startsWith('[Possible spam] New booking: '), biz.headers.subject);
+    assert.ok(biz.text.startsWith('POSSIBLE SPAM: A spam check flagged this request: ') && biz.text.includes(why), biz.text.slice(0, 300));
+    assert.ok(biz.text.includes('No confirmation email was sent to them.'));
+    assert.ok(biz.html.includes('Possible spam.'));
+    assert.ok(!existsSync(path.join(MAIL_DIR, `${r.data.ref}-client.eml`)), 'no client confirmation');
+    return biz;
+  }
+  const logText = () => readdirSync(TMP_DIR).filter((f) => f.startsWith('booking-')).map((f) => readFileSync(path.join(TMP_DIR, f), 'utf8')).join('');
+
+  test('honeypot filled → the lead is still emailed (flagged), no confirmation, logged without PII', async () => {
+    await assertFlagged(await post({ ...validPayload('proposal'), company_website: 'https://spam.example' }), 'hidden “leave this empty” field');
+    const logs = logText();
     assert.match(logs, /"event":"honeypot"/);
+    assert.match(logs, /"flag":"honeypot"[^\n]*"confirmation":"skipped"/);
     assert.ok(!logs.includes(CLIENT.email) && !logs.includes('127.0.0.1'), 'log has no PII or raw IPs');
   });
 
-  test('submitted too fast (_ts) → fake 200, nothing sent', async () => {
+  test('honeypot filled but answers invalid → the usual 422, nothing sent', async () => {
     const before = mailFiles().length;
-    // Milliseconds (Date.now()) and whole seconds are both understood.
-    for (const ts of [String(Date.now()), String(Math.ceil(Date.now() / 1000))]) {
-      const r = await post({ ...validPayload('proposal'), _ts: ts });
-      assert.equal(r.status, 200, r.text);
-      assert.equal(r.data.ok, true);
-    }
-    assert.equal(mailFiles().length, before, 'no email written');
+    const r = await post({ ...validPayload('proposal'), company_website: 'x', email: 'nope' });
+    assert.equal(r.status, 422, r.text);
+    assert.ok(r.data.errors.email);
+    assert.equal(mailFiles().length, before);
   });
 
-  test('a visitor clock running ahead (_ts in the future) is not treated as spam', async () => {
-    const r = await post({ ...validPayload('proposal'), _ts: String(Date.now() + 10 * 60_000) });
+  test('a real send and a trapped send answer alike', async () => {
+    const real = await post(validPayload('proposal'));
+    const trap = await post({ ...validPayload('proposal'), company_website: 'x' });
+    assert.equal(real.status, trap.status);
+    assert.equal(real.data.message, trap.data.message);
+    assert.deepEqual(Object.keys(real.data).sort(), Object.keys(trap.data).sort());
+    assert.equal(real.headers.get('content-type'), trap.headers.get('content-type'));
+  });
+
+  test('submitted too fast (_ts) → flagged, no confirmation', async () => {
+    // Milliseconds (Date.now()) and whole seconds are both understood.
+    for (const ts of [String(Date.now()), String(Math.ceil(Date.now() / 1000))]) {
+      await assertFlagged(await post({ ...validPayload('proposal'), _ts: ts }), 'within seconds');
+    }
+  });
+
+  test('fetch() submission without _ts, or with one far in the future → flagged', async () => {
+    const noTs = validPayload('proposal');
+    delete noTs._ts;
+    await assertFlagged(await post(noTs), 'timer was missing');
+    await assertFlagged(await post({ ...validPayload('proposal'), _ts: '' }), 'timer was missing');
+    for (const ts of [String(Date.now() + 86_400_000), '99999999999999', '1e20']) {
+      await assertFlagged(await post({ ...validPayload('proposal'), _ts: ts }), 'far in the future');
+    }
+  });
+
+  test('a visitor clock running a few minutes ahead is not treated as spam', async () => {
+    const r = await post({ ...validPayload('proposal'), _ts: String(Date.now() + 5 * 60_000) });
     assert.equal(r.status, 200, r.text);
-    readMail(r.data.ref, 'business');
+    assertEmails(r.data.ref, validPayload('proposal'));
+  });
+
+  test('a no-JS form post (no _ts at all) is a normal request with a confirmation', async () => {
+    const payload = validPayload('birthday');
+    delete payload._ts;
+    const before = mailFiles().length;
+    const r = await post(payload, { json: false });
+    assert.equal(r.status, 303);
+    assert.equal(mailFiles().length, before + 2);
+  });
+
+  test('business email: summary first, no repeats, and the client’s preferred contact is the main button', async () => {
+    const r = await post({ ...validPayload('proposal', { full: true }), contact_pref: 'Email' });
+    assert.equal(r.status, 200, r.text);
+    const biz = readMail(r.data.ref, 'business');
+    const buttons = [...biz.html.matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
+    assert.ok(buttons[0][0].startsWith(`mailto:${CLIENT.email}`) && buttons[0][1] === `Email ${CLIENT.first}`, JSON.stringify(buttons.slice(0, 3)));
+    assert.ok(buttons.some(([h, t]) => h.startsWith('sms:') && t === 'Text'), 'Text is still offered');
+    assert.match(biz.text, /\n {2}Email: priya@example\.com \(or just reply\) {2}← preferred\n/);
+    assert.ok(biz.text.includes('\nPrefers: Email\n') && biz.text.includes('\nSurprise: Yes\n'));
+    assert.ok(biz.text.includes(`\nLocation: ${FIELDS.get('location_type').field.options[0].label} · Trinity Bellwoods Park\n`), 'location type · place');
+    assert.ok(!/OCCASION & PACKAGE|WHEN & WHERE/.test(biz.text), 'no sections that only repeat the summary');
+    const plain = readMail((await post(validPayload('proposal'))).data.ref, 'business');
+    assert.ok(/<a href="sms:\+14165550123"[^>]*>Text Priya<\/a>/.test(plain.html), 'no preference → Text is the main button');
+  });
+
+  test('client confirmation: summary only from our own lists, careful greeting', async () => {
+    const r = await post({ ...validPayload('other', { pkg: 'not-sure' }), name: 'WinBig.example.com Now' });
+    assert.equal(r.status, 200, r.text);
+    const cli = readMail(r.data.ref, 'client');
+    assert.ok(cli.text.startsWith('Thank you.\n'), 'a first "name" that isn’t a name is left out');
+    assert.ok(!cli.raw.includes('WinBig'), 'none of it anywhere in the confirmation');
+    assert.ok(cli.text.includes('Package: Not sure yet — we’ll recommend one') && !cli.text.includes('Help me choose'));
+    const accented = await post({ ...validPayload('proposal'), name: 'Zoë O’Brien' });
+    assert.ok(readMail(accented.data.ref, 'client').text.startsWith('Thank you, Zoë.\n'));
   });
 
   test('GET → 405', async () => {
@@ -666,10 +783,19 @@ describe('booking handler (file transport)', () => {
     assert.equal(local.status, 200, local.text);
   });
 
-  test('oversized body → 413', async () => {
+  test('oversized body → 413 (urlencoded, and multipart, which PHP parses before book.php runs)', async () => {
     const r = await post({ ...validPayload('proposal'), notes: 'x'.repeat(70_000) });
     assert.equal(r.status, 413, r.text);
     assert.equal(r.data.ok, false);
+    const m = await post({ ...validPayload('proposal'), notes: 'x'.repeat(70_000) }, { type: 'multipart' });
+    assert.equal(m.status, 413, m.text);
+  });
+
+  test('a file part in a multipart post → 413, nothing sent', async () => {
+    const before = mailFiles().length;
+    const r = await post(validPayload('proposal'), { type: 'multipart', files: { upload: 'hello' } });
+    assert.equal(r.status, 413, r.text);
+    assert.equal(mailFiles().length, before);
   });
 
   test('unsupported content type → 415; malformed JSON → 400', async () => {
@@ -687,7 +813,13 @@ describe('booking handler (file transport)', () => {
     } catch {
       return t.skip('Playwright not installed');
     }
-    const browser = await chromium.launch();
+    // CI's build job installs no browser (the e2e job does), so a missing Chromium is a skip, not a failure.
+    let browser;
+    try {
+      browser = await chromium.launch();
+    } catch {
+      return t.skip('Chromium not installed (npx playwright install chromium)');
+    }
     try {
       const page = await browser.newPage();
       await page.goto(`${BASE}/book?occasion=proposal&package=proposal-romance`);
@@ -736,7 +868,9 @@ describe('rate limit', () => {
     await startServer({ TEST_RATE_LIMIT_MAX: '2' });
   });
 
-  test('third send from the same IP within the window → 429 with Retry-After', async () => {
+  test('third send from the same IP within the window → 429 with Retry-After (answers to fix don’t count)', async () => {
+    const invalid = await post({ ...validPayload('proposal'), email: 'nope' });
+    assert.equal(invalid.status, 422, invalid.text);
     for (let i = 0; i < 2; i++) {
       const ok = await post(validPayload('proposal'));
       assert.equal(ok.status, 200, ok.text);
@@ -757,6 +891,56 @@ describe('rate limit', () => {
     const raw = readFileSync(path.join(TMP_DIR, 'rate-limit.json'), 'utf8');
     assert.ok(!raw.includes('127.0.0.1'));
     assert.match(raw, /[0-9a-f]{64}/);
+  });
+});
+
+describe('rate limit under a burst of parallel requests', () => {
+  before(async () => {
+    rmSync(path.join(TMP_DIR, 'rate-limit.json'), { force: true });
+    await startServer({ TEST_RATE_LIMIT_MAX: '2', PHP_CLI_SERVER_WORKERS: '6' });
+  });
+
+  test('6 requests at once with a limit of 2 → exactly 2 sent', async () => {
+    const results = await Promise.all(Array.from({ length: 6 }, () => post(validPayload('proposal'))));
+    const codes = results.map((r) => r.status).sort();
+    assert.deepEqual(codes, [200, 200, 429, 429, 429, 429], results.map((r) => r.text).join('\n'));
+  });
+});
+
+describe('client confirmations: site-wide hourly cap', () => {
+  before(async () => {
+    rmSync(path.join(TMP_DIR, 'confirm-limit.json'), { force: true });
+    await startServer({ TEST_CONFIRM_MAX: '1' });
+  });
+
+  test('over the cap the business email still goes out, the confirmation doesn’t', async () => {
+    const first = await post(validPayload('proposal'));
+    const second = await post(validPayload('proposal'));
+    for (const r of [first, second]) assert.equal(r.status, 200, r.text);
+    assertEmails(first.data.ref, validPayload('proposal'));
+    readMail(second.data.ref, 'business');
+    assert.ok(!existsSync(path.join(MAIL_DIR, `${second.data.ref}-client.eml`)), 'second confirmation held back');
+    assert.match(readdirSync(TMP_DIR).filter((f) => f.startsWith('booking-')).map((f) => readFileSync(path.join(TMP_DIR, f), 'utf8')).join(''), new RegExp(`"ref":"${second.data.ref}"[^\\n]*"confirmation":"capped"`));
+  });
+});
+
+describe('client IP for the rate limit', () => {
+  test('a proxy header counts only from a trusted proxy; IPv6 is counted per /64', () => {
+    const php = `
+      require 'public/api/lib/Http.php';
+      $out = [];
+      $_SERVER = ['REMOTE_ADDR' => '203.0.113.9', 'HTTP_X_FORWARDED_FOR' => '198.51.100.7, 10.0.0.1'];
+      $out[] = Blush\\Request::clientIp('X-Forwarded-For');                          // no trusted proxies → ignored
+      $out[] = Blush\\Request::clientIp('X-Forwarded-For', ['192.0.2.0/24']);        // not from the proxy → ignored
+      $out[] = Blush\\Request::clientIp('X-Forwarded-For', ['203.0.113.0/24']);      // from the proxy → believed
+      $out[] = Blush\\Request::rateKeyIp('2001:db8:1:2:aaaa:bbbb:cccc:dddd');
+      $out[] = Blush\\Request::rateKeyIp('2001:db8:1:2::1');
+      $out[] = Blush\\Request::rateKeyIp('::ffff:198.51.100.7');
+      $out[] = Blush\\Request::rateKeyIp('198.51.100.7');
+      echo json_encode($out);`;
+    const r = spawnSync('php', ['-r', php], { cwd: ROOT, encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    assert.deepEqual(JSON.parse(r.stdout), ['203.0.113.9', '203.0.113.9', '198.51.100.7', '2001:db8:1:2::/64', '2001:db8:1:2::/64', '198.51.100.7', '198.51.100.7']);
   });
 });
 

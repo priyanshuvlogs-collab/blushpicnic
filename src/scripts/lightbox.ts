@@ -15,8 +15,15 @@ const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]');
 
 if (dialog && typeof dialog.showModal === 'function') {
   const $ = <T extends Element>(sel: string) => dialog.querySelector<T>(sel)!;
-  const img = $<HTMLImageElement>('[data-lb-img]');
   const stage = $<HTMLElement>('[data-lb-stage]');
+  // The photo is created here rather than in the markup, so the static HTML never holds an <img>
+  // without a src. alt="" because its description is the visible caption (aria-describedby).
+  const img = document.createElement('img');
+  img.className = 'lb-img';
+  img.alt = '';
+  img.decoding = 'async';
+  img.draggable = false;
+  stage.prepend(img);
   const count = $<HTMLElement>('[data-lb-count]');
   const title = $<HTMLElement>('[data-lb-title]');
   const desc = $<HTMLElement>('[data-lb-desc]');
@@ -92,7 +99,6 @@ if (dialog && typeof dialog.showModal === 'function') {
       page.textContent = d.pageLabel;
       page.hidden = false;
     } else {
-      page.textContent = '';
       page.hidden = true;
     }
 

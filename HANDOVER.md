@@ -65,18 +65,27 @@ To **upload photos** through GitHub instead of the photo tool, see [Photos](#pho
 | --- | --- | --- |
 | Starting price | `priceFrom:` | `priceFrom: 375` → `priceFrom: 395` (numbers only, no `$`) |
 | Price per extra guest (Signature) | `extraGuestPrice:` | `extraGuestPrice: 35` |
-| The small line under the price | `priceNote:` | `priceNote: "+$35 per extra guest"` |
+| An extra note under the price (no amounts!) | `priceNote:` | `priceNote: "More than 8 guests? We'll quote your group."` |
 | Guests included / maximum | `guestsIncluded:`, `guestsMax:`, `guestsLabel:` | `guestsLabel: "for 6–8 guests"` |
 | Length | `durationHours:` | `durationHours: 2.5` |
 | What's included | the lines under `includes:` | each starts with `    - "` |
 
 The site adds "Starting at" and "before HST" by itself, and the booking estimate updates automatically.
 
-**One extra step:** some descriptions and FAQ answers mention prices in words, e.g. "starts at
-$375 for 2 guests". After changing a price, search for the old one: on GitHub, type the old
-number (e.g. `375`) in the search box at the top of the repository, choose "Search in this
-repository", and update the matches in `src/content/occasions/` and `src/content/faqs.yaml`. The
-same goes for `priceNote` ("+$35 per extra guest") if you change the extra-guest price.
+**That's the only place you change a price.** Occasion pages, FAQs and policies never have
+prices typed into them — they use little placeholders in curly brackets that the website fills
+in from this file when it's published:
+
+| Write this in copy | It shows |
+| --- | --- |
+| `{price:signature}` / `{price:proposal-romance}` / `{price:celebration}` | $375 / $495 / $1,200 |
+| `{guests:celebration}` · `{hours:signature}` · `{guestsMax:celebration}` | 6–8 guests · 2 hours · 8 |
+| `{extraGuest:signature}` | $35 |
+| `{deposit}` · `{depositPercent}` · `{securityDeposit}` | $100 · 50% · $100 |
+| `{phone}` · `{email}` · `{instagram}` · `{tiktok}` | your contact details |
+
+If you ever type a dollar amount into an occasion page or FAQ by hand, the publish log shows a
+friendly warning so it doesn't go out of date.
 
 ### Add-on prices
 
@@ -107,8 +116,8 @@ Prices you set here also appear in the booking form's estimate. To go back to "P
 - `analytics`: your **Google Analytics 4** ID (`G-…`) and **Meta Pixel** ID (digits only). See
   [One-time setup](#one-time-setup), step 9. They only switch on after a visitor accepts cookies.
 
-Like prices, the phone number and deposit are also written out in a few FAQ answers
-(`src/content/faqs.yaml`). Search for the old value after changing them.
+The phone number and deposit amounts in FAQs, occasion pages and policies come from here too
+(through the `{phone}` and `{deposit}` placeholders), so one change updates the whole site.
 
 **Name or tagline changed?** The logo and social-share image are made from them, so ask your
 developer to run `npm run brand`.
@@ -259,7 +268,7 @@ hPanel's search box.
 The FTP password was sent in a chat while the site was being set up, so treat it as public.
 
 1. hPanel → **Files** → **FTP Accounts**.
-2. Change the password for `u228675638`. Save the new one in your password manager.
+2. Change the password for your FTP account (the username starting with `u…`). Save the new one in your password manager.
 3. Never send it by chat or email. Only put it in the places below.
 
 ### 2. Add the three GitHub secrets (for the Deploy button)
@@ -268,8 +277,8 @@ GitHub → the repository → **Settings** → **Secrets and variables** → **A
 
 | Name | Secret |
 | --- | --- |
-| `FTP_SERVER` | `147.93.42.131` |
-| `FTP_USERNAME` | `u228675638` |
+| `FTP_SERVER` | the "FTP IP (hostname)" from hPanel → Files → FTP Accounts |
+| `FTP_USERNAME` | the "FTP username" from the same page |
 | `FTP_PASSWORD` | your new FTP password |
 
 Secrets can't be read back, not even by you, so you'll never see the password on GitHub again.
@@ -356,8 +365,9 @@ Nothing has been made up in its place.
 
 <!-- PLACEHOLDERS:START -->
 
-**Policies** (`src/content/pages/policies.md`): the weather, cancellation, late-arrival, rental
-damage, permit and confetti sections were written from your notes. **Please read
+**Policies** (`src/content/pages/policies.md`): the deposit, security deposit, payment, weather,
+cancellation, setup/pickup times, late-arrival, extra time, rental damage, clean-up, confetti and
+permit sections were written from your booking-confirmation email. **Please read
 https://blushpicnic.com/policies once and confirm every line is right.**
 
 - [ ] **Weather policy**: confirm the wording (unsafe weather → rescheduled, deposit moves to the new date, no refunds for weather).
@@ -374,6 +384,11 @@ https://blushpicnic.com/policies once and confirm every line is right.**
 - [ ] **Meta Pixel ID** (`settings.yaml` → `metaPixelId`).
 - [ ] **Privacy policy review**: have it checked, then fill in: the date it takes effect, who handles privacy questions, where your email and hosting providers store data (`privacy.md`).
 - [ ] **How long you keep booking emails and records** (retention period, `privacy.md`).
+- [ ] **Celebration package — what's included?** Does it include the Signature basics (low table, rugs and cushions, tableware and glassware, florals, letter board, speaker)? If yes, add `includesFrom: "Everything in the Signature Picnic, plus:"` to `celebration` in `packages.yaml` — the comparison table on /packages then shows ticks instead of "Ask us".
+- [ ] **Kids and the extra-guest price**: are kids charged the $35 extra-guest rate on the Signature Picnic? For now the booking estimate prices extra adults and says "we'll confirm pricing" for kids.
+- [ ] **Invoices for companies**: do you issue invoices (and do they show HST)? The corporate page only says "tell us if you need an invoice".
+- [ ] **Instagram photo promise**: the About and Privacy pages say you only share photos of a setup if the client says yes (the booking form asks), and that you'll take a photo down on request. Confirm you're happy with that.
+- [ ] **Delivery fee**: your confirmation email lists a delivery charge. The site only says "prices vary by location" — tell us if you'd like the fee explained.
 
 <!-- PLACEHOLDERS:END -->
 
@@ -388,6 +403,8 @@ https://blushpicnic.com/policies once and confirm every line is right.**
 | The Deploy button failed at "Upload" | The FTP password may have changed: update the `FTP_PASSWORD` secret |
 | "Booking handler can't read blush-config.php" | Re-do [setup step 5](#5-put-the-booking-settings-on-the-server-blush-configphp). The file goes *next to* `public_html`, not inside it |
 | Bookings stopped arriving | Check spam, then send a test booking. If the mailbox password changed, update it in `blush-config.php` on the server (File Manager → domains → blushpicnic.com → blush-config.php → Edit). Requests that couldn't be emailed are saved in `domains/blushpicnic.com/blush-data/unsent/` and open in any email app |
+| A request arrives with "[Possible spam]" in the subject | Our spam filter wasn't sure. Read it — if it's a real client, reply as normal. |
+| Tidying up (every few months) | Delete files in `domains/blushpicnic.com/blush-data/unsent/` once you've handled them (the privacy page promises this), and old `booking-YYYY-MM.log` files in `blush-data/`. |
 | The site looks wrong after publishing | Undo it: Actions → Deploy to Hostinger → last good run → **Re-run all jobs** |
 | Browser says "not secure" | SSL is off or renewing: hPanel → Security → SSL |
 

@@ -1,6 +1,6 @@
 ---
 // Short "good to know" column beside (desktop) or below (mobile) the booking form.
-// Every line comes from settings.yaml: reply time, deposit summary, phone.
+// Every line comes from settings.yaml: reply time, booking + security deposit summaries, phone.
 import Icon from '../Icon.astro';
 import { getSettings, smsUrl, telUrl } from '../../lib/site';
 
@@ -9,9 +9,11 @@ interface Props {
 }
 const { class: className = '' } = Astro.props;
 const s = await getSettings();
+// settings.yaml is typed with straight apostrophes ("It’s"); show typographic ones like the rest of the site.
+const curly = (t: string) => t.replace(/(\w)'(\w)/g, '$1’$2');
 ---
 <section class:list={['bk-reassure', className]} aria-labelledby="bk-reassure-title">
-  <h2 id="bk-reassure-title" class="sr-only">Good to know before you send</h2>
+  <h2 id="bk-reassure-title" class="bk-reassure-heading">Good to know</h2>
   <ul class="bk-reassure-list">
     <li>
       <Icon name="clock" size={20} class="bk-reassure-icon" />
@@ -24,7 +26,14 @@ const s = await getSettings();
       <Icon name="calendar" size={20} class="bk-reassure-icon" />
       <div>
         <p class="bk-reassure-title">Holding your date</p>
-        <p>{s.deposit.summary}</p>
+        <p>{curly(s.deposit.summary)}</p>
+      </div>
+    </li>
+    <li>
+      <Icon name="sparkle" size={20} class="bk-reassure-icon" />
+      <div>
+        <p class="bk-reassure-title">Refundable security deposit</p>
+        <p>{curly(s.securityDeposit.summary)}</p>
       </div>
     </li>
     <li>

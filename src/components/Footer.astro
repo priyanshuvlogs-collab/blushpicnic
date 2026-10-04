@@ -7,19 +7,19 @@ const s = await getSettings();
 const occasions = (await getOccasions()).slice(0, 8);
 const year = new Date().getFullYear();
 ---
-<footer class="on-dark bg-plum text-cream">
-  <div class="container-x grid gap-12 py-16 md:grid-cols-12 md:py-20">
-    <div class="md:col-span-4">
+<footer class="site-footer on-dark bg-plum text-cream">
+  <div class="container-x grid grid-cols-2 gap-x-6 gap-y-12 py-16 md:grid-cols-12 md:py-20">
+    <div class="col-span-2 md:col-span-12 lg:col-span-4">
       <a href="/" class="inline-flex min-h-12 items-center no-underline" aria-label="Blush Picnic — home">
         <Wordmark size="lg" class="text-cream" />
       </a>
       <p class="mt-4 max-w-xs text-cream/85">
         Styled luxury picnics across {s.serviceArea}. We deliver, set up, style and clean up — you just arrive.
       </p>
-      <a href="/book" class="btn btn-light mt-6" data-track="booking_cta" data-track-location="footer">Book your picnic</a>
+      <a href="/book" class="btn btn-light mt-6" data-track="booking_cta" data-track-location="footer" data-astro-prefetch>Book your picnic</a>
     </div>
 
-    <nav aria-label="Footer — explore" class="md:col-span-2">
+    <nav aria-label="Footer — explore" class="md:col-span-3 lg:col-span-2">
       <h2 class="heading-sm text-cream/75">Explore</h2>
       <ul class="mt-3 space-y-1">
         {[
@@ -36,8 +36,8 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
 
-    <nav aria-label="Footer — occasions" class="md:col-span-3">
-      <h2 class="heading-sm text-cream/75">Popular occasions</h2>
+    <nav aria-label="Footer — occasions" class="md:col-span-4 lg:col-span-2">
+      <h2 class="heading-sm text-cream/75">Occasions</h2>
       <ul class="mt-3 space-y-1">
         {occasions.map((o) => (
           <li><a href={occasionUrl(o)} class="inline-flex min-h-11 items-center no-underline hover:underline">{o.data.chip}</a></li>
@@ -46,7 +46,7 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
 
-    <div class="md:col-span-3">
+    <div class="col-span-2 md:col-span-5 lg:col-span-4">
       <h2 class="heading-sm text-cream/75">Get in touch</h2>
       <ul class="mt-3 space-y-1">
         <li><a href={telUrl(s)} class="inline-flex min-h-11 items-center gap-3 no-underline hover:underline" data-track="click_call"><Icon name="phone" size={18} />Call {s.phoneDisplay}</a></li>

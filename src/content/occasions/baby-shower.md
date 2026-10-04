@@ -5,7 +5,7 @@ urlSlug: "baby-shower-picnic-toronto"
 order: 13
 formGroup: "baby"
 recommendedPackage: "celebration"
-metaTitle: "Baby Shower Picnic Toronto | Themed Shower Setups | Blush Picnic"
+metaTitle: "Baby Shower Picnic Toronto | Themed Showers | Blush Picnic"
 metaDescription: "A baby shower picnic in Toronto or the GTA, themed in your colours with a backdrop and custom signage, all cleared away after. Starting at {price:celebration} before HST."
 h1: "A baby shower picnic the host gets to enjoy, too"
 lede: "You're throwing a baby shower in Toronto for someone you love. We take care of the styling, the backdrop and the pack-up, so you can spend the afternoon with the parent-to-be instead of your to-do list."
@@ -22,11 +22,11 @@ highlights:
     text: "Throwing it as a surprise? Tell us who's in on it and how the guest of honour will arrive, and we'll plan around it."
 faqs:
   - q: "Why do you recommend Celebration for a baby shower?"
-    a: "Showers are usually group affairs, and Celebration is our full themed setup for groups: a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST, and varies by location."
-  - q: "Our guest list is longer than 8. Can you still do it?"
-    a: "Yes. Celebration covers {guests:celebration}, and larger groups get their own quote. Enter the number of adults and kids in the booking form. For larger events the deposit is {depositPercent} rather than {deposit}, with the balance due before the shower."
-  - q: "Can the shower be a surprise for the mom-to-be?"
-    a: "Of course. Switch on the surprise section, tell us who else knows and how she'll arrive, and choose whether our team stays out of sight nearby or heads off before she gets there."
+    a: "Showers are usually group affairs, and Celebration is our full themed setup for groups: a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST, and varies by location."
+  - q: "Our guest list is longer than {guestsMax:celebration}. Can you still do it?"
+    a: "Yes. Celebration covers {guests:celebration}, and larger groups get their own quote. Enter the number of adults and kids in the booking form. For larger events the booking deposit is {depositPercent} rather than {deposit}, with the balance due before the shower."
+  - q: "Can the shower be a surprise for the parent-to-be?"
+    a: "Of course. Switch on the surprise section, tell us who else knows and how they'll arrive, and choose whether our team stays out of sight nearby or heads off before they get there."
   - q: "Do you supply food for the shower?"
     a: "Food isn't part of our packages, so you're welcome to bring your own or arrange it separately. You can also tick a grazing board or a custom cake in the booking form and we'll include it in your quote. Note any allergies in the same section."
   - q: "Does it have to be outdoors?"
@@ -48,12 +48,12 @@ Planning it as a surprise? Switch on the surprise section and tell us who else k
 
 ## The Celebration setup
 
-We recommend our Celebration package for showers. It's a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games for between the gifts, and it starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST. Showers often grow beyond that, and when yours does, we'll quote the larger group. Prices vary by location across the GTA, and we confirm your exact quote by message.
+For showers we recommend our Celebration package: a themed backdrop for photos with the parent-to-be, a balloon garland or flower arch, custom signage that can carry the baby's details, and games for between the gifts. It starts at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST. Showers often grow beyond that, and when yours does, we'll quote the larger group. Prices vary by location across the GTA, and we confirm your exact quote by message.
 
 Food isn't part of the packages, so bring your own spread or add a grazing board and a custom cake to your request. A photographer, a neon sign or a flower arch alongside the balloons can be added the same way, each one priced into your quote.
 
 ## From group chat to shower
 
 1. **Fill in the shower basics.** The parents' names, due date or month, colours, a date and a backup date.
-2. **Hold the date.** Within 24 hours we send availability and a quote. A {deposit} deposit, or {depositPercent} for larger events, secures it, and the balance is due before the shower.
+2. **Hold the date.** Within 24 hours we send availability and a quote. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit. The balance is due before the shower.
 3. **Welcome your guests.** The setup is styled before anyone arrives, and we clear it all away when the shower wraps up.

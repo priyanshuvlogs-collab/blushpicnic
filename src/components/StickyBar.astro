@@ -1,5 +1,6 @@
 ---
 // Mobile-only bottom bar: the two highest-intent actions, always one tap away.
+// When it shows (phones held upright) is set in global.css → "Site chrome", along with the room the page leaves for it.
 import Icon from './Icon.astro';
 import { getSettings, smsUrl, bookUrl } from '../lib/site';
 interface Props {
@@ -8,9 +9,9 @@ interface Props {
 const s = await getSettings();
 const bookHref = bookUrl(Astro.props.book);
 ---
-<nav aria-label="Quick actions" class="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-cream/95 px-4 pt-3 backdrop-blur-sm md:hidden" style="padding-bottom:max(0.75rem, env(safe-area-inset-bottom))" data-sticky-bar>
+<nav aria-label="Quick actions" class="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-cream/95 px-4 pt-3 backdrop-blur-sm" style="padding-bottom:max(0.75rem, env(safe-area-inset-bottom))" data-sticky-bar>
   <div class="grid grid-cols-2 gap-3">
-    <a href={bookHref} class="btn btn-primary w-full" data-track="booking_cta" data-track-location="sticky_bar">Book</a>
+    <a href={bookHref} class="btn btn-primary w-full" data-track="booking_cta" data-track-location="sticky_bar" data-astro-prefetch="tap">Book</a>
     <a href={smsUrl(s)} class="btn btn-secondary w-full" data-track="click_text"><Icon name="message" size={18} />Text us</a>
   </div>
 </nav>

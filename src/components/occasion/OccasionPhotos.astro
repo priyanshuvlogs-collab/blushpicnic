@@ -24,6 +24,7 @@ const slots = [
   { cls: 'col-span-6 md:col-span-7 md:-mt-24 self-end', aspect: '4/3', sizes: '(min-width: 1280px) 680px, (min-width: 768px) 56vw, 48vw' },
 ];
 const single = items.length === 1;
+const pair = items.length === 2;
 ---
 {items.length > 0 && (
   <section aria-labelledby="photos-title" class="section-y">
@@ -31,7 +32,7 @@ const single = items.length === 1;
       <div class="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
         <h2 id="photos-title" class="lg:col-span-6">{capitalize(plural)}, styled</h2>
         <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
-          See a look you love? Book it, then tell us your colours, flowers and the words for your sign. We'll style it around you.
+          See a look you love? Book it, then tell us your colours and the message you'd like to see. We'll style it around you.
         </p>
       </div>
 
@@ -39,7 +40,7 @@ const single = items.length === 1;
         {items.map((g, i) => {
           const slot = single ? { cls: 'col-span-12 md:col-span-8 md:col-start-3', aspect: '3/2', sizes: '(min-width: 1280px) 780px, (min-width: 768px) 66vw, 100vw' } : slots[i];
           return (
-            <figure class={slot.cls}>
+            <figure class:list={[slot.cls, pair && i === 1 && 'md:row-span-2']}>
               <Picture
                 src={g.data.image}
                 alt={g.data.alt}
@@ -54,25 +55,28 @@ const single = items.length === 1;
             </figure>
           );
         })}
-      </div>
 
-      {anyPlaceholder && (
-        <p class="placeholder-note mt-8 max-w-2xl">
-          <strong>Placeholder —</strong> these are stand-in images. Real photos of {plural} replace them once they're added to the gallery.
-        </p>
-      )}
+        {/* With two photos, the note and actions sit under the first one, beside the dropped second photo. */}
+        <div class:list={['col-span-12', pair ? 'md:col-span-7 md:col-start-1 md:row-start-2' : single && 'md:col-span-8 md:col-start-3']}>
+          {anyPlaceholder && (
+            <p class="placeholder-note mb-8 max-w-2xl">
+              <strong>Placeholder —</strong> these are stand-in images. Real photos of {plural} replace them once they're added to the gallery.
+            </p>
+          )}
 
-      <div class="mt-8 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-10">
-        <a
-          href={bookUrl({ occasion: entry.id, package: pkg.id })}
-          class="btn btn-primary"
-          data-track="booking_cta"
-          data-track-location="occasion_photos"
-          data-track-occasion={entry.id}
-          data-track-package={pkg.id}
-        >Book this look</a>
-        <a href={`/gallery?occasion=${encodeURIComponent(entry.id)}`} class="link-arrow">See more in the gallery<Icon name="arrow-right" size={18} /></a>
-        <a href={s.instagramUrl} rel="noopener" class="link-arrow" data-track="click_instagram"><Icon name="instagram" size={20} />{s.instagramHandle}</a>
+          <div class="flex flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 sm:gap-y-2">
+            <a
+              href={bookUrl({ occasion: entry.id, package: pkg.id })}
+              class="btn btn-primary"
+              data-track="booking_cta"
+              data-track-location="occasion_photos"
+              data-track-occasion={entry.id}
+              data-track-package={pkg.id}
+            >Book this look</a>
+            <a href={`/gallery?occasion=${encodeURIComponent(entry.id)}`} class="link-arrow">See more in the gallery<Icon name="arrow-right" size={18} /></a>
+            <a href={s.instagramUrl} rel="noopener" class="link-arrow" data-track="click_instagram"><Icon name="instagram" size={20} />{s.instagramHandle}</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>

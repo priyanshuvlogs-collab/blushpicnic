@@ -1,24 +1,27 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #  Deploy blushpicnic.com to Hostinger.
 #
-#  MANUAL ONLY: nothing goes live until you press the button.
+#  MANUAL ONLY: nothing goes live until you press the button, and only from the main branch.
 #    GitHub → Actions → "Deploy to Hostinger" → Run workflow → Run workflow
 #
 #  One-time setup (HANDOVER.md has screenshots-free, step-by-step instructions):
 #    Settings → Secrets and variables → Actions → New repository secret:
-#      FTP_SERVER    147.93.42.131 (or the FTP hostname from hPanel → Files → FTP Accounts)
-#      FTP_USERNAME  u228675638
+#      FTP_SERVER    the FTP host NAME from hPanel → Files → FTP Accounts — the name on the
+#                    server's certificate (./deploy.sh --show-cert prints it), not the IP address
+#      FTP_USERNAME  the FTP username from the same hPanel page
 #      FTP_PASSWORD  the FTP password (change it first if it was ever shared in a chat)
+#    (Real values live only in these secrets and in your own deploy.env, never in a file in git.)
 #    Optional repository VARIABLES (same page, "Variables" tab):
 #      SITE_URL          https://blushpicnic.com (used by the checks after uploading)
 #      FTP_PORT          21
-#      FTP_TLS_SECURITY  loose (default) or strict — see "Encryption" below
+#      FTP_TLS_SECURITY  strict (default) or loose — see "Encryption" below
+#    Settings → Environments → production → Deployment branches: "Selected branches" → main
+#    (optionally also a required reviewer), so no other branch can reach the live site.
 #
-#  Encryption: the upload always uses FTPS (FTP over TLS), so the password and files are
-#  encrypted. "loose" doesn't check the server's certificate name, because Hostinger's
-#  certificate is issued to a hostname and FTP_SERVER is an IP address. If FTP_SERVER is set
-#  to the exact name on the certificate (./deploy.sh --show-cert prints it), set
-#  FTP_TLS_SECURITY to strict.
+#  Encryption: the upload always uses FTPS (FTP over TLS) and, by default, checks that the
+#  server's certificate matches FTP_SERVER, so nobody in between can pose as Hostinger and
+#  catch the password. That's why FTP_SERVER must be the certificate's name: with an IP
+#  address the check fails. "loose" switches the check off; avoid it.
 #
 #  To deploy automatically on every push to main later, add this under "on:" (and keep
 #  workflow_dispatch so you can still deploy by hand):
@@ -48,6 +51,7 @@ concurrency:
 jobs:
   deploy:
     name: Build and upload
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
@@ -82,31 +86,59 @@ jobs:
       - name: Build the site
         run: npm run build
 
+      # Same checks as ./deploy.sh: key files present, no secrets or saved emails inside, no
+      # file outside _astro/ named like a fingerprinted one (.htaccess would cache it for a year),
+      # and the business facts the booking emails need.
       - name: Check the build before uploading
+        env:
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
           for f in index.html 404.html .htaccess sitemap-index.xml robots.txt api/book.php api/form-schema.json api/.htaccess api/lib/.htaccess; do
             [ -f "dist/$f" ] || { echo "::error::dist/$f is missing — the build is incomplete."; exit 1; }
           done
-          leaks="$(find dist \( -name 'blush-config.php' -o -name 'deploy.env' -o -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' \) -print)"
+          leaks="$(find dist \( -name 'blush-config.php' -o -name 'deploy*.env' -o -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' -o -name 'id_rsa*' -o -name 'id_ed25519*' -o -name '*.eml' -o -path '*/.mail*' -o -path '*/blush-data*' \) -print)"
           if [ -n "$leaks" ]; then
-            echo "::error::Secret-looking files in dist/ (never upload these): $leaks"
+            echo "::error::Secret-looking files or saved emails in dist/ (never upload these): $leaks"
             exit 1
           fi
+          if [ "${#FTP_PASSWORD}" -ge 8 ] && grep -rqF -- "$FTP_PASSWORD" dist; then
+            echo "::error::The FTP password appears inside dist/ — something copied it into the site."
+            exit 1
+          fi
+          odd="$(find dist -path dist/_astro -prune -o -type f -print | grep -E '(^|/)([^/]*\.[A-Za-z0-9_-]{8}(_[A-Za-z0-9_-]+)?\.(css|m?js|avif|webp|jpe?g|png|gif|svg|woff2?|ttf|otf)|[0-9a-f]{16}\.(woff2?|ttf|otf))$' || true)"
+          if [ -n "$odd" ]; then
+            echo "::error::Files outside _astro/ named like fingerprinted build files (they'd be cached for a year; rename them): $odd"
+            exit 1
+          fi
+          grep -q '"phoneDisplay"' dist/api/form-schema.json || { echo "::error::dist/api/form-schema.json has no business facts (phone…) for the booking emails."; exit 1; }
           echo "$(find dist -maxdepth 1 -name '*.html' | wc -l) pages, $(find dist/_astro -type f | wc -l) build files, $(du -sh dist | cut -f1)"
+
+      # The booking handler must work before it goes live: PHP syntax, then the full API test
+      # suite against this very build (the runner's own PHP; no browser needed).
+      - name: Booking handler checks (php -l, API tests)
+        env:
+          API_TEST_DIST: dist
+          API_TEST_SKIP_BUILD: '1'
+        run: |
+          php -v | head -1
+          find public/api tests/fixtures -name '*.php' -print0 | xargs -0 -n1 php -l
+          npm run test:api
 
       # Uploads only what changed since the last run of this workflow (it keeps a list in
       # public_html/.ftp-deploy-sync-state.json, which .htaccess hides from the web). Files
       # that were removed from the site are deleted from the server; anything else already
       # on the server (and blush-config.php, which lives above public_html) is left alone.
+      # Pinned to the exact commit of v4.3.5 (a tag can be moved; this action gets the password).
+      # To update: look up the new release's commit on GitHub and replace both the hash and the comment.
       - name: Upload to Hostinger (FTPS)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ vars.FTP_PORT || 21 }}
           protocol: ftps
-          security: ${{ vars.FTP_TLS_SECURITY || 'loose' }}
+          security: ${{ vars.FTP_TLS_SECURITY || 'strict' }}
           local-dir: ./dist/
           server-dir: ./public_html/
           dangerous-clean-slate: false

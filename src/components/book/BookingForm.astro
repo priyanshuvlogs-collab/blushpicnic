@@ -18,7 +18,7 @@ const pkgs = await getPackages();
 
 const minPrice = Math.min(...pkgs.map((p) => p.data.priceFrom));
 const estimateNote = `Estimate only — starting price ${s.taxNote}. ${s.locationNote}`;
-const depositLine = `${money(s.deposit.standard)} deposit holds your date (${s.deposit.largeEventPercent}% for larger events)`;
+const depositLine = `${money(s.deposit.standard)} booking deposit holds your date (${s.deposit.largeEventPercent}% for larger events), plus a ${money(s.securityDeposit.amount)} refundable security deposit`;
 
 const config: BookingConfig = {
   schema,
@@ -51,10 +51,11 @@ const progressItems = [...schema.steps, 'Review'];
 
   <div class="bk-layout">
     <div class="bk-card" data-booking-card>
-      <nav class="bk-progress" aria-label="Booking steps" data-progress data-js-only hidden>
+      {/* Shown from first paint while the script loads (.bp-js), so nothing shifts when it starts; hidden without JS. */}
+      <nav class="bk-progress" aria-label="Booking steps" data-progress data-js-only>
         <ol>
           {progressItems.map((label, i) => (
-            <li data-progress-item={i + 1} data-state="upcoming">
+            <li data-progress-item={i + 1} data-state={i === 0 ? 'current' : 'upcoming'}>
               <button type="button" data-goto={i + 1} disabled>
                 <span class="bk-progress-num" aria-hidden="true">
                   <span class="bk-progress-n">{i + 1}</span>
@@ -123,10 +124,15 @@ const progressItems = [...schema.steps, 'Review'];
           <div class="bk-review" data-review-list></div>
           <div class="bk-before-send">
             <Icon name="sparkle" size={20} class="bk-before-send-icon" />
-            <p>
-              This is a request, not a payment. We reply {s.replyTime} with availability and your quote, and a {money(s.deposit.standard)} deposit
-              (or {s.deposit.largeEventPercent}% for larger events) holds your date once you’re happy.
-            </p>
+            <div class="bk-before-send-text">
+              <p><strong>This is a request, not a payment.</strong> We reply {s.replyTime} with availability and your quote.</p>
+              <p>
+                Once you’re happy, a {money(s.deposit.standard)} booking deposit (or {s.deposit.largeEventPercent}% for larger events) holds your
+                date&nbsp;— it’s non-refundable. There’s also a {money(s.securityDeposit.amount)} refundable security deposit, returned within
+                {s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.
+                <a href="/policies" class="bk-link">Read our booking policies</a>
+              </p>
+            </div>
           </div>
           <div class="bk-status" data-submit-status hidden></div>
         </section>
@@ -139,7 +145,7 @@ const progressItems = [...schema.steps, 'Review'];
         </div>
 
         <div class="bk-nav" data-nav>
-          <div class="bk-estbar" data-js-only hidden>
+          <div class="bk-estbar" data-js-only>
             <button type="button" class="bk-estbar-toggle" aria-expanded="false" aria-controls="bk-est-sheet" data-estimate-toggle>
               <span class="bk-estbar-label">Estimate</span>
               <span class="bk-estbar-total" data-estimate-total>Choose a package</span>
@@ -153,7 +159,8 @@ const progressItems = [...schema.steps, 'Review'];
             </button>
             <button type="submit" class="btn btn-primary btn-lg bk-primary" data-primary>
               <span class="bk-spinner" aria-hidden="true"></span>
-              <span data-primary-label>Send booking request</span>
+              {/* Without JS this sends the long form; with JS it starts as step 1's "Continue" (same as booking.ts sets, so nothing shifts). */}
+              <span data-primary-label><span class="bk-primary-nojs">Send booking request</span><span class="bk-primary-js">Continue<span class="bk-continue-to"> to {schema.steps[1]}</span></span></span>
             </button>
           </div>
           <p class="bk-nojs-note nojs-only">We reply {s.replyTime} with availability and your quote. Starting prices are {s.taxNote}; {s.locationNote}</p>
@@ -161,17 +168,19 @@ const progressItems = [...schema.steps, 'Review'];
       </form>
     </div>
 
-    <aside class="bk-aside" aria-label="Your estimate and booking info">
+    <aside class="bk-aside" aria-label="Your estimate">
       <section class="bk-est-panel" aria-labelledby="bk-est-title">
         <h2 id="bk-est-title" class="bk-est-heading">Your estimate</h2>
         <div data-estimate>
+          <p class="bk-est-empty">Choose a package to see a starting estimate.</p>
           <p class="bk-est-sub">Packages start at {money(minPrice)}, {s.taxNote}.</p>
           <p class="bk-est-note">{estimateNote}</p>
           <p class="bk-est-deposit">{depositLine}</p>
         </div>
       </section>
-      <Reassurance />
     </aside>
+
+    <Reassurance />
   </div>
 
   <p class="sr-only" aria-live="polite" data-live-status></p>
@@ -198,6 +207,9 @@ const progressItems = [...schema.steps, 'Review'];
   /* Until the script takes over, show only step 1 (no flash of the long no-JS form). */
   .bp-js:not(.bp-ready) .bk-step:not([data-step="1"]) { display: none; }
   .bp-js .nojs-only { display: none; }
+  /* Script-driven chrome is in place from first paint while the script loads (no layout shift when it
+     starts) and stays out of the way without JS — book.astro drops .bp-js if the script never runs. */
+  html:not(.bp-js) .bk-progress, html:not(.bp-js) .bk-estbar, html:not(.bp-js) .bk-est-empty { display: none; }
 
   .bk-layout { display: grid; gap: 2.5rem; }
   @media (min-width: 1024px) {
@@ -223,12 +235,12 @@ const progressItems = [...schema.steps, 'Review'];
   .bk-progress ol { display: flex; gap: 0.375rem; list-style: none; margin: 0; padding: 0; }
   .bk-progress li { flex: 1; position: relative; }
   .bk-progress button {
-    display: block; width: 100%; min-height: 1.5rem; padding: 0.6rem 0; border: 0; background: none;
+    display: flex; align-items: center; width: 100%; min-height: 2.75rem; padding: 0; border: 0; background: none;
     color: var(--color-plum); font: inherit; cursor: pointer; border-radius: 6px;
   }
   .bk-progress button:disabled { cursor: default; }
   .bk-progress button::before {
-    content: ""; display: block; height: 4px; border-radius: 99px; background: var(--color-line);
+    content: ""; display: block; flex: 1; height: 4px; border-radius: 99px; background: var(--color-line);
     transition: background-color 0.3s;
   }
   .bk-progress [data-state="done"] button::before,
@@ -265,7 +277,7 @@ const progressItems = [...schema.steps, 'Review'];
 
   /* Steps */
   .bk-step { padding-top: 1.5rem; }
-  .bk-progress[hidden] + .bk-form .bk-step:first-child { padding-top: 0.5rem; }
+  html:not(.bp-js) .bk-form .bk-step:first-child { padding-top: 0.5rem; }
   .bk-step + .bk-step { margin-top: 3.5rem; } /* no-JS long form */
   .bp-ready .bk-step + .bk-step { margin-top: 0; }
   @media (min-width: 768px) { .bk-step { padding-top: 2.5rem; } }
@@ -431,7 +443,8 @@ const progressItems = [...schema.steps, 'Review'];
     .bk-pkg-thumb { display: block; }
     .bk-pkg.is-help .bk-pkg-face { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot body"; padding-block: 1.1rem; }
   }
-  .bk-pkg-compare { margin-top: 0.9rem; font-size: 0.95rem; }
+  .bk-pkg-compare { margin-top: 0.35rem; font-size: 0.95rem; }
+  .bk-pkg-compare a { display: inline-flex; align-items: center; min-height: 2.75rem; }
 
   /* Switch */
   .bk-switch { display: inline-flex; align-items: center; gap: 0.9rem; min-height: 3rem; cursor: pointer; font-weight: 600; }
@@ -483,6 +496,7 @@ const progressItems = [...schema.steps, 'Review'];
   .bk-review-empty { margin-top: 0.4rem; color: var(--color-plum-soft); font-size: 0.95rem; }
   .bk-before-send { display: flex; align-items: flex-start; gap: 0.75rem; margin-top: 1.5rem; padding: 1rem 1.15rem; border-radius: 14px; background: var(--color-sage-wash); font-size: 0.95rem; line-height: 1.55; }
   .bk-before-send-icon { flex-shrink: 0; margin-top: 0.15rem; color: var(--color-sage-ink); }
+  .bk-before-send-text > p + p { margin-top: 0.5rem; }
 
   .bk-alert { margin-top: 1.5rem; padding: 1.25rem; border: 2px solid var(--color-error); border-radius: 16px; background: color-mix(in srgb, var(--color-error) 5%, var(--color-cream)); }
   .bk-alert-title { font-family: var(--font-display); font-size: 1.4rem; line-height: 1.2; }
@@ -517,6 +531,7 @@ const progressItems = [...schema.steps, 'Review'];
   @media (min-width: 640px) {
     .bk-primary { flex: 0 1 auto; min-width: 15rem; margin-left: auto; }
   }
+  .bp-js .bk-primary-nojs, html:not(.bp-js) .bk-primary-js { display: none; }
   .bk-continue-to { display: none; }
   @media (min-width: 640px) { .bk-continue-to { display: inline; } }
   .bk-primary:disabled { cursor: progress; opacity: 0.85; }
@@ -532,8 +547,8 @@ const progressItems = [...schema.steps, 'Review'];
     background: none; color: var(--color-plum); font: inherit; text-align: left; cursor: pointer;
   }
   .bk-estbar-label { font-size: 0.95rem; color: var(--color-plum-soft); }
-  .bk-estbar-total { margin-left: auto; font-weight: 700; font-size: 1rem; }
-  .bk-estbar-chev { flex-shrink: 0; transform: rotate(180deg); transition: transform 0.2s; }
+  .bk-estbar-total { font-weight: 700; font-size: 1rem; }
+  .bk-estbar-chev { flex-shrink: 0; margin-left: auto; transform: rotate(180deg); transition: transform 0.2s; }
   .bk-estbar-toggle[aria-expanded="true"] .bk-estbar-chev { transform: none; }
   .bk-est-sheet { max-height: 45vh; overflow: auto; padding: 0.25rem 0 0.75rem; margin-bottom: 0.5rem; border-bottom: 1px solid var(--color-line); }
   .bk-est-sheet .bk-est-kicker, .bk-est-sheet .bk-est-total:not(.is-text) { display: none; }
@@ -544,7 +559,7 @@ const progressItems = [...schema.steps, 'Review'];
   .bk-est-kicker { margin-top: 0.75rem; font-size: 0.95rem; color: var(--color-plum-soft); }
   .bk-est-total { font-family: var(--font-display); font-size: 3.25rem; line-height: 1; margin-top: 0.2rem; }
   .bk-est-total.is-text { font-size: 1.65rem; line-height: 1.15; margin-top: 0.6rem; }
-  .bk-est-empty { margin-top: 0.6rem; font-weight: 600; }
+  .bk-est-empty { margin-top: 0.6rem; font-family: var(--font-display); font-size: 1.65rem; line-height: 1.15; }
   .bk-est-sub { margin-top: 0.35rem; font-size: 0.95rem; color: var(--color-plum-soft); }
   .bk-est-lines { margin-top: 1.1rem; border-top: 1px solid var(--color-line); }
   .bk-est-lines li { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--color-line); font-size: 0.95rem; line-height: 1.4; }
@@ -554,20 +569,32 @@ const progressItems = [...schema.steps, 'Review'];
   .bk-est-note { margin-top: 0.9rem; font-size: 0.875rem; line-height: 1.5; color: var(--color-plum-soft); }
   .bk-est-deposit { margin-top: 0.6rem; font-size: 0.875rem; line-height: 1.5; font-weight: 600; }
 
-  .bk-aside { display: grid; gap: 1.25rem; min-width: 0; }
-  .bk-est-panel { display: none; }
+  /* Desktop: the estimate is the only thing that follows you down the page (it always fits the screen);
+     the "good to know" notes sit under the form, where they also are on phones. */
+  .bk-aside { display: none; min-width: 0; }
   @media (min-width: 1024px) {
-    .bk-aside { position: sticky; top: 6rem; max-height: calc(100vh - 7rem); overflow: auto; overscroll-behavior: contain; }
-    .bk-est-panel { display: block; padding: 1.6rem 1.6rem 1.5rem; border-radius: var(--radius-card); background: var(--color-cream); border: 1px solid var(--color-line); }
+    .bk-card { grid-column: 1; grid-row: 1; }
+    .bk-aside { display: block; grid-column: 2; grid-row: 1 / span 2; align-self: stretch; }
+    .bk-layout > .bk-reassure { grid-column: 1; grid-row: 2; }
+    .bk-est-panel { position: sticky; top: 6rem; padding: 1.6rem 1.6rem 1.5rem; border-radius: var(--radius-card); background: var(--color-cream); border: 1px solid var(--color-line); }
+    /* Reserve the height of a priced estimate, so a deep link (?package=…) filling it in doesn't push the
+       column down; the small print sits at the bottom while it's emptier. */
+    .bp-js .bk-est-panel [data-estimate] { display: flex; flex-direction: column; min-height: 20.75rem; }
+    .bp-js .bk-est-panel .bk-est-note { margin-top: auto; padding-top: 0.9rem; }
   }
+  @media (min-width: 1280px) { .bp-js .bk-est-panel [data-estimate] { min-height: 18.125rem; } }
 
-  .bk-reassure-list { display: grid; gap: 1.1rem; }
+  .bk-reassure-list { display: grid; gap: 1.25rem; }
+  @media (min-width: 640px) {
+    .bk-reassure { padding-inline: var(--bk-pad); }
+    .bk-reassure-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem 2.5rem; }
+  }
   .bk-reassure-list li { display: flex; gap: 0.8rem; font-size: 0.95rem; line-height: 1.5; color: var(--color-plum-soft); }
-  .bk-reassure-icon { flex-shrink: 0; margin-top: 0.15rem; color: var(--color-sage-ink); }
+  .bk-reassure-heading { font-size: clamp(1.35rem, 1.25rem + 0.4vw, 1.55rem); line-height: 1.2; margin-bottom: 1.25rem; }
+  .bk-reassure-icon { flex-shrink: 0; align-self: flex-start; height: 1.25rem; margin-top: 0.15rem; color: var(--color-sage-ink); }
   .bk-reassure-title { font-weight: 600; color: var(--color-plum); }
   .bk-reassure-foot { display: flex; gap: 0.6rem; align-items: center; margin-top: 1rem; font-size: 0.9rem; }
   .bk-reassure-foot a { display: inline-flex; align-items: center; min-height: 2.75rem; }
-  @media (min-width: 1024px) { .bk-reassure { padding: 0 0.4rem; } }
 
   /* Phones/tablets: keep focused fields clear of the sticky nav bar (WCAG 2.4.11) */
   @media (max-width: 1023px) { html:has(.bk) { scroll-padding-bottom: 10rem; } }
@@ -583,5 +610,11 @@ const progressItems = [...schema.steps, 'Review'];
     .bk-switch input { border: 1px solid CanvasText; }
     .bk-switch input::before { background: CanvasText; }
     .bk-chip-input:checked + .bk-chip-face, .bk-pkg-input:checked + .bk-pkg-face { border-width: 3px; }
+    /* Progress: phone segments and desktop connectors are drawn with backgrounds, which this mode drops. */
+    .bk-progress button::before, .bk-progress li + li::after { forced-color-adjust: none; background: Canvas; }
+    .bk-progress button::before { border: 1px solid CanvasText; }
+    .bk-progress [data-state="done"] button::before, .bk-progress [data-state="current"] button::before,
+    .bk-progress li + li::after { background: CanvasText; }
+    .bk-progress [data-state="current"] .bk-progress-num { forced-color-adjust: none; background: Highlight; border-color: Highlight; color: HighlightText; }
   }
 </style>

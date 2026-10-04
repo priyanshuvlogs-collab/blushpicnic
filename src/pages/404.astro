@@ -32,7 +32,7 @@ const links = [
           <a href={smsUrl(s)} class="btn btn-secondary btn-lg" data-track="click_text" data-track-location="404"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
         </div>
         <p class="mt-4 text-[0.95rem] text-plum-soft">
-          Or call us on <a href={telUrl(s)} class="nf-link" data-track="click_call" data-track-location="404">{s.phoneDisplay}</a>.
+          Or call us at <a href={telUrl(s)} class="nf-link" data-track="click_call" data-track-location="404">{s.phoneDisplay}</a>.
         </p>
       </div>
 
@@ -41,7 +41,7 @@ const links = [
           <svg viewBox="0 0 200 260" fill="none" class="h-full w-full">
             <path d="M14 258V108a86 86 0 0 1 172 0v150" stroke="currentColor" stroke-width="1.2" class="text-gold" />
             <path d="M32 258V112a68 68 0 0 1 136 0v146" fill="currentColor" class="text-cream" />
-            <path d="M58 258h84" stroke="currentColor" stroke-width="1" class="text-line" />
+            <path d="M0 259.5h200" stroke="currentColor" stroke-width="1" class="text-line" />
           </svg>
           <span class="nf-num font-display">404</span>
         </div>
@@ -55,7 +55,7 @@ const links = [
             <a href={l.href} class="nf-card group">
               <span class="flex items-center justify-between gap-3">
                 <span class="font-display text-[1.5rem] leading-tight">{l.title}</span>
-                <Icon name="arrow-right" size={20} class="shrink-0 text-plum-soft transition-transform group-hover:translate-x-1" />
+                <Icon name="arrow-right" size={20} class="shrink-0 text-plum-soft motion-safe:transition-transform motion-safe:group-hover:translate-x-1" />
               </span>
               <span class="mt-1.5 block text-[0.95rem] text-plum-soft">{l.text}</span>
             </a>
@@ -69,7 +69,7 @@ const links = [
 <style>
   .nf-arch {
     position: relative;
-    width: min(62vw, 17rem);
+    width: min(46vw, 12.5rem);
     aspect-ratio: 200 / 260;
   }
   @media (min-width: 1024px) {

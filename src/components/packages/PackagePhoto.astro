@@ -1,0 +1,62 @@
+---
+// Package photo with art direction: a 4:3 crop on phones and tablets (full width, so the whole
+// setup shows) and a taller crop beside the text on desktop (4:5 by default). Each crop has its
+// own srcset, so every screen downloads the crop it actually shows, sharp on retina. Widths never
+// exceed the largest crop the source allows (no upscaling).
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  /** `sizes` for desktop (≥ 1024px), where the desktop crop is used. */
+  desktopSizes: string;
+  /** Width / height of the desktop crop. Match the box the photo fills there. */
+  desktopAspect?: number;
+  /** `sizes` below 1024px (4:3 crop). The photo spans the container there. */
+  mobileSizes?: string;
+  class?: string;
+}
+const { src, alt, desktopSizes, desktopAspect = 4 / 5, mobileSizes = '92vw', class: className } = Astro.props;
+
+const DESKTOP = '(min-width: 1024px)';
+const FORMATS = ['avif', 'webp'] as const;
+
+/** Largest crop of `aspect` (width / height) the source allows, plus the srcset widths that fit it. */
+function crop(aspect: number, wanted: number[]) {
+  const width = Math.min(src.width, Math.round(src.height * aspect));
+  const height = Math.round(width / aspect);
+  const widths = wanted.filter((w) => w < width);
+  if (wanted.some((w) => w >= width)) widths.push(width);
+  return { width, height, widths };
+}
+
+const desk = crop(desktopAspect, [480, 640, 800, 960, 1200]);
+const mob = crop(4 / 3, [400, 640, 800, 1100, 1400, 1600]);
+
+const srcset = async (c: typeof desk, format: (typeof FORMATS)[number] | 'jpg') =>
+  getImage({ src, width: c.width, height: c.height, widths: c.widths, fit: 'cover', format });
+
+const deskSources = await Promise.all(FORMATS.map((f) => srcset(desk, f)));
+const mobSources = await Promise.all(FORMATS.map((f) => srcset(mob, f)));
+const fallback = await srcset(mob, 'jpg');
+---
+<picture>
+  {deskSources.map((img, i) => (
+    <source media={DESKTOP} type={`image/${FORMATS[i]}`} srcset={img.srcSet.attribute} sizes={desktopSizes} />
+  ))}
+  {mobSources.map((img, i) => (
+    <source type={`image/${FORMATS[i]}`} srcset={img.srcSet.attribute} sizes={mobileSizes} />
+  ))}
+  <img
+    src={fallback.src}
+    srcset={fallback.srcSet.attribute}
+    sizes={mobileSizes}
+    alt={alt}
+    width={mob.width}
+    height={mob.height}
+    loading="lazy"
+    decoding="async"
+    class={className}
+  />
+</picture>

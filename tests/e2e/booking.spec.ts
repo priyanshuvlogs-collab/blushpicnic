@@ -162,9 +162,14 @@ test('validation messages say how to fix each problem', async ({ page }) => {
   await expect(firstOccasion).toBeFocused();
   await expect(firstOccasion).toHaveAttribute('aria-invalid', 'true');
   await expect(page.locator('[data-field="occasion"]')).toHaveAttribute('aria-describedby', /f-occasion-error/);
+  // The focused radio carries the error too (screen readers rarely read a fieldset's description on focus),
+  // and the number of problems is announced.
+  await expect(firstOccasion).toHaveAttribute('aria-describedby', /f-occasion-error/);
+  await expect(page.locator('[data-live-status]')).toContainText('2 things to fix before you continue');
 
   await choose(page, 'picnic-date', 'signature');
   await expect(summary1).toBeHidden();
+  await expect(firstOccasion).not.toHaveAttribute('aria-describedby', /f-occasion-error/);
   await next(page);
 
   // Step 2: dates can't be in the past (Toronto time), numbers must be in range, required fields say what's missing.
@@ -244,17 +249,19 @@ test('live estimate adds extra guests and add-ons, and never prices what it does
   await expect(visibleEstimateTotal(page)).toContainText(/Choose a package/);
   await choose(page, 'birthday', 'signature');
   await next(page);
-  await page.fill('#f-guests_adults', '3');
+  await page.fill('#f-guests_adults', '4');
   await page.fill('#f-guests_kids', '1');
-  // Signature for 4 guests: priceFrom + 2 extra guests × extraGuestPrice (today: $375 + 2 × $35 = $445).
+  // Signature, 4 adults + 1 kid: priceFrom + 2 extra (adult) guests × extraGuestPrice (today: $375 + 2 × $35 = $445).
+  // There's no published price for kids, so the kid past the included guests is a note, never a charge.
   const expected = sig.priceFrom! + (4 - sig.guestsIncluded!) * sig.extraGuestPrice!;
   await expect(visibleEstimateTotal(page)).toContainText(money(expected));
   const text = await estimateText(page);
   expect(text).toContain(`2 extra guests × ${money(sig.extraGuestPrice!)}`);
   expect(text).toContain(money(2 * sig.extraGuestPrice!));
+  expect(text).toContain('1 kid: we’ll confirm pricing in your quote');
   expect(text).toContain('Estimate only — starting price before HST.');
   expect(text).toContain('Prices vary by location');
-  expect(text).toMatch(/\$\d+ deposit holds your date \(\d+% for larger events\)/);
+  expect(text).toMatch(/\$\d+ booking deposit holds your date \(\d+% for larger events\), plus a \$\d+ refundable security deposit/);
 
   // Mobile: the compact bar expands to show the breakdown.
   const toggle = page.locator('[data-estimate-toggle]');
@@ -517,6 +524,11 @@ test.describe('without JavaScript', () => {
     await expect(page.locator('#f-birthday_name')).not.toHaveAttribute('required', '');
     await expect(page.locator('[data-group="birthday"]')).toContainText('Only if you’re booking for');
     await expect(page.locator('[data-review]')).toBeHidden();
+    // Script-only chrome stays out of the way; the deposits are spelled out before sending.
+    await expect(page.locator('[data-progress]')).toBeHidden();
+    await expect(page.locator('.bk-estbar')).toBeHidden();
+    await expect(page.locator('.bk-reassure')).toContainText('non-refundable');
+    await expect(page.locator('.bk-reassure')).toContainText('refundable security deposit');
   });
 
   test('a failed submission sent back to /book?error=1#booking-error shows the notice', async ({ page }) => {
@@ -529,6 +541,8 @@ test.describe('without JavaScript', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Thank you.');
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
     await expect(page.getByRole('link', { name: /Follow @/ })).toBeVisible();
+    await expect(page.locator('main')).toContainText('non-refundable');
+    await expect(page.locator('main')).toContainText('refundable security deposit');
   });
 });
 

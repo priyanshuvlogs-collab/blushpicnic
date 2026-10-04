@@ -14,6 +14,18 @@
  */
 declare(strict_types=1);
 
+// lib/ needs PHP 8.1 (readonly properties). On anything older, answer like any other server
+// error instead of a blank page, and say why in the error log (hPanel → Advanced → PHP Configuration).
+if (PHP_VERSION_ID < 80100) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    error_log('[blush-book] PHP 8.1 or newer is required (this server runs ' . PHP_VERSION . ')');
+    echo '{"ok":false,"message":"Something went wrong on our side and your request wasn’t sent. Please try again later or text us."}';
+    exit;
+}
+header_remove('X-Powered-By'); // .htaccess unsets it too, but not every server honours that for PHP
+
 ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');
 ini_set('log_errors', '1');

@@ -13,9 +13,8 @@ hasPlaceholders: true
   • Your photo: replace src/assets/photos/about.jpg (portrait, at least 1600 × 2000 px),
     then update the photo description in src/pages/about.astro.
   • Words in {curly braces} are filled in from settings.yaml, e.g. {serviceArea} and {instagram}.
+  • The "Our story" heading is added by the page, so start straight with your first paragraph.
 -->
-
-## Our story
 
 <div class="placeholder-note">
 <p><strong>Placeholder —</strong> the owner's story goes here, in their own words. Three or four short paragraphs is perfect:</p>

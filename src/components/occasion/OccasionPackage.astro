@@ -20,6 +20,7 @@ const fits = (p: Package) => (p.data.bestFor.includes(entry.id) ? 0 : 1);
 const others = (await getPackages()).filter((p) => p.id !== pkg.id).sort((a, b) => fits(a) - fits(b) || a.data.order - b.data.order);
 const addons = await getAddons();
 const phrase = picnicPhrase(entry);
+const article = /^[aeiou]/i.test(phrase) ? 'an' : 'a'; // "an anniversary picnic", "a proposal picnic"
 const pkgLabel = /picnic$/i.test(d.name) ? d.name : `${d.name} package`;
 // Skip a priceNote that only repeats the extra-guest price PriceTag already shows.
 const showNote = d.priceNote && !(d.extraGuestPrice !== null && d.priceNote.includes(money(d.extraGuestPrice)));
@@ -28,9 +29,9 @@ const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
 <section id="package" aria-labelledby="package-title" class="section-y scroll-mt-16 bg-cream">
   <div class="container-x">
     <div class="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
-      <h2 id="package-title" class="lg:col-span-6">The package we'd suggest</h2>
+      <h2 id="package-title" class="lg:col-span-6">The package we’d suggest</h2>
       <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
-        For a {phrase}, start with the {pkgLabel}. Want to change something? Tell us in your request and we'll include it in your quote.
+        For {article} {phrase}, start with the {pkgLabel}. Want to change something? Tell us in your request and we'll include it in your quote.
       </p>
     </div>
 
@@ -56,7 +57,7 @@ const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
           <PriceTag pkg={pkg} size="lg" />
         </div>
 
-        <h4 class="heading-sm mt-7 text-[1.0625rem]">What's included</h4>
+        <h4 class="heading-sm mt-7 text-[1.0625rem]">What’s included</h4>
         {d.includesFrom && <p class="mt-1.5 text-plum-soft">{d.includesFrom}</p>}
         <ul class="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
           {d.includes.map((item) => (
@@ -90,7 +91,7 @@ const widths = [480, 720, 960, 1200].filter((w) => w <= d.image.width);
       <div class="mt-14 grid gap-x-16 gap-y-8 md:mt-16 lg:grid-cols-12">
         <div class="lg:col-span-4">
           <h3 class="text-[1.5rem] md:text-[1.75rem]">Other ways to do it</h3>
-          <p class="mt-2 max-w-[34ch] text-plum-soft">Every package is delivered, styled and cleared away by us. Here's what changes.</p>
+          <p class="mt-2 max-w-[34ch] text-plum-soft">Every package is delivered, styled and cleared away by us. Here’s what changes.</p>
         </div>
         <ul class="divide-y divide-line border-y border-line lg:col-span-8" role="list">
           {others.map((o) => (

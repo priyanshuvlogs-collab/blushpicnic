@@ -18,21 +18,14 @@ final class Emails
 
     // ── Business: "New booking request" ─────────────────────
 
-    public static function businessHtml(Booking $b): string
+    /** $spamNote: why a spam check flagged this request ('' = it didn't), shown above everything else. */
+    public static function businessHtml(Booking $b, string $spamNote = ''): string
     {
         $first = $b->firstName();
         $actions = [];
-        $tel = $b->clientPhoneE164();
-        if ($tel !== '') {
-            $actions[] = self::button('sms:' . $tel, 'Text ' . $first, true);
-            $actions[] = self::button('tel:' . $tel, 'Call', false);
-        }
-        if ($b->clientEmail() !== '') {
-            $subject = rawurlencode('Your ' . $b->business['name'] . ' request (' . $b->ref . ')');
-            $actions[] = self::button('mailto:' . $b->clientEmail() . '?subject=' . $subject, 'Email', false);
-        }
-        if ($b->instagramUrl() !== '') {
-            $actions[] = self::button($b->instagramUrl(), 'Instagram', false);
+        foreach (self::contactActions($b) as $i => [, $href, $verb, $short]) {
+            // The client's "Best way to reach you" comes first, as the filled button.
+            $actions[] = self::button($href, $i === 0 && $first !== '' ? $verb . ' ' . $first : $short, $i === 0);
         }
         if ($b->mapsUrl() !== '') {
             $actions[] = self::button($b->mapsUrl(), 'Map', false);
@@ -40,7 +33,8 @@ final class Emails
 
         $sub = implode(' · ', array_filter([$b->occasionName(), $b->dateLabel(), 'from ' . $b->clientName()], 'strlen'));
 
-        $html = self::h1('New booking request')
+        $html = ($spamNote !== '' ? self::notice(self::spamNoticeText($spamNote)) : '')
+            . self::h1('New booking request')
             . self::p(self::e($sub), 'margin:8px 0 22px;color:' . self::PLUM_SOFT . ';')
             . ($actions ? '<div style="margin:0 0 18px;">' . implode('', $actions) . '</div>' : '')
             . self::rows($b->summaryRows(true))
@@ -63,9 +57,13 @@ final class Emails
         return self::layout($b->businessSubject(), $preheader, $html, $footer);
     }
 
-    public static function businessText(Booking $b): string
+    public static function businessText(Booking $b, string $spamNote = ''): string
     {
         $out = [];
+        if ($spamNote !== '') {
+            $out[] = 'POSSIBLE SPAM: ' . self::spamNoticeText($spamNote);
+            $out[] = '';
+        }
         $out[] = 'NEW BOOKING REQUEST — ' . $b->ref;
         $out[] = implode(' · ', array_filter([$b->occasionName(), $b->dateLabel(), 'from ' . $b->clientName()], 'strlen'));
         $out[] = '';
@@ -83,13 +81,8 @@ final class Emails
         $out[] = '  (' . self::estimateNote($b) . ')';
         $out[] = '';
         $out[] = 'QUICK ACTIONS';
-        if ($b->clientPhoneE164() !== '') {
-            $out[] = '  Text: sms:' . $b->clientPhoneE164();
-            $out[] = '  Call: tel:' . $b->clientPhoneE164();
-        }
-        $out[] = '  Email: ' . $b->clientEmail() . ' (or just reply)';
-        if ($b->instagramUrl() !== '') {
-            $out[] = '  Instagram: ' . $b->instagramUrl();
+        foreach (self::contactActions($b) as [$kind, $href, , $short, $preferred]) {
+            $out[] = '  ' . $short . ': ' . ($kind === 'email' ? $b->clientEmail() . ' (or just reply)' : $href) . ($preferred ? '  ← preferred' : '');
         }
         if ($b->mapsUrl() !== '') {
             $out[] = '  Map: ' . $b->mapsUrl();
@@ -112,19 +105,22 @@ final class Emails
     public static function clientHtml(Booking $b): string
     {
         $biz = $b->business;
-        $first = $b->firstName();
-        $tel = '<a href="tel:' . self::e($biz['phoneE164']) . '" style="color:' . self::PLUM . ';">' . self::e($biz['phoneDisplay']) . '</a>';
-        $ig = '<a href="' . self::e($biz['instagramUrl']) . '" style="color:' . self::PLUM . ';">' . self::e($biz['instagramHandle']) . '</a>';
+        $first = $b->greetingName();
+        $link = static fn (string $href, string $text): string => '<a href="' . self::e($href) . '" style="color:' . self::PLUM . ';">' . self::e($text) . '</a>';
+        $tel = $link('tel:' . $biz['phoneE164'], $biz['phoneDisplay']);
+        $ig = $link($biz['instagramUrl'], $biz['instagramHandle']);
+        $policies = $link(self::policiesUrl($b), 'Read our booking policies');
+
+        $steps = [];
+        foreach (self::nextSteps($b) as [$title, $text, $withPolicies]) {
+            $steps[] = [$title, self::e($text) . ($withPolicies ? ' ' . $policies . '.' : '')];
+        }
 
         $html = self::h1($first !== '' ? 'Thank you, ' . $first . '.' : 'Thank you.')
-            . self::p('We’ve received your picnic request. Here’s a copy of what you sent us:', 'margin:10px 0 18px;')
+            . self::p('We’ve received your picnic request. Here’s a summary:', 'margin:10px 0 18px;')
             . self::rows($b->summaryRows(false))
             . self::h2('What happens next')
-            . self::steps([
-                ['We reply with your quote', sprintf('We’ll get back to you %s with availability and your quote.', $biz['replyTime'])],
-                ['A deposit holds your date', $biz['depositSummary']],
-                ['We set up, you arrive', 'We deliver, set up, style and clean up — you just arrive.'],
-            ])
+            . self::steps($steps)
             . self::p(
                 'Questions before then, or something to add? Text or call ' . $tel . ', message us on Instagram ' . $ig . ', or simply reply to this email.',
                 'margin:24px 0 0;'
@@ -140,20 +136,21 @@ final class Emails
     public static function clientText(Booking $b): string
     {
         $biz = $b->business;
-        $first = $b->firstName();
+        $first = $b->greetingName();
         $out = [];
         $out[] = $first !== '' ? "Thank you, {$first}." : 'Thank you.';
         $out[] = '';
-        $out[] = 'We’ve received your picnic request. Here’s a copy of what you sent us:';
+        $out[] = 'We’ve received your picnic request. Here’s a summary:';
         $out[] = '';
         foreach ($b->summaryRows(false) as [$label, $value]) {
             $out[] = $label . ': ' . $value;
         }
         $out[] = '';
         $out[] = 'WHAT HAPPENS NEXT';
-        $out[] = sprintf('1. We’ll get back to you %s with availability and your quote.', $biz['replyTime']);
-        $out[] = '2. ' . $biz['depositSummary'];
-        $out[] = '3. We deliver, set up, style and clean up — you just arrive.';
+        foreach (self::nextSteps($b) as $i => [$title, $text, $withPolicies]) {
+            $out[] = ($i + 1) . '. ' . $title;
+            $out[] = '   ' . $text . ($withPolicies ? ' Our booking policies: ' . self::policiesUrl($b) : '');
+        }
         $out[] = '';
         $out[] = sprintf('Questions before then? Text or call %s, message us on Instagram %s (%s), or simply reply to this email.',
             $biz['phoneDisplay'], $biz['instagramHandle'], $biz['instagramUrl']);
@@ -166,7 +163,64 @@ final class Emails
         return implode("\n", $out) . "\n";
     }
 
+    /**
+     * The client's "What happens next": the two deposits are separate steps so they can't be read as one.
+     *
+     * @return list<array{0:string,1:string,2:bool}> [title, text, end with the policies link]
+     */
+    private static function nextSteps(Booking $b): array
+    {
+        $biz = $b->business;
+        $security = $biz['securityDepositSummary'];
+        return array_values(array_filter([
+            ['We reply with your quote', sprintf('We’ll get back to you %s with availability and your quote.', $biz['replyTime']), false],
+            ['Your booking deposit', $biz['bookingDepositSummary'], $security === ''],
+            $security !== '' ? ['Your security deposit', $security, true] : null,
+            ['We set up, you arrive', 'We deliver, set up, style and clean up — you just arrive.', false],
+        ]));
+    }
+
+    private static function policiesUrl(Booking $b): string
+    {
+        return rtrim($b->business['url'], '/') . '/policies';
+    }
+
     // ── Building blocks ─────────────────────────────────────
+
+    /**
+     * Ways to reach the client, the one they picked under "Best way to reach you" first.
+     *
+     * @return list<array{0:string,1:string,2:string,3:string,4:bool}> [kind, href, verb for the filled button, short label, preferred]
+     */
+    private static function contactActions(Booking $b): array
+    {
+        $list = [];
+        $tel = $b->clientPhoneE164();
+        if ($tel !== '') {
+            $list['text'] = ['text', 'sms:' . $tel, 'Text', 'Text', false];
+            $list['call'] = ['call', 'tel:' . $tel, 'Call', 'Call', false];
+        }
+        if ($b->clientEmail() !== '') {
+            $subject = rawurlencode('Your ' . $b->business['name'] . ' request (' . $b->ref . ')');
+            $list['email'] = ['email', 'mailto:' . $b->clientEmail() . '?subject=' . $subject, 'Email', 'Email', false];
+        }
+        if ($b->instagramUrl() !== '') {
+            $list['instagram'] = ['instagram', $b->instagramUrl(), 'DM', 'Instagram', false];
+        }
+        $pref = strtolower($b->contactPref());
+        $kind = match (true) {
+            str_contains($pref, 'instagram') => 'instagram',
+            str_contains($pref, 'mail') => 'email',
+            str_contains($pref, 'text') => 'text',
+            str_contains($pref, 'call') => 'call',
+            default => '',
+        };
+        if ($kind !== '' && isset($list[$kind])) {
+            $list[$kind][4] = true;
+            $list = [$kind => $list[$kind]] + $list;
+        }
+        return array_values($list);
+    }
 
     public static function e(string $s): string
     {
@@ -273,6 +327,20 @@ HTML;
             . self::e($label) . '</a>';
     }
 
+    private static function spamNoticeText(string $why): string
+    {
+        return 'A spam check flagged this request: ' . $why . '. It may still be a real client, so have a look before deleting it. '
+            . 'No confirmation email was sent to them.';
+    }
+
+    /** A highlighted plain-text notice. */
+    private static function notice(string $text): string
+    {
+        return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border-collapse:separate;">'
+            . '<tr><td style="padding:14px 18px;border:1px solid ' . self::PLUM . ';border-radius:12px;font-family:' . self::SANS . ';font-size:15px;line-height:1.5;color:' . self::PLUM . ';">'
+            . '<strong>Possible spam.</strong> ' . self::e($text) . '</td></tr></table>';
+    }
+
     private static function estimateNote(Booking $b): string
     {
         return 'Estimate from the website’s starting prices, ' . $b->business['taxNote'] . '. Location and final details change the quote.';
@@ -299,7 +367,7 @@ HTML;
             . '</td></tr></table>';
     }
 
-    /** @param list<array{0:string,1:string}> $steps [title, text] */
+    /** @param list<array{0:string,1:string}> $steps [title (plain text), body (already escaped HTML)] */
     private static function steps(array $steps): string
     {
         $out = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">';
@@ -309,7 +377,7 @@ HTML;
                 . '<div style="width:30px;height:30px;border-radius:15px;background-color:' . self::PETAL . ';font-family:' . self::SERIF . ';font-size:16px;line-height:30px;text-align:center;color:' . self::PLUM . ';">' . ($i + 1) . '</div></td>'
                 . '<td valign="top" style="padding:12px 0;font-family:' . self::SANS . ';font-size:16px;line-height:1.55;color:' . self::PLUM . ';">'
                 . '<strong style="display:block;font-weight:600;">' . self::e($title) . '</strong>'
-                . '<span style="color:' . self::PLUM_SOFT . ';">' . self::e($text) . '</span></td>'
+                . '<span style="color:' . self::PLUM_SOFT . ';">' . $text . '</span></td>'
                 . '</tr>';
         }
         return $out . '</table>';

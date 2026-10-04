@@ -1,8 +1,6 @@
 ---
 import '../styles/global.css';
-import gloockWoff2 from '@fontsource/gloock/files/gloock-latin-400-normal.woff2?url';
-import figtreeWoff2 from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
-import { getImage } from 'astro:assets';
+import { getImage, Font, fontData } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -17,9 +15,11 @@ interface Props {
   description: string;
   /** Social share image: an imported image, or a path under /public. Defaults to /og.jpg (1200×630). */
   image?: ImageMetadata | string;
+  /** Describes `image`. Defaults to a description of /og.jpg (the wordmark card). */
   imageAlt?: string;
   /** JSON-LD objects for this page (see src/lib/schema.ts). */
   jsonLd?: Record<string, unknown>[];
+  /** Keeps the page out of search results (no canonical either). Also add it to NOINDEX_PATHS in astro.config.mjs so it stays out of the sitemap. */
   noindex?: boolean;
   /** Hide the mobile sticky Book / Text bar (e.g. on /book itself). */
   hideStickyBar?: boolean;
@@ -32,7 +32,7 @@ const {
   title,
   description,
   image,
-  imageAlt = 'Blush Picnic — styled luxury picnic setup in Toronto',
+  imageAlt: imageAltProp,
   jsonLd = [],
   noindex = false,
   hideStickyBar = false,
@@ -44,27 +44,38 @@ const s = await getSettings();
 const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/').replace(/(.)\/$/, '$1');
 const canonical = new URL(path, s.url).href.replace(/\/$/, path === '/' ? '/' : '');
 
+// /og.jpg is the brand card (arch, wordmark, tagline, web address) made by `npm run brand`.
+const imageAlt = imageAltProp ?? `${s.name} — ${s.tagline}`;
 let ogImage = new URL('/og.jpg', s.url).href;
 if (image && typeof image === 'string') ogImage = new URL(image, s.url).href;
 else if (image) {
   const img = await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
   ogImage = new URL(img.src, s.url).href;
 }
+
+// Preload only each font's Latin file (its first variant in astro.config.mjs); Latin Extended loads on demand.
+const fontPreloads = (['--font-gloock', '--font-figtree'] as const)
+  .map((cssVariable) => fontData[cssVariable]?.[0]?.src[0]?.url)
+  .filter((url): url is string => Boolean(url));
+
+// JSON-LD goes inside <script>: escape "<" so a "</script>" or "<!--" in any content string can't end it early.
+const ldJson = (data: Record<string, unknown>) => JSON.stringify(data).replace(/</g, '\\u003c');
 ---
 <!doctype html>
-<html lang="en-CA">
+<html lang="en-CA" class={hideStickyBar ? undefined : 'has-sticky-bar'}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, follow" />}
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
     <meta name="theme-color" content="#F6E4E1" />
     <meta name="format-detection" content="telephone=no" />
 
-    <link rel="preload" href={gloockWoff2} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={figtreeWoff2} as="font" type="font/woff2" crossorigin />
+    {/* @font-face rules and size-matched fallback faces (Astro Fonts API) */}
+    <Font cssVariable="--font-gloock" />
+    <Font cssVariable="--font-figtree" />
+    {fontPreloads.map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
 
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -77,7 +88,7 @@ else if (image) {
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -88,17 +99,18 @@ else if (image) {
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={imageAlt} />
 
-    {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
+    {jsonLd.map((data) => <script type="application/ld+json" set:html={ldJson(data)} />)}
     <slot name="head" />
   </head>
-  <body class={hideStickyBar ? '' : 'pb-[4.75rem] md:pb-0'}>
+  <body>
     <a href="#main" class="skip-link">Skip to content</a>
+    {/* First after the skip link, so keyboard and screen-reader users reach the cookie choice before anything else. */}
+    <ConsentBanner />
     <Header {book} />
     <main id="main" tabindex="-1" class="outline-none">
       <slot />
     </main>
     <Footer />
     {!hideStickyBar && <StickyBar {book} />}
-    <ConsentBanner />
   </body>
 </html>

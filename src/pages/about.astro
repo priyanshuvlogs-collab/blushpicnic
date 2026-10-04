@@ -10,7 +10,7 @@ import Icon from '../components/Icon.astro';
 import Prose from '../components/pages/Prose.astro';
 import { fillTokensText } from '../components/pages/prose';
 import { getSettings, getPackages } from '../lib/site';
-import { breadcrumbs, businessId } from '../lib/schema';
+import { breadcrumbs, businessRef } from '../lib/schema';
 import aboutPhoto from '../assets/photos/about.jpg';
 
 const s = await getSettings();
@@ -26,14 +26,14 @@ const kit = signature.data.includes.slice(0, 4).map((x) => x.toLowerCase()).join
 const verbs = [
   { word: 'Deliver', text: `Everything arrives with us — ${kit} and more.` },
   { word: 'Set up', text: 'We get there ahead of you and build the picnic in the spot you chose.' },
-  { word: 'Style', text: 'Your colours, your flowers, your words on the letter board. The details are the point.' },
+  { word: 'Style', text: 'Your colours, your occasion, your words on the letter board. The details are the point.' },
   { word: 'Clean up', text: 'When your time is up, we come back and pack away all the decor and equipment.' },
 ];
 
 const commitments = [
   {
     title: 'Styled around the person it’s for',
-    text: 'We ask about their favourite colours and flowers, and the words for your sign, then style the setup around the answers — not around a template.',
+    text: 'We ask about the colours and the feeling you have in mind, and the words for your letter board, then style the setup around the answers — not around a template.',
   },
   {
     title: 'You arrive. We handle the rest.',
@@ -62,7 +62,7 @@ const jsonLd = [
     name: d.metaTitle,
     url: `${s.url}/about`,
     description: d.metaDescription,
-    about: { '@id': businessId(s) },
+    about: businessRef(s),
   },
 ];
 const metaDescription = await fillTokensText(d.metaDescription);
@@ -95,9 +95,12 @@ const lede = d.lede ? await fillTokensText(d.lede) : undefined;
     </div>
   </section>
 
-  <section id="story" aria-label="Our story" class="scroll-mt-20 pb-16 md:pb-24">
-    <div class="container-x grid lg:grid-cols-12">
-      <div class="lg:col-span-8 lg:col-start-3">
+  <section id="story" aria-labelledby="story-title" class="scroll-mt-20 pb-16 md:pb-24">
+    <div class="container-x grid gap-5 md:gap-6 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <h2 id="story-title" class="lg:sticky lg:top-28">Our story</h2>
+      </div>
+      <div class="lg:col-span-8">
         <Prose {html} />
         <a href={s.instagramUrl} rel="noopener" class="link-arrow mt-6" data-track="click_instagram" data-track-location="about_story">
           <Icon name="instagram" size={20} />Follow along on Instagram {s.instagramHandle}

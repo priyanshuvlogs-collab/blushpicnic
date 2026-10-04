@@ -13,7 +13,7 @@ site:
   # Pre-written text message for the "Text us" buttons
   smsBody: "Hi Blush Picnic! I'd love to book a picnic. My date is: "
   instagramHandle: "@blush.picnic"
-  instagramUrl: "https://instagram.com/blush.picnic"
+  instagramUrl: "https://www.instagram.com/blush.picnic/"
   tiktokHandle: "@blush.picnic"
   tiktokUrl: "https://www.tiktok.com/@blush.picnic"
   serviceArea: "Toronto and the GTA"
@@ -36,15 +36,18 @@ site:
   heroAlt: "Placeholder photo for a styled luxury picnic setup in Toronto (real photo coming soon)"
   tagline: "Luxury picnic setups in Toronto & the GTA"
   description: "Styled luxury picnic setups for proposals, birthdays, dates and celebrations across Toronto and the GTA. We deliver, set up, style and clean up."
+  # Deposits. Change the amounts in the number lines only: the summary sentences fill in
+  # {deposit}, {depositPercent}, {securityDeposit} and {securityReturned} from them,
+  # so please don't type dollar amounts into the summaries.
   deposit:
     standard: 100
     largeEventPercent: 50
-    summary: "A $100 booking deposit (or 50% for larger events) holds your date. It's non-refundable. The balance is due before your event."
+    summary: "A {deposit} booking deposit (or {depositPercent} for larger events) holds your date. It’s non-refundable. The balance is due before your event."
   # Refundable security deposit for the rented decor and equipment
   securityDeposit:
     amount: 100
     returnedWithin: "24–48 hours"
-    summary: "A $100 refundable security deposit is required for every booking. It's returned within 24–48 hours after the event, once all rental items are collected and checked."
+    summary: "A {securityDeposit} refundable security deposit is required for every booking. It’s returned within {securityReturned} after the event, once all rental items are collected and checked."
   taxNote: "before HST"
   locationNote: "Prices vary by location across the GTA. We confirm your exact quote by message."
 

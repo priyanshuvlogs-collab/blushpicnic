@@ -19,12 +19,18 @@ const entry = pkgs.reduce((a, b) => (b.data.priceFrom < a.data.priceFrom ? b : a
 const featured = pkgs.find((p) => p.data.featured) ?? pkgs[0];
 const crumbs = [{ name: 'Packages', path: '/packages' }];
 
-const title = 'Picnic Packages & Prices | Blush Picnic Toronto';
-const description = `Compare luxury picnic packages in Toronto & the GTA, starting at ${money(entry.data.priceFrom)} ${entry.data.guestsLabel}, ${s.taxNote}. Guests, time and what's included, all spelled out.`;
+const title = 'Luxury Picnic Packages & Prices in Toronto | Blush Picnic';
+const description = `Compare luxury picnic packages in Toronto & the GTA, starting at ${money(entry.data.priceFrom)} ${entry.data.guestsLabel}, ${s.taxNote}. Guests, time and what’s included, all spelled out.`;
+
+// Stand-in photos (alt text starts "Placeholder") stay out of share cards and structured data:
+// the page falls back to /og.jpg and the Service entries carry no image until real photos land.
+const isPlaceholder = (alt: string) => /^placeholder\b/i.test(alt.trim());
+const share = isPlaceholder(featured.data.imageAlt) ? {} : { image: featured.data.image, imageAlt: featured.data.imageAlt };
 
 const jsonLd = [
   ...(await Promise.all(
     pkgs.map(async (p) => {
+      if (isPlaceholder(p.data.imageAlt)) return service(s, p);
       const img = await getImage({ src: p.data.image, width: 1200, format: 'jpg' });
       return service(s, p, { image: new URL(img.src, s.url).href });
     }),
@@ -39,14 +45,14 @@ const jump = [
   { href: '#pricing-questions', label: 'Pricing questions' },
 ];
 ---
-<BaseLayout {title} {description} {jsonLd} image={featured.data.image} imageAlt={featured.data.imageAlt}>
+<BaseLayout {title} {description} {jsonLd} {...share}>
   <section aria-labelledby="page-title" class="container-x pb-4 pt-3 md:pt-5">
     <Breadcrumbs crumbs={crumbs} />
     <div class="mt-5 grid items-center gap-x-14 gap-y-10 md:mt-8 lg:grid-cols-12">
       <div class="hero-enter lg:col-span-7 lg:row-start-1 lg:self-end">
-        <h1 id="page-title" class="max-w-[14ch]">Luxury picnic packages &amp; prices</h1>
+        <h1 id="page-title" class="max-w-[14ch] text-wrap">Luxury picnic packages &amp;&nbsp;prices in&nbsp;Toronto</h1>
         <p class="measure mt-6 text-lg text-plum-soft md:text-xl md:leading-relaxed">
-          Three starting points, with the guests, time and details spelled out. Every price is a starting price, {s.taxNote} — and every package is delivered, set up, styled and cleared away by us.
+          Three starting points, with the guests, time and details spelled out. Every price is a starting price, {s.taxNote} — and every package is delivered, set up, styled and cleared away by us, anywhere in {s.serviceArea}.
         </p>
       </div>
       <PriceMenu class="hero-enter-delay mx-auto w-full max-w-[27rem] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:mr-0" />
@@ -74,5 +80,5 @@ const jump = [
   <AddOns />
   <DepositInfo />
   <PricingFaq />
-  <CtaBand title="Found your package?" text={`Send a booking request and we'll reply ${s.replyTime} with availability and your exact quote.`} />
+  <CtaBand title="Found your package?" text={`Send a booking request and we’ll reply ${s.replyTime} with availability and your exact quote.`} />
 </BaseLayout>

@@ -2,9 +2,11 @@
 // Home packages preview. Not three identical cards: the featured package (packages.yaml
 // `featured: true`) is a large photo block; the others are quiet editorial rows.
 // Everything — names, prices, guests, time, inclusions — comes from packages.yaml.
-import { Picture } from 'astro:assets';
+// On desktop the featured photo fills a column as tall as its text (about 600px), so it uses a
+// square crop and `sizes` describes that height: object-cover scales the photo to it.
 import Icon from '../Icon.astro';
 import PriceTag from '../PriceTag.astro';
+import PackagePhoto from '../packages/PackagePhoto.astro';
 import { getSettings, getPackages, bookUrl } from '../../lib/site';
 
 const s = await getSettings();
@@ -18,7 +20,7 @@ const bookLabel = (name: string) => `Book the ${name}${/picnic$/i.test(name) ? '
     <div class="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-10">
       <h2 id="packages-title" class="max-w-[16ch] lg:col-span-6">Three ways to picnic, priced in plain sight</h2>
       <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
-        Every package is delivered, set up, styled and cleared away by us. Guests and time are included in the price you see — all starting prices, {s.taxNote}.
+        Every package is delivered, set up, styled and cleared away by us. Each price shows the guests and time it includes — all starting prices, {s.taxNote}.
       </p>
     </div>
 
@@ -29,19 +31,16 @@ const bookLabel = (name: string) => `Book the ${name}${/picnic$/i.test(name) ? '
         if (p.id === featuredId) {
           return (
             <article aria-labelledby={`home-pkg-${p.id}`} class="my-6 grid overflow-hidden rounded-[var(--radius-card)] bg-cream md:my-8 lg:grid-cols-12">
-              <div class="relative lg:col-span-6">
-                <Picture
+              <div class="relative lg:col-span-5 xl:col-span-6">
+                <PackagePhoto
                   src={d.image}
                   alt={d.imageAlt}
-                  widths={[400, 640, 800, 1100]}
-                  sizes="(min-width: 1280px) 608px, (min-width: 1024px) 48vw, 100vw"
-                  formats={['avif', 'webp']}
-                  fallbackFormat="jpg"
-                  loading="lazy"
+                  desktopAspect={1}
+                  desktopSizes="(min-width: 1280px) 600px, 57vw"
                   class="aspect-[4/3] h-full w-full object-cover lg:absolute lg:inset-0 lg:aspect-auto"
                 />
               </div>
-              <div class="px-6 py-8 sm:px-10 sm:py-10 lg:col-span-6 lg:px-14 lg:py-14">
+              <div class="px-6 py-8 sm:px-10 sm:py-10 lg:col-span-7 lg:px-12 lg:py-12 xl:col-span-6 xl:px-14 xl:py-14">
                 <h3 id={`home-pkg-${p.id}`} class="text-[2.1rem] md:text-[2.6rem]">{d.name}</h3>
                 <p class="mt-2 text-plum-soft">{d.tagline}</p>
                 <PriceTag pkg={p} size="md" class="mt-6" />

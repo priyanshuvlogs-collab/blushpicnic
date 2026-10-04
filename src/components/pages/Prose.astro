@@ -2,7 +2,6 @@
 // Long-form copy from src/content/pages/*.md (about, policies, privacy): fills {tokens} from
 // settings.yaml, drops the editing notes kept in HTML comments, and applies the prose styles.
 // Pass the entry's rendered HTML as `html`, or render <Content /> into the slot.
-import { getSettings } from '../../lib/site';
 import { fillTokens } from './prose';
 
 interface Props {
@@ -12,7 +11,6 @@ interface Props {
   class?: string;
 }
 const { html: input, ruled = false, class: className = '' } = Astro.props;
-const s = await getSettings();
 const raw = input ?? (Astro.slots.has('default') ? await Astro.slots.render('default') : '');
 const html = await fillTokens(raw.replace(/<!--[\s\S]*?-->/g, ''));
 ---

@@ -21,7 +21,7 @@ const preFilterCss = ids
   .join('');
 
 const crumbs = [{ name: 'Gallery', path: '/gallery' }];
-const title = 'Luxury Picnic Gallery, Toronto | Proposals & More | Blush Picnic';
+const title = 'Luxury Picnic Gallery | Toronto & the GTA | Blush Picnic';
 const description = `Browse luxury picnic setups across ${s.serviceArea} by occasion: proposals, birthdays, showers, dates and more. See a look you love? Book it in minutes.`;
 ---
 <BaseLayout {title} {description} jsonLd={[breadcrumbs(s, crumbs)]}>
@@ -44,7 +44,7 @@ const description = `Browse luxury picnic setups across ${s.serviceArea} by occa
       <h1 id="page-title" class="max-w-[13ch] lg:col-span-6">Find the look for your moment</h1>
       <div class="lg:col-span-6 lg:pb-2">
         <p class="measure text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">
-          Browse setups by occasion — proposals, birthdays, showers and slow afternoons for two. Open any photo and tap “Book this look”: your request starts there, and we style it around your colours, flowers and words.
+          Luxury picnic setups from across {s.serviceArea} — proposals, birthdays, showers and slow afternoons for two. Open any photo and tap “Book this look”: your request starts there, styled in your colours, with your words.
         </p>
       </div>
     </div>
@@ -62,7 +62,7 @@ const description = `Browse luxury picnic setups across ${s.serviceArea} by occa
           Follow {s.instagramHandle} for new looks, styling details and ideas for your own picnic. Saw something there you love? Send us a DM, or describe it in your booking request.
         </p>
         <p class="mt-3 text-plum-soft">
-          We're on TikTok too: <a href={s.tiktokUrl} rel="noopener" class="tiktok-link">{s.tiktokHandle}</a>
+          We're on TikTok too: <a href={s.tiktokUrl} rel="noopener" class="tiktok-link" data-track="click_tiktok" data-track-location="gallery">{s.tiktokHandle}</a>
         </p>
       </div>
       <div class="flex flex-col gap-3 sm:flex-row lg:col-span-5 lg:justify-end">

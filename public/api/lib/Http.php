@@ -49,9 +49,16 @@ final class Request
             || self::header('X-Requested-With') !== '';
     }
 
-    public static function clientIp(string $trustedHeader = ''): string
+    /**
+     * The visitor's IP. A proxy/CDN header (client_ip_header) is believed only when the request
+     * really comes from one of trusted_proxies; otherwise anyone could pick their own "IP" per request.
+     *
+     * @param list<string> $trustedProxies IPs or CIDR ranges (v4 or v6)
+     */
+    public static function clientIp(string $trustedHeader = '', array $trustedProxies = []): string
     {
-        if ($trustedHeader !== '') {
+        $remote = (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+        if ($trustedHeader !== '' && self::ipInList($remote, $trustedProxies)) {
             $key = strtoupper(str_replace('-', '_', $trustedHeader));
             if (!str_starts_with($key, 'HTTP_')) {
                 $key = 'HTTP_' . $key;
@@ -61,7 +68,57 @@ final class Request
                 return $v;
             }
         }
-        return (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+        return $remote;
+    }
+
+    /**
+     * What the rate limit counts: the IPv4 address, or the /64 network of an IPv6 address
+     * (one home or phone gets a whole /64, so counting single v6 addresses is easy to dodge).
+     */
+    public static function rateKeyIp(string $ip): string
+    {
+        $bin = @inet_pton($ip);
+        if ($bin === false || strlen($bin) !== 16) {
+            return $ip;
+        }
+        if (str_starts_with($bin, str_repeat("\0", 10) . "\xff\xff")) {
+            return (string) inet_ntop(substr($bin, 12)); // IPv4-mapped (::ffff:1.2.3.4)
+        }
+        return inet_ntop(substr($bin, 0, 8) . str_repeat("\0", 8)) . '/64';
+    }
+
+    /** @param list<string> $list IPs or CIDR ranges */
+    public static function ipInList(string $ip, array $list): bool
+    {
+        $bin = @inet_pton($ip);
+        if ($bin === false) {
+            return false;
+        }
+        foreach ($list as $entry) {
+            [$net, $bits] = array_pad(explode('/', trim((string) $entry), 2), 2, null);
+            $netBin = @inet_pton((string) $net);
+            if ($netBin === false || strlen($netBin) !== strlen($bin)) {
+                continue;
+            }
+            $max = strlen($bin) * 8;
+            if ($bits !== null && !preg_match('/^\d{1,3}$/', $bits)) {
+                continue;
+            }
+            $bits = $bits === null ? $max : min($max, (int) $bits);
+            $bytes = intdiv($bits, 8);
+            $rest = $bits % 8;
+            if (substr($bin, 0, $bytes) !== substr($netBin, 0, $bytes)) {
+                continue;
+            }
+            if ($rest === 0) {
+                return true;
+            }
+            $mask = (0xFF << (8 - $rest)) & 0xFF;
+            if ((ord($bin[$bytes]) & $mask) === (ord($netBin[$bytes]) & $mask)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -81,7 +138,11 @@ final class Request
         $type = strtolower(trim(explode(';', self::header('Content-Type'))[0]));
 
         if ($type === 'multipart/form-data') {
-            // PHP has already parsed it (file parts land in $_FILES and are ignored on purpose).
+            // PHP has already parsed it (also when no Content-Length was sent, e.g. chunked).
+            // The form has no file inputs, so any file part means this isn't our form.
+            if ($_FILES !== [] || self::sizeOf($_POST) > self::MAX_BODY) {
+                throw self::tooLarge();
+            }
             return self::normalise($_POST);
         }
         if ($type === 'application/x-www-form-urlencoded') {
@@ -115,6 +176,16 @@ final class Request
             throw self::tooLarge();
         }
         return $raw;
+    }
+
+    /** Rough byte size of parsed form values (keys + values), for bodies PHP parsed before we could measure them. */
+    private static function sizeOf(array $data): int
+    {
+        $n = 0;
+        foreach ($data as $k => $v) {
+            $n += strlen((string) $k) + (is_array($v) ? self::sizeOf($v) : strlen(is_scalar($v) ? (string) $v : ''));
+        }
+        return $n;
     }
 
     private static function tooLarge(): HttpError

@@ -17,11 +17,32 @@ const byOrder = <T extends { data: { order: number } }>(a: T, b: T) => a.data.or
 export async function getSettings(): Promise<Settings> {
   const entry = await getEntry('settings', 'site');
   if (!entry) throw new Error('src/content/settings.yaml must contain a "site" entry');
-  return entry.data;
+  const d = entry.data;
+  // Sentences shown on the page get typographer's quotes (not smsBody: a ’ makes a text message cost more).
+  return {
+    ...d,
+    description: smartQuotes(d.description),
+    tagline: smartQuotes(d.tagline),
+    heroAlt: smartQuotes(d.heroAlt),
+    locationNote: smartQuotes(d.locationNote),
+    deposit: { ...d.deposit, summary: smartQuotes(d.deposit.summary) },
+    securityDeposit: { ...d.securityDeposit, summary: smartQuotes(d.securityDeposit.summary) },
+  };
 }
 
-export const getPackages = async () => (await getCollection('packages')).sort(byOrder);
-export const getAddons = async () => (await getCollection('addons')).sort(byOrder);
+/** Typographer's quotes in every string of a data entry (images and other objects are left alone). */
+function smartDeep<T extends { data: object }>(entry: T): T {
+  const data = Object.fromEntries(
+    Object.entries(entry.data).map(([k, v]) => [
+      k,
+      typeof v === 'string' ? smartQuotes(v) : Array.isArray(v) ? v.map((x) => (typeof x === 'string' ? smartQuotes(x) : x)) : v,
+    ]),
+  );
+  return { ...entry, data };
+}
+
+export const getPackages = async () => (await getCollection('packages')).sort(byOrder).map(smartDeep);
+export const getAddons = async () => (await getCollection('addons')).sort(byOrder).map(smartDeep);
 
 // Occasion frontmatter and FAQ answers may contain {tokens} (see src/lib/tokens.ts); they are
 // filled here so every page gets real values. The occasion body is filled where it's rendered.
@@ -55,14 +76,17 @@ export async function getFaqs() {
   });
 }
 export const getGallery = async () => (await getCollection('gallery')).sort(byOrder);
-export const getReviews = async () => await getCollection('reviews');
+// Read once per build: while reviews.yaml is empty, every read logs a "collection is empty" warning,
+// and one per page would bury the warnings that matter. (In `astro dev` it's re-read each time.)
+let reviews: Promise<Review[]> | undefined;
+export const getReviews = () => (import.meta.env.PROD ? (reviews ??= getCollection('reviews')) : getCollection('reviews'));
 export const getFormGroups = async () =>
   (await getCollection('formGroups')).sort((a, b) => a.data.step - b.data.step || a.data.order - b.data.order);
 
 export async function getPackage(id: string) {
   const p = await getEntry('packages', id);
   if (!p) throw new Error(`Unknown package "${id}"`);
-  return p;
+  return smartDeep(p);
 }
 
 export async function getOccasion(id: string) {
@@ -102,9 +126,23 @@ export const mailUrl = (s: Settings) => `mailto:${s.email}`;
 /** Opens an Instagram DM thread on mobile, the profile on desktop. */
 export const igDmUrl = (s: Settings) => `https://ig.me/m/${s.instagramHandle.replace(/^@/, '')}`;
 
+/**
+ * Typographer's quotes for copy typed with straight ones in YAML/frontmatter, matching the Markdown
+ * bodies: it's → it’s, "Yes" → “Yes”, 'Yes' → ‘Yes’.
+ */
+export function smartQuotes(text: string): string {
+  const open = /(^|[\s([{\u2014\u2013/-])/.source;
+  return text
+    .replace(/([\p{L}\p{N}])'(?=[\p{L}\p{N}])/gu, '$1\u2019')
+    .replace(new RegExp(`${open}"`, 'gu'), '$1\u201c')
+    .replace(/"/g, '\u201d')
+    .replace(new RegExp(`${open}'`, 'gu'), '$1\u2018')
+    .replace(/'/g, '\u2019');
+}
+
 /** Tiny, safe markdown for short data strings: **bold** and [text](/link). Escapes everything else. */
 export function inlineMd(text: string): string {
-  const esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const esc = smartQuotes(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   return esc
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\[([^\]]+)\]\(((?:\/|https:\/\/|mailto:|tel:)[^)\s]*)\)/g, '<a href="$2">$1</a>');

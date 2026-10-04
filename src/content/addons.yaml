@@ -6,7 +6,7 @@
 - id: rose-bouquet
   name: "Rose bouquet"
   order: 1
-  description: "A hand-tied bouquet of fresh roses to gift on the day."
+  description: "A bouquet of roses to give on the day."
   price: null
   priceSuffix: ""
 

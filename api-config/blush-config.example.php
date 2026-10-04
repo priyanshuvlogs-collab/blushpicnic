@@ -67,9 +67,15 @@ return [
     'rate_limit_max' => 5,
     'rate_limit_window' => 3600,          // seconds (3600 = 1 hour)
 
-    // Requests sent faster than this many seconds after the form opened are treated as bots
-    // (they get a normal-looking "thank you" but nothing is sent).
+    // Requests sent faster than this many seconds after the form opened look like bots. Like the
+    // other spam checks, that never loses a booking: the request still reaches to_email with
+    // "[Possible spam]" in the subject, but the client gets no automatic confirmation.
     'min_seconds' => 4,
+
+    // At most this many client confirmation emails per hour for the whole site (0 = no limit), so
+    // the form can never be used to make the mailbox send lots of email. Booking requests to
+    // to_email are never held back by this.
+    'confirm_max_per_hour' => 20,
 
     // Only accept submissions from these website addresses. Requests from your own domain are
     // always accepted too, including Hostinger's temporary preview address.
@@ -83,4 +89,9 @@ return [
     // carries the visitor's real IP (e.g. 'CF-Connecting-IP'), so the rate limit counts visitors,
     // not the CDN. Leave empty on plain Hostinger hosting.
     'client_ip_header' => '',
+
+    // ...and list the proxy's own addresses (single IPs or ranges such as '173.245.48.0/20'; for
+    // Cloudflare: https://www.cloudflare.com/ips/). The header is believed only on requests that
+    // really come from one of these, because anyone else could make it up.
+    'trusted_proxies' => [],
 ];

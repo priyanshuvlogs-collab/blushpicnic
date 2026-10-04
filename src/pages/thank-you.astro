@@ -2,8 +2,8 @@
 // /thank-you — shown after a booking request is sent. Not indexed (and excluded from the sitemap).
 // Personalised from sessionStorage "bp-booking-done" ({ firstName, occasion, ref }) when present;
 // reads fine without JS. A ?ref=BP-… query (e.g. from a no-JS redirect) also shows the reference.
+import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ArchImage from '../components/ArchImage.astro';
 import Icon from '../components/Icon.astro';
 import { getSettings, getOccasions, money, smsUrl, telUrl, mailUrl } from '../lib/site';
 import { picnicPhrase } from '../components/occasion/text';
@@ -13,20 +13,34 @@ const s = await getSettings();
 const phrases = Object.fromEntries((await getOccasions()).map((o) => [o.id, picnicPhrase(o)]));
 const phrasesJson = JSON.stringify(phrases).replace(/</g, '\\u003c');
 
-const next = [
+const next: { title: string; text: string; link?: { href: string; label: string } }[] = [
   {
     title: `We reply ${s.replyTime}`,
     text: 'By text or email, with availability for your date and your quote. If you don’t see it, check your spam folder or text us.',
   },
   {
-    title: 'A deposit holds your date',
-    text: `Once you’re happy with your quote, a ${money(s.deposit.standard)} deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date. Deposits are non-refundable.`,
+    title: 'A booking deposit holds your date',
+    text: `Once you’re happy with your quote, a ${money(s.deposit.standard)} booking deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date. It’s non-refundable. There’s also a ${money(s.securityDeposit.amount)} refundable security deposit, returned within ${s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.`,
+    link: { href: '/policies', label: 'Read our booking policies' },
   },
   {
     title: 'We style it, you arrive',
     text: 'The balance is due before your event. On the day we deliver, set up, style and clean up — you just arrive.',
   },
 ];
+
+// The hero photo only shows from 1024px, where it's above the fold (and the LCP). Every real source
+// carries that media query and the <img> fallback is a 1×1 transparent GIF, so phones download nothing
+// while desktops fetch it early, at high priority.
+const DESKTOP = '(min-width: 1024px)';
+const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+const heroWidths = [360, 540, 720, 960].filter((w) => w <= hero.width);
+const heroSources = await Promise.all(
+  (['avif', 'webp', 'jpg'] as const).map(async (format) => {
+    const r = await getImage({ src: hero, widths: heroWidths.length ? heroWidths : [hero.width], format });
+    return { type: format === 'jpg' ? 'image/jpeg' : `image/${format}`, srcset: r.srcSet.attribute };
+  }),
+);
 ---
 <BaseLayout
   title="Thank You | Blush Picnic"
@@ -52,6 +66,7 @@ const next = [
             <div>
               <h2 class="ty-step-title">{step.title}</h2>
               <p class="mt-1.5 text-plum-soft">{step.text}</p>
+              {step.link && <a href={step.link.href} class="ty-link">{step.link.label}</a>}
             </div>
           </li>
         ))}
@@ -59,13 +74,21 @@ const next = [
     </div>
 
     <div class="hero-enter-delay hidden lg:col-span-5 lg:block">
-      <ArchImage
-        src={hero}
-        alt="Placeholder photo: a styled luxury picnic with a low table, cushions and florals"
-        sizes="(min-width: 1280px) 420px, 34vw"
-        outline
-        class="ml-auto mr-3 max-w-[26rem]"
-      />
+      <div class="arch-outline relative ml-auto mr-3 max-w-[26rem]">
+        <picture>
+          {heroSources.map((src) => <source media={DESKTOP} type={src.type} srcset={src.srcset} sizes="(min-width: 1280px) 416px, 34vw" />)}
+          <img
+            src={BLANK}
+            alt={s.heroAlt}
+            width={hero.width}
+            height={hero.height}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            class="arch aspect-[4/5] h-full w-full bg-petal-deep object-cover"
+          />
+        </picture>
+      </div>
     </div>
   </section>
 

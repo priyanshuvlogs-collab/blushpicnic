@@ -16,7 +16,7 @@ const H = headingLevel;
     <details class="group">
       <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 [&::-webkit-details-marker]:hidden">
         <H class="heading-sm text-[1.0625rem] md:text-lg">{item.q}</H>
-        <span class="grid size-9 shrink-0 place-items-center rounded-full border border-line transition-transform duration-300 group-open:rotate-180">
+        <span class="grid size-9 shrink-0 place-items-center rounded-full border border-line group-open:rotate-180 motion-safe:transition-transform motion-safe:duration-300">
           <Icon name="chevron-down" size={18} />
         </span>
       </summary>

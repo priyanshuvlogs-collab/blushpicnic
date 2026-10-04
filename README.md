@@ -144,9 +144,13 @@ instead of shipping. The main rules (details in [CLAUDE.md](CLAUDE.md)):
    - `403 / 413 / 415 / 429 / 500 {message}`: the message always offers the phone number
 
    Without JavaScript, the handler answers with a `303` redirect instead.
-4. **Spam protection**: a honeypot field (`company_website`), a time trap (`_ts`: posts sent within
-   4 seconds of opening the form are dropped quietly), a per-IP rate limit (the IP is stored as an HMAC
-   hash), and an Origin/Referer check.
+4. **Spam protection**: a honeypot field (`company_website`) and a time trap (`_ts`: sent within
+   4 seconds of opening the form, missing from a fetch() post, or far in the future). A request that
+   trips one is never thrown away: it still reaches the business, with `[Possible spam]` in the subject,
+   but gets no client confirmation, and the visitor sees the usual reply. Also a per-IP rate limit
+   (IPv6 per /64; the IP is stored as an HMAC hash), a site-wide cap on client confirmations
+   (`confirm_max_per_hour`), and an Origin/Referer check. The confirmation holds no free text the
+   visitor typed, so it can't carry anyone's message to a stranger.
 5. **Email.** PHPMailer sends over SMTP (`smtp.hostinger.com:465`, SSL) as support@blushpicnic.com
    to blush.picnic25@gmail.com, with Reply-To set to the client, and sends the client an automatic
    confirmation. Each request gets a reference such as `BP-20261003-AB12`. If sending fails, a copy
@@ -165,7 +169,8 @@ The full contract, file map and test coverage: [tests/api-README.md](tests/api-R
 - `npm run test:api` builds into `dist-api/`, then runs `book.php` under `php -S` with a test
   config (emails become `.eml` files). It exercises every occasion, every required field, rejected
   and ignored answers, header injection, spam traps, the rate limit, error paths and a fake SMTP
-  server. `API_TEST_SKIP_BUILD=1` reuses an existing build, and `API_TEST_DIST=dist` tests `dist/`.
+  server. `API_TEST_SKIP_BUILD=1` reuses an existing build, and `API_TEST_DIST=dist` tests `dist/`
+  (`API_TEST_PORT`, `API_TEST_MAIL_DIR` and `API_TEST_TMP_DIR` let two runs work side by side).
 - `npm run test:e2e`: Playwright (Chromium, mobile 390px and desktop 1440px) builds into `dist-e2e/`
   and serves it with PHP on port 4455. The booking specs live in `tests/e2e/`.
 - `bash docs/htaccess-test.sh dist` needs `apache2` (and `libapache2-mod-php` for the PHP

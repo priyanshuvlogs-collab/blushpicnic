@@ -6,51 +6,89 @@ import { z } from 'astro/zod';
 
 const money = z.number().nonnegative();
 
+// "$1,200": the same format as money() in src/lib/site.ts (site.ts reads the collections, so the config can't import it).
+const dollars = (n: number) =>
+  new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0, minimumFractionDigits: 0 })
+    .format(n)
+    .replace('CA', '');
+
+/**
+ * The deposit summaries are written with {deposit}, {depositPercent}, {securityDeposit} and
+ * {securityReturned}, filled here from the numbers beside them, so changing an amount in settings.yaml
+ * updates every page and email that shows a summary. An unknown {token} fails the build with a clear
+ * message instead of showing up on the site; a typed "$100" only warns (like occasion copy does).
+ */
+const SUMMARY_TOKEN = /\{([a-zA-Z]+)\}/g;
+function fillSummary(where: string, text: string, values: Record<string, string>, ctx: z.core.$RefinementCtx) {
+  const unknown = [...text.matchAll(SUMMARY_TOKEN)].map((m) => m[0]).filter((t) => !(t.slice(1, -1) in values));
+  if (unknown.length) {
+    const known = Object.keys(values).map((k) => `{${k}}`).join(', ');
+    ctx.addIssue({ code: 'custom', path: [where, 'summary'], message: `settings.yaml ${where}.summary: unknown ${unknown.join(', ')}. Available: ${known}.` });
+  }
+  const typed = text.match(/\$\d[\d,]*/g);
+  if (typed) console.warn(`[content] settings.yaml ${where}.summary contains a typed amount (${typed.join(', ')}). Use {deposit} or {securityDeposit} so it updates with the numbers above it.`);
+  return text.replace(SUMMARY_TOKEN, (m, k: string) => values[k] ?? m);
+}
+
 // One entry ("site") holding business facts, analytics IDs and booking-form settings.
 const settings = defineCollection({
   loader: file('src/content/settings.yaml'),
-  schema: z.object({
-    name: z.string(),
-    domain: z.string(),
-    url: z.url(),
-    email: z.email(),
-    phoneDisplay: z.string(),
-    phoneE164: z.string().regex(/^\+\d{10,15}$/),
-    smsBody: z.string(),
-    instagramHandle: z.string(),
-    instagramUrl: z.url(),
-    tiktokHandle: z.string(),
-    tiktokUrl: z.url(),
-    serviceArea: z.string(),
-    serviceAreaList: z.array(z.string()),
-    replyTime: z.string(),
-    heroAlt: z.string().min(10),
-    tagline: z.string(),
-    description: z.string(),
-    deposit: z.object({
-      standard: money,
-      largeEventPercent: z.number().min(1).max(100),
-      summary: z.string(),
+  schema: z
+    .object({
+      name: z.string(),
+      domain: z.string(),
+      url: z.url(),
+      email: z.email(),
+      phoneDisplay: z.string(),
+      phoneE164: z.string().regex(/^\+\d{10,15}$/),
+      smsBody: z.string(),
+      instagramHandle: z.string(),
+      instagramUrl: z.url(),
+      tiktokHandle: z.string(),
+      tiktokUrl: z.url(),
+      serviceArea: z.string(),
+      serviceAreaList: z.array(z.string()),
+      replyTime: z.string(),
+      heroAlt: z.string().min(10),
+      tagline: z.string(),
+      description: z.string(),
+      deposit: z.object({
+        standard: money,
+        largeEventPercent: z.number().min(1).max(100),
+        summary: z.string(),
+      }),
+      securityDeposit: z.object({
+        amount: money,
+        returnedWithin: z.string(),
+        summary: z.string(),
+      }),
+      taxNote: z.string(),
+      locationNote: z.string(),
+      analytics: z.object({
+        ga4Id: z.string(),
+        metaPixelId: z.string(),
+      }),
+      booking: z.object({
+        // "php" posts to /api/book.php (Hostinger SMTP). "web3forms" posts to Web3Forms instead.
+        provider: z.enum(['php', 'web3forms']),
+        endpoint: z.string(),
+        web3formsAccessKey: z.string(),
+        letterBoardMaxWords: z.number().int().positive(),
+      }),
+    })
+    .transform((s, ctx) => {
+      const values = {
+        deposit: dollars(s.deposit.standard),
+        depositPercent: `${s.deposit.largeEventPercent}%`,
+        securityDeposit: dollars(s.securityDeposit.amount),
+        securityReturned: s.securityDeposit.returnedWithin,
+      };
+      return {
+        ...s,
+        deposit: { ...s.deposit, summary: fillSummary('deposit', s.deposit.summary, values, ctx) },
+        securityDeposit: { ...s.securityDeposit, summary: fillSummary('securityDeposit', s.securityDeposit.summary, values, ctx) },
+      };
     }),
-    securityDeposit: z.object({
-      amount: money,
-      returnedWithin: z.string(),
-      summary: z.string(),
-    }),
-    taxNote: z.string(),
-    locationNote: z.string(),
-    analytics: z.object({
-      ga4Id: z.string(),
-      metaPixelId: z.string(),
-    }),
-    booking: z.object({
-      // "php" posts to /api/book.php (Hostinger SMTP). "web3forms" posts to Web3Forms instead.
-      provider: z.enum(['php', 'web3forms']),
-      endpoint: z.string(),
-      web3formsAccessKey: z.string(),
-      letterBoardMaxWords: z.number().int().positive(),
-    }),
-  }),
 });
 
 const packages = defineCollection({

@@ -3,7 +3,6 @@
 // Occasion links come from occasion data and are skipped if that page doesn't exist yet.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArchImage from '../components/ArchImage.astro';
-import Wordmark from '../components/Wordmark.astro';
 import Icon from '../components/Icon.astro';
 import hero from '../assets/photos/hero.jpg';
 import { getSettings, getPackages, getOccasions, occasionUrl, smsUrl, telUrl, mailUrl, money, type Occasion } from '../lib/site';
@@ -79,9 +78,9 @@ const trackAttrs = (l: LinkItem) => ({
           outline
           class="mx-auto w-[7.5rem]"
         />
-        <h1 id="links-title" class="mt-6 text-[2.4rem] leading-none"><Wordmark size="lg" /></h1>
+        <h1 id="links-title" class="mx-auto mt-6 max-w-[18ch] text-[2rem] leading-[1.1] sm:text-[2.3rem]">{s.tagline}</h1>
         <p class="mx-auto mt-3 max-w-[22rem] text-plum-soft">
-          {s.tagline}. We deliver, set up, style and clean up — you just arrive.
+          We deliver, set up, style and clean up — you just arrive.
         </p>
       </div>
 
@@ -117,7 +116,12 @@ const trackAttrs = (l: LinkItem) => ({
         ))}
       </ul>
 
-      <p class="mt-8 text-center text-[0.88rem] text-plum-soft">All prices are starting prices, {s.taxNote}. {s.locationNote}</p>
+      <div class="mt-6 flex items-center justify-center gap-8">
+        <a href={s.instagramUrl} rel="noopener" class="link-arrow" data-track="click_instagram" data-track-location="links"><Icon name="instagram" size={20} />Instagram</a>
+        <a href={s.tiktokUrl} rel="noopener" class="link-arrow" data-track="click_tiktok" data-track-location="links"><Icon name="tiktok" size={20} />TikTok</a>
+      </div>
+
+      <p class="mt-6 text-center text-[0.88rem] text-plum-soft">All prices are starting prices, {s.taxNote}. {s.locationNote}</p>
     </div>
   </section>
 </BaseLayout>

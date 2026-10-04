@@ -13,7 +13,9 @@ let occasions = (await getOccasions()).filter((o) => !exclude.includes(o.id));
 if (limit) occasions = occasions.slice(0, limit);
 ---
 <nav aria-label={label} class={className}>
-  <ul class="-mx-[var(--gutter)] flex snap-x gap-2 overflow-x-auto px-[var(--gutter)] pb-2 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+  {/* pt-2 / -mt-2 (and pb-2): room inside the scroll box so the focus ring isn't clipped.
+      scroll-px: chips snap to the page gutter instead of the screen edge. */}
+  <ul class="-mx-[var(--gutter)] -mt-2 flex snap-x scroll-px-[var(--gutter)] gap-2 overflow-x-auto px-[var(--gutter)] pb-2 pt-2 [scrollbar-width:none] lg:mx-0 lg:mt-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pt-0 [&::-webkit-scrollbar]:hidden" data-chip-strip>
     {occasions.map((o) => (
       <li class="shrink-0 snap-start">
         <a href={occasionUrl(o)} class="inline-flex min-h-11 items-center rounded-full border border-plum/25 bg-cream/60 px-4 text-[0.95rem] font-medium no-underline transition-colors hover:border-plum hover:bg-cream">{o.data.chip}</a>
@@ -24,3 +26,19 @@ if (limit) occasions = occasions.slice(0, limit);
     </li>
   </ul>
 </nav>
+
+<script>
+  // Browsers don't scroll a half-visible chip into view on Tab, so a focused chip could sit almost
+  // entirely off-screen. When focus lands on one that isn't fully visible, scroll the strip so it
+  // starts at the gutter — a snap position, so scroll-snap doesn't pull it back out of view.
+  for (const strip of document.querySelectorAll<HTMLElement>('[data-chip-strip]')) {
+    strip.addEventListener('focusin', (e) => {
+      if (strip.scrollWidth <= strip.clientWidth) return;
+      const chip = (e.target as HTMLElement).getBoundingClientRect();
+      const box = strip.getBoundingClientRect();
+      const pad = parseFloat(getComputedStyle(strip).scrollPaddingLeft) || 0;
+      if (chip.left >= box.left + pad - 1 && chip.right <= box.right - pad + 1) return;
+      strip.scrollTo({ left: strip.scrollLeft + chip.left - box.left - pad, behavior: 'instant' });
+    });
+  }
+</script>

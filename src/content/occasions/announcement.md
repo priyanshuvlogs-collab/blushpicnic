@@ -1,16 +1,16 @@
 ---
 name: "Pregnancy announcement"
-chip: "Baby announcements"
+chip: "Pregnancy announcements"
 urlSlug: "pregnancy-announcement-picnic-toronto"
 order: 14
 formGroup: "baby"
 recommendedPackage: "signature"
 metaTitle: "Pregnancy Announcement Picnic Toronto | Blush Picnic"
 metaDescription: "Share your news with a pregnancy announcement picnic in Toronto or the GTA: your words on the letter board, florals and cushions. Starting at {price:signature} before HST."
-h1: "You have news. We'll set the table for it."
-lede: "A pregnancy announcement picnic in Toronto or anywhere in the GTA: your due date on the letter board, fresh florals, soft cushions, and the people you can't wait to tell sitting right across from you."
+h1: "A pregnancy announcement picnic for your big news"
+lede: "A pregnancy announcement picnic in Toronto or anywhere in the GTA: your due date on the letter board, florals, soft cushions, and the people you can't wait to tell sitting right across from you."
 heroImage: "../../assets/photos/occasion-announcement.jpg"
-heroAlt: "Placeholder photo for a pregnancy announcement picnic in Toronto with a letter board message, fresh florals and cushions"
+heroAlt: "Placeholder photo for a pregnancy announcement picnic in Toronto with a letter board message, florals and cushions"
 highlights:
   - title: "The board says it first"
     text: "“Baby Okafor, arriving spring 2027”, or a line only your family would decode. It's waiting on the letter board when they sit down."
@@ -22,9 +22,9 @@ highlights:
     text: "Mark it as a surprise and tell us who already knows. We reply to you, the way you've asked us to get in touch."
 faqs:
   - q: "What's included in a pregnancy announcement picnic?"
-    a: "We recommend the Signature Picnic: a low table, rugs, cushions, tableware, glassware, fresh florals, a letter board with your message, a Bluetooth speaker and games. It starts at {price:signature} for {guests:signature} for {hours:signature}, plus {extraGuest:signature} per extra guest, before HST, and the price varies by location."
+    a: "We recommend the Signature Picnic: a low table, rugs, cushions, tableware, glassware, florals, a letter board with your message, a Bluetooth speaker and games. It starts at {price:signature} for {guests:signature} and {hours:signature}, plus {extraGuest:signature} per extra guest, before HST, and the price varies by location."
   - q: "We want to tell both families together. Is there room?"
-    a: "Yes. Add everyone to your guest count in the booking form; extra guests on the Signature Picnic are {extraGuest:signature} each, before HST. For a fully themed gathering with a backdrop and custom signage, Celebration starts at {price:celebration} for {guests:celebration} for {hours:celebration}, before HST, and larger groups are quoted."
+    a: "Yes. Add everyone to your guest count in the booking form; extra guests on the Signature Picnic are {extraGuest:signature} each, before HST. For a fully themed gathering with a backdrop and custom signage, Celebration starts at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST, and larger groups are quoted."
   - q: "Any ideas for the letter board message?"
     a: "Keep it short and true to you: the due month, a new title like “Big sister” or “Grandpa”, or a line your family will work out in a second. Add it under “Letter board message” in the booking form."
   - q: "How do we keep the news quiet until the picnic?"
@@ -42,16 +42,16 @@ A pregnancy announcement picnic in Toronto gives that moment a setting. Choose a
 
 ## Letting the news land
 
-The booking form asks for the parents' names and your due date or month, and there's space for a letter board message, so the news can be spelled out in front of everyone before you say a word. Pass the scan around, or simply let the board do the talking and watch their faces as they read it.
+The booking form asks for the parents' names and your due date or month, and there's space for a letter board message, so the news can be spelled out in front of everyone before you say a word. Pass the ultrasound photo around, or simply let the board do the talking and watch their faces as they read it.
 
-Our Signature Picnic brings a low table, rugs and cushions, tableware and glassware, fresh florals, a Bluetooth speaker and games, along with that all-important letter board. It starts at {price:signature} for {guests:signature} for {hours:signature}, plus {extraGuest:signature} per extra guest, before HST. Prices vary by location across the GTA, and we confirm your exact quote by message.
+Our Signature Picnic brings a low table, rugs and cushions, tableware and glassware, florals, a Bluetooth speaker and games, along with that all-important letter board. It starts at {price:signature} for {guests:signature} and {hours:signature}, plus {extraGuest:signature} per extra guest, before HST. Prices vary by location across the GTA, and we confirm your exact quote by message.
 
-Telling your partner first? Because the price starts at 2 guests, it works just as beautifully as a private moment between the two of you.
+Telling your partner first? Because the price includes {guests:signature}, it works just as beautifully as a private moment between the two of you.
 
 To make it more of an occasion, add a photographer, a custom cake, a grazing board to share, or a rose bouquet to hand to the newest grandmother-to-be. Tick them in the form and we'll include them in your quote.
 
 ## Before you tell anyone
 
 1. **Tell us first.** The parents' names, due date or month, your letter board message, a date and a backup date.
-2. **Get the go-ahead.** We reply within 24 hours with availability and your quote, and a {deposit} deposit holds the date.
+2. **Get the go-ahead.** We reply within 24 hours with availability and your quote. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
 3. **Share the news.** Everything is set before your guests arrive, and we clean up once the hugs are over.

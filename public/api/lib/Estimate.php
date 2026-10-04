@@ -3,7 +3,8 @@
 // on /book (src/scripts/booking/estimate.ts), so the owner sees what the client saw:
 //
 //   total = package priceFrom
-//         + (adults + kids − guestsIncluded) × extraGuestPrice   (only when extraGuestPrice is known)
+//         + (adults − guestsIncluded) × extraGuestPrice   (only when extraGuestPrice is known;
+//           kids past the included guests get a "we'll confirm" note — no published kids' price)
 //         + known add-on prices
 //
 // Unknown amounts are never guessed: extra guests without a price become a note, add-ons with a
@@ -48,7 +49,9 @@ final class Estimate
             return new self(null, $addonLines, [], $onRequest);
         }
 
-        $given = max(0, (int) $r->get('guests_adults')) + max(0, (int) $r->get('guests_kids'));
+        $adults = max(0, (int) $r->get('guests_adults'));
+        $kids = max(0, (int) $r->get('guests_kids'));
+        $given = $adults + $kids;
         $included = (int) ($pkg['guestsIncluded'] ?? 0);
         $guests = $given > 0 ? $given : $included;
         $guestsLabel = self::guestsLabel($pkg);
@@ -59,7 +62,15 @@ final class Estimate
         if ($extra > 0) {
             $each = $pkg['extraGuestPrice'] ?? null;
             if (is_numeric($each)) {
-                $lines[] = [sprintf('%d %s × %s', $extra, $extra === 1 ? 'extra guest' : 'extra guests', Money::format((float) $each)), $extra * (float) $each];
+                // Only adults are priced; kids past the included guests are confirmed in the quote.
+                $extraAdults = max(0, $adults - $included);
+                if ($extraAdults > 0) {
+                    $lines[] = [sprintf('%d %s × %s', $extraAdults, $extraAdults === 1 ? 'extra guest' : 'extra guests', Money::format((float) $each)), $extraAdults * (float) $each];
+                }
+                $extraKids = min($kids, $extra);
+                if ($extraKids > 0) {
+                    $notes[] = sprintf('%d %s: we’ll confirm pricing in your quote', $extraKids, $extraKids === 1 ? 'kid' : 'kids');
+                }
             } elseif (is_numeric($pkg['guestsMax'] ?? null)) {
                 if ($guests > (int) $pkg['guestsMax']) {
                     $notes[] = sprintf('%d guests: larger groups quoted', $guests);

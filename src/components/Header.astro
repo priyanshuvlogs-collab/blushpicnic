@@ -19,6 +19,8 @@ const nav = [
 const here = Astro.url.pathname.replace(/\.html$/, '');
 const isCurrent = (href: string) => here === href || here.startsWith(href + '/');
 ---
+{/* 1px marker 8px down the page: once it scrolls out of view, the header gets its hairline (no scroll listener). */}
+<div class="pointer-events-none absolute left-0 top-2 h-px w-px" aria-hidden="true" data-header-sentinel></div>
 <header class="site-header sticky top-0 z-40 border-b border-transparent bg-petal/95 backdrop-blur-sm transition-[border-color] duration-300" data-header>
   <div class="container-x flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
     <a href="/" class="-mx-1 flex min-h-12 items-center rounded-md px-1 no-underline" aria-label="Blush Picnic — home">
@@ -43,14 +45,14 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
     </nav>
 
     <div class="flex items-center gap-1 sm:gap-2">
-      <a href={telUrl(s)} class="hidden min-h-12 items-center gap-2 rounded-lg px-2 text-[0.98rem] font-medium no-underline md:inline-flex" data-track="click_call">
+      <a href={telUrl(s)} class="hidden min-h-12 items-center gap-2 whitespace-nowrap rounded-lg px-2 text-[0.98rem] font-medium no-underline md:inline-flex" data-track="click_call">
         <Icon name="phone" size={18} />
-        <span>{s.phoneDisplay}</span>
+        <span class="lg:sr-only xl:not-sr-only">{s.phoneDisplay}</span>
       </a>
       <a href={smsUrl(s)} class="inline-flex size-12 items-center justify-center rounded-full md:hidden" data-track="click_text">
         <Icon name="message" size={22} label="Text us" />
       </a>
-      <a href={bookHref} class="btn btn-primary hidden !min-h-11 !px-5 sm:inline-flex" data-track="booking_cta" data-track-location="header">Book your picnic</a>
+      <a href={bookHref} class="btn btn-primary hidden !min-h-11 whitespace-nowrap !px-5 sm:inline-flex" data-track="booking_cta" data-track-location="header" data-astro-prefetch>Book your picnic</a>
       <button
         type="button"
         class="inline-flex size-12 items-center justify-center rounded-full lg:hidden"
@@ -58,14 +60,16 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
         aria-controls="mobile-menu"
         data-menu-toggle
       >
-        <span class="sr-only" data-menu-label>Open menu</span>
+        <span class="sr-only">Menu</span>
         <span data-icon-open><Icon name="menu" size={24} /></span>
         <span data-icon-close hidden><Icon name="close" size={24} /></span>
       </button>
     </div>
   </div>
 
-  <div id="mobile-menu" class="border-t border-line bg-petal lg:hidden" hidden data-menu>
+  {/* Fills the screen below the bar (covering the page and the mobile Book bar) and scrolls on its
+      own, so every item can be reached on short screens and at high zoom. */}
+  <div id="mobile-menu" class="h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-line bg-petal md:h-[calc(100dvh-4.5rem)] lg:hidden" hidden data-menu>
     <nav aria-label="Mobile" class="container-x py-4">
       <ul class="divide-y divide-line">
         {nav.map((item) => (
@@ -79,12 +83,13 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
         ))}
       </ul>
       <div class="mt-6 grid gap-3 pb-2">
-        <a href={bookHref} class="btn btn-primary btn-lg w-full" data-track="booking_cta" data-track-location="menu">Book your picnic</a>
+        <a href={bookHref} class="btn btn-primary btn-lg w-full" data-track="booking_cta" data-track-location="menu" data-astro-prefetch>Book your picnic</a>
         <div class="grid grid-cols-3 gap-2 text-sm">
           <a href={telUrl(s)} class="btn btn-secondary !px-2" data-track="click_call"><Icon name="phone" size={18} />Call</a>
           <a href={smsUrl(s)} class="btn btn-secondary !px-2" data-track="click_text"><Icon name="message" size={18} />Text</a>
           <a href={s.instagramUrl} class="btn btn-secondary !px-2" data-track="click_instagram" rel="noopener"><Icon name="instagram" size={18} />DM</a>
         </div>
+        <p class="mt-3 text-center text-sm text-plum-soft">Styled picnics across {s.serviceArea}. We reply {s.replyTime}.</p>
       </div>
     </nav>
   </div>
@@ -92,23 +97,24 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
 
 <script>
   const header = document.querySelector<HTMLElement>('[data-header]');
+  const sentinel = document.querySelector<HTMLElement>('[data-header-sentinel]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.querySelector<HTMLElement>('[data-menu]');
 
-  if (header) {
-    const onScroll = () => header.classList.toggle('border-line', window.scrollY > 8);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+  // Hairline under the header once the page has scrolled. An IntersectionObserver instead of reading
+  // window.scrollY on load, which would force a synchronous layout while the page is still loading.
+  if (header && sentinel && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => header.classList.toggle('border-line', !entry.isIntersecting)).observe(sentinel);
   }
 
-  if (toggle && menu) {
-    const label = toggle.querySelector('[data-menu-label]')!;
+  if (header && toggle && menu) {
     const iconOpen = toggle.querySelector<HTMLElement>('[data-icon-open]')!;
     const iconClose = toggle.querySelector<HTMLElement>('[data-icon-close]')!;
+    // The button's name stays "Menu"; aria-expanded tells screen readers whether it's open.
     const setOpen = (open: boolean, returnFocus = false) => {
       toggle.setAttribute('aria-expanded', String(open));
       menu.hidden = !open;
-      label.textContent = open ? 'Close menu' : 'Open menu';
+      header.toggleAttribute('data-menu-open', open);
       iconOpen.hidden = open;
       iconClose.hidden = !open;
       document.documentElement.classList.toggle('overflow-hidden', open);
@@ -118,6 +124,13 @@ const isCurrent = (href: string) => here === href || here.startsWith(href + '/')
     toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !menu.hidden) setOpen(false, true);
+    });
+    // Tabbing out of the open menu (past its last link, or back above the header) closes it, so focus
+    // never lands on page content hidden underneath. A null relatedTarget (a tap, or switching
+    // windows) is ignored: Safari blurs links on tap, and closing then would swallow the tap.
+    header.addEventListener('focusout', (e) => {
+      const next = e.relatedTarget as Node | null;
+      if (!menu.hidden && next && !header.contains(next)) setOpen(false);
     });
     window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => e.matches && setOpen(false));
   }

@@ -1,6 +1,6 @@
 <?php
-// Small on-disk helpers in data_dir (outside public_html): per-IP rate limit, an event log
-// without personal details, and a spool of requests that could not be emailed.
+// Small on-disk helpers in data_dir (outside public_html): rate limits (per visitor, and for client
+// confirmations overall), an event log without personal details, and a spool of requests that could not be emailed.
 declare(strict_types=1);
 
 namespace Blush;
@@ -49,38 +49,68 @@ final class RateLimiter
     ) {
     }
 
-    /** Seconds until this key may send again; 0 = allowed. Fails open if the file can't be used. */
-    public function retryAfter(string $key, int $now): int
+    /**
+     * Claim one send for this key in a single locked read-modify-write, so a burst of parallel
+     * requests can't all pass the check before any of them is counted.
+     * Returns 0 when the send is allowed (and now counted), otherwise the seconds until the key
+     * may send again. Fails open if the file can't be used.
+     */
+    public function take(string $key, int $now): int
     {
         if ($this->max <= 0) {
             return 0;
         }
-        $hits = $this->withFile(LOCK_SH, fn (array $data) => [$data, false])[$key] ?? [];
-        $hits = array_values(array_filter($hits, fn ($t) => is_int($t) && $t > $now - $this->window));
-        if (count($hits) < $this->max) {
-            return 0;
-        }
-        sort($hits);
-        return max(1, $hits[count($hits) - $this->max] + $this->window - $now);
-    }
-
-    /** Record a send for this key (and prune everything older than the window). */
-    public function hit(string $key, int $now): void
-    {
-        $this->withFile(LOCK_EX, function (array $data) use ($key, $now) {
-            $cut = $now - $this->window;
-            foreach ($data as $k => $hits) {
-                $data[$k] = array_values(array_filter((array) $hits, static fn ($t) => is_int($t) && $t > $cut));
-                if ($data[$k] === []) {
-                    unset($data[$k]);
-                }
+        $wait = 0;
+        $this->withFile(LOCK_EX, function (array $data) use ($key, $now, &$wait) {
+            $data = $this->prune($data, $now);
+            $hits = $data[$key] ?? [];
+            if (count($hits) >= $this->max) {
+                sort($hits);
+                $wait = max(1, $hits[count($hits) - $this->max] + $this->window - $now);
+                return [$data, false];
             }
-            $data[$key][] = $now;
+            $data[$key] = [...$hits, $now];
             if (count($data) > self::MAX_KEYS) {
                 $data = array_slice($data, -self::MAX_KEYS, null, true);
             }
             return [$data, true];
         });
+        return $wait;
+    }
+
+    /** Give back a send claimed with take() that never happened (e.g. the answers needed fixing). */
+    public function release(string $key, int $now): void
+    {
+        if ($this->max <= 0) {
+            return;
+        }
+        $this->withFile(LOCK_EX, function (array $data) use ($key, $now) {
+            $hits = $data[$key] ?? [];
+            $i = array_search($now, $hits, true);
+            if ($i === false) {
+                return [$data, false];
+            }
+            array_splice($hits, (int) $i, 1);
+            if ($hits === []) {
+                unset($data[$key]);
+            } else {
+                $data[$key] = array_values($hits);
+            }
+            return [$data, true];
+        });
+    }
+
+    /** @param array<string,mixed> $data @return array<string, list<int>> only hits inside the window */
+    private function prune(array $data, int $now): array
+    {
+        $cut = $now - $this->window;
+        foreach ($data as $k => $hits) {
+            $data[$k] = array_values(array_filter((array) $hits, static fn ($t) => is_int($t) && $t > $cut));
+            if ($data[$k] === []) {
+                unset($data[$k]);
+            }
+        }
+        return $data;
     }
 
     /**

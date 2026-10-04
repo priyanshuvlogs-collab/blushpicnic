@@ -1,12 +1,24 @@
 <?php
 // The booking request flow, top to bottom:
-//   method → config → origin → body → honeypot / time trap → rate limit → validate → email → respond.
+//   method → config → origin → body → spam signals → rate limit → validate → email → respond.
 declare(strict_types=1);
 
 namespace Blush;
 
 final class Handler
 {
+    /** The hidden "leave this empty" field in the booking form. */
+    private const HONEYPOT = 'company_website';
+    /** How far ahead of the server a visitor's clock may run before _ts counts as forged (seconds). */
+    private const CLOCK_AHEAD_MAX = 600;
+    /** Spam signal → the note at the top of the flagged business email. */
+    private const SPAM_NOTES = [
+        'honeypot' => 'the hidden “leave this empty” field was filled in (bots do this; so, rarely, does a browser’s autofill)',
+        'too_fast' => 'it was sent within seconds of the form opening',
+        'no_timestamp' => 'the form’s timer was missing',
+        'future_timestamp' => 'the form’s timer was far in the future (a forged value, or a device clock that is way off)',
+    ];
+
     private Log $log;
     private ?Config $config = null;
     /** @var array<string,string> */
@@ -62,24 +74,22 @@ final class Handler
 
         $input = Request::fields();
         $now = time();
-        $ipKey = $dataOk ? hash_hmac('sha256', Request::clientIp($config->str('client_ip_header')), DataDir::salt($config->str('data_dir'))) : '';
+        $ip = Request::rateKeyIp(Request::clientIp($config->str('client_ip_header'), $config->list('trusted_proxies')));
+        $ipKey = $dataOk ? hash_hmac('sha256', $ip, DataDir::salt($config->str('data_dir'))) : '';
 
-        // Spam traps: look like success, send nothing.
-        if (trim(is_array($input['company_website'] ?? null) ? implode('', $input['company_website']) : (string) ($input['company_website'] ?? '')) !== '') {
-            $this->log->event('honeypot', ['ip' => substr($ipKey, 0, 12)]);
-            $this->succeed($json, Booking::newRef(new \DateTimeImmutable('now')));
-            return;
-        }
-        if ($this->tooFast($input['_ts'] ?? null, max(0, $config->int('min_seconds')))) {
-            $this->log->event('too_fast', ['ip' => substr($ipKey, 0, 12)]);
-            $this->succeed($json, Booking::newRef(new \DateTimeImmutable('now')));
-            return;
+        // Spam signals never throw a request away: a real customer can trip one (a password manager
+        // filling the hidden field, a clock that's far off). The request is checked and emailed to the
+        // business as usual, flagged in the subject, but the client confirmation is skipped, so the
+        // form can't be used to mail strangers. The visitor gets exactly the same reply either way.
+        $suspect = $this->spamSignal($input, $json, max(0, $config->int('min_seconds')));
+        if ($suspect !== '') {
+            $this->log->event($suspect, ['ip' => substr($ipKey, 0, 12)]);
         }
 
         $limiter = $dataOk
             ? new RateLimiter($config->str('data_dir') . '/rate-limit.json', $config->int('rate_limit_max'), max(60, $config->int('rate_limit_window')))
             : null;
-        $wait = $limiter ? $limiter->retryAfter($ipKey, $now) : 0;
+        $wait = $limiter ? $limiter->take($ipKey, $now) : 0;
         if ($wait > 0) {
             throw new HttpError(
                 429,
@@ -93,14 +103,18 @@ final class Handler
         $today = new \DateTimeImmutable('today', new \DateTimeZone(Booking::TZ));
         $result = (new Validator($schema, $today))->validate($input);
         if (!$result->ok()) {
+            $limiter?->release($ipKey, $now); // answers to fix don't count as a send
             throw new HttpError(422, 'Please check the highlighted answers.', $result->errors, 'invalid');
         }
 
         $received = new \DateTimeImmutable('now', new \DateTimeZone(Booking::TZ));
         $booking = new Booking(Booking::newRef($received), $received, $schema, $result);
-        $limiter?->hit($ipKey, $now);
         $mailer = new Mailer($config, $this->apiDir . '/lib');
         $logCtx = ['ref' => $booking->ref, 'occasion' => $result->get('occasion'), 'package' => $result->get('package'), 'ip' => substr($ipKey, 0, 12)];
+        $spamNote = self::SPAM_NOTES[$suspect] ?? '';
+        if ($suspect !== '') {
+            $logCtx['flag'] = $suspect;
+        }
 
         try {
             $mailer->send(new OutgoingEmail(
@@ -109,9 +123,9 @@ final class Handler
                 $config->str('from_name'),
                 $booking->clientEmail(),
                 $booking->clientName(),
-                $booking->businessSubject(),
-                Emails::businessHtml($booking),
-                Emails::businessText($booking),
+                ($spamNote !== '' ? '[Possible spam] ' : '') . $booking->businessSubject(),
+                Emails::businessHtml($booking, $spamNote),
+                Emails::businessText($booking, $spamNote),
                 ['X-Blush-Ref' => $booking->ref],
             ), $booking->ref);
         } catch (\Throwable $e) {
@@ -125,26 +139,34 @@ final class Handler
 
         // The client confirmation never blocks success. Where the server allows it, reply first
         // and send it after the visitor already has their answer.
-        $confirm = $config->bool('send_client_confirmation');
+        $confirm = $config->bool('send_client_confirmation') && $suspect === '';
         $early = $confirm && (function_exists('fastcgi_finish_request') || function_exists('litespeed_finish_request'));
         if ($confirm && !$early) {
-            $logCtx['confirmation'] = $this->sendConfirmation($mailer, $booking, $config);
+            $logCtx['confirmation'] = $this->sendConfirmation($mailer, $booking, $config, $dataOk);
         }
         $this->succeed($json, $booking->ref, $booking->firstName());
         if ($early) {
             function_exists('fastcgi_finish_request') ? fastcgi_finish_request() : litespeed_finish_request();
-            $logCtx['confirmation'] = $this->sendConfirmation($mailer, $booking, $config);
+            $logCtx['confirmation'] = $this->sendConfirmation($mailer, $booking, $config, $dataOk);
         }
-        $this->log->event('sent', $logCtx + ['confirmation' => $confirm ? 'sent' : 'off']);
+        $this->log->event('sent', $logCtx + ['confirmation' => $suspect !== '' ? 'skipped' : ($confirm ? 'sent' : 'off')]);
     }
 
-    private function sendConfirmation(Mailer $mailer, Booking $booking, Config $config): string
+    private function sendConfirmation(Mailer $mailer, Booking $booking, Config $config, bool $dataOk): string
     {
+        // A cap on confirmations for the whole site, whoever sends them: even a bot that passes
+        // every other check can only make the mailbox send a handful an hour.
+        if ($dataOk) {
+            $cap = new RateLimiter($config->str('data_dir') . '/confirm-limit.json', $config->int('confirm_max_per_hour'), 3600);
+            if ($cap->take('all', time()) > 0) {
+                return 'capped';
+            }
+        }
         try {
             $mailer->send(new OutgoingEmail(
                 'client',
                 $booking->clientEmail(),
-                $booking->clientName(),
+                '', // no display name: the confirmation carries none of the visitor's own words
                 $config->str('reply_to_for_client'),
                 $config->str('from_name'),
                 $booking->clientSubject(),
@@ -160,25 +182,34 @@ final class Handler
     }
 
     /**
-     * _ts = when the form was shown (Unix milliseconds or seconds, from the browser).
-     * Submitted sooner than min_seconds → a bot. A clearly negative gap means the visitor's
-     * clock runs ahead, which is not their fault, so it is never treated as spam
-     * (a couple of seconds of jitter either way still counts as "instant").
+     * Why a request looks automated ('' = it doesn't); SPAM_NOTES says what each one means.
+     * _ts = when the form was shown (Unix milliseconds or seconds, from the browser). A plain no-JS
+     * form post never has one, so only fetch() submissions (the site's script always sends it) are
+     * flagged for a missing value. A clock running a little ahead is not the visitor's fault, so a
+     * small negative gap is fine; a couple of seconds of jitter either way still counts as "instant".
+     *
+     * @param array<string, string|list<string>> $input
      */
-    private function tooFast(string|array|null $ts, int $minSeconds): bool
+    private function spamSignal(array $input, bool $json, int $minSeconds): string
     {
-        if (is_array($ts)) {
-            $ts = $ts[0] ?? null;
+        $hp = $input[self::HONEYPOT] ?? '';
+        if (trim(is_array($hp) ? implode('', $hp) : $hp) !== '') {
+            return 'honeypot';
         }
-        if ($ts === null || !is_numeric(trim($ts)) || $minSeconds === 0) {
-            return false;
+        $ts = $input['_ts'] ?? '';
+        $ts = trim(is_array($ts) ? (string) ($ts[0] ?? '') : $ts);
+        if ($ts === '' || !is_numeric($ts)) {
+            return $json ? 'no_timestamp' : '';
         }
         $t = (float) $ts;
         if ($t > 1e11) {
             $t /= 1000;
         }
         $elapsed = microtime(true) - $t;
-        return $elapsed > -2.0 && $elapsed < $minSeconds;
+        if ($elapsed < -self::CLOCK_AHEAD_MAX) {
+            return 'future_timestamp';
+        }
+        return $minSeconds > 0 && $elapsed > -2.0 && $elapsed < $minSeconds ? 'too_fast' : '';
     }
 
     /** Browser posts must come from the site itself (or an allowed origin). Requests without Origin/Referer pass. */

@@ -1,6 +1,9 @@
 # ─────────────────────────────────────────────────────────────
 #  Packages. Prices are "starting at", before HST.
 #  To change a price, edit priceFrom / extraGuestPrice and redeploy.
+#  The extra-guest price is shown next to the price automatically, so
+#  don't type amounts into summary or priceNote (an optional extra line
+#  under the price).
 #  Keep the id lines (signature, proposal-romance, celebration) as they are —
 #  booking links use them.
 # ─────────────────────────────────────────────────────────────
@@ -9,7 +12,7 @@
   order: 1
   featured: false
   tagline: "Our classic styled picnic for two or more"
-  summary: "A low table dressed with rugs, cushions, florals and real tableware — everything you need for an easy, beautiful afternoon."
+  summary: "A low table dressed with rugs, cushions, florals, tableware and glassware — everything you need for an easy, beautiful afternoon."
   priceFrom: 375
   guestsIncluded: 2
   guestsMax: null
@@ -21,21 +24,20 @@
     - "Low picnic table"
     - "Rugs and cushions"
     - "Tableware and glassware"
-    - "Fresh florals"
+    - "Florals"
     - "Letter board with your message"
     - "Bluetooth speaker"
     - "Games"
   bestFor: ["picnic-date", "birthday", "anniversary", "family", "appreciation", "just-engaged", "newly-married", "announcement"]
   image: "../assets/photos/pkg-signature.jpg"
   imageAlt: "Placeholder photo for the Signature Picnic: low table with rugs, cushions and florals"
-  priceNote: "+$35 per extra guest"
 
 - id: proposal-romance
   name: "Proposal & Romance"
   order: 2
   featured: true
   tagline: "For the question, or the moment that deserves more"
-  summary: "Everything in the Signature, plus the romantic details: a Marry Me or custom sign, rose petals, candles and a fresh flower arrangement."
+  summary: "Everything in the Signature Picnic, plus the romantic details: a Marry Me or custom sign, rose petals, candles and a fresh flower arrangement."
   priceFrom: 495
   guestsIncluded: 2
   guestsMax: null

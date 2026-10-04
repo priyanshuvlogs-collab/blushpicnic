@@ -31,7 +31,7 @@ If you have a question about your information, email {email}.
 
 - **Your contact details** — your name, phone number and email, and optionally your Instagram handle and the best way to reach you.
 - **Event details** — the occasion and package, your preferred and backup dates, start time, number of adults and kids, where you'd like the picnic and your budget range.
-- **Details that personalise the setup**, depending on the occasion — for example the names of the people being celebrated, favourite colours and flowers, the words for your sign or letter board, surprise plans, kids' ages, or a company name if you need an invoice.
+- **Details that personalize the setup**, depending on the occasion — for example the names of the people being celebrated, favourite colours and flowers, the words for your sign or letter board, surprise plans, kids' ages, or a company name if you need an invoice.
 - **Food plans and allergies**, if you choose to tell us, so we can plan any food add-ons safely.
 - **Your choice about photos** — whether we may share photos of your setup on Instagram.
 - **How you heard about us** and any notes you add.
@@ -42,7 +42,9 @@ Only share what you're comfortable with. Fields that aren't required can be left
 
 **While you fill in the form**, your browser keeps your answers on your own device (in session storage) so a refresh doesn't lose them. They're removed when you close the tab, and nothing is sent to us until you press send.
 
-**To stop spam**, our form keeps a short technical record of each request: a reference number, the occasion and package chosen, and a scrambled, one-way code made from your internet address — not the address itself.
+**To stop spam**, our form keeps a short technical record of each request: a reference number, the occasion and package chosen, and a scrambled, one-way code made from your internet address — not the address itself. It never includes your name, contact details or answers.
+
+**If our email system is ever down** when you press send, a full copy of your request is saved privately on our web host, outside the public website, so it isn't lost. We delete it once your request has reached us.
 
 <h2 id="how-we-use-it">How we use it</h2>
 
@@ -56,7 +58,7 @@ We won't add you to a mailing list or send you marketing messages unless you ask
 
 <h2 id="how-its-sent">How your request is sent</h2>
 
-When you press send, your answers travel over an encrypted (HTTPS) connection to our website, which emails them through our hosting provider's mail server to our business inbox. You also receive an automatic confirmation email with a copy of your request.
+When you press send, your answers travel over an encrypted (HTTPS) connection to our website, which emails them through our hosting provider's mail server to our business inbox. You also receive an automatic confirmation email with a summary of your request.
 
 We share your information only with the services that help us run the business — our website host and email provider, and, if you accept analytics cookies, Google and Meta (see below) — and only so they can provide that service. If you add something provided by a partner (for example a photographer, cake or grazing board), we share just the details they need. When the law requires it, we may also have to share information with the authorities.
 
@@ -68,7 +70,9 @@ We share your information only with the services that help us run the business �
 
 We keep your information only as long as we need it for your booking and for our business and tax records.
 
-<p class="placeholder-note"><strong>Placeholder —</strong> how long booking emails and records are kept, and when they are deleted.</p>
+A copy of a request saved on our web host because our email system was down is deleted once the request has reached our inbox.
+
+<p class="placeholder-note"><strong>Placeholder —</strong> how long booking emails, records and the form's technical record (see "To stop spam" above) are kept, and when they are deleted.</p>
 
 <h2 id="cookies">Cookies and analytics</h2>
 
@@ -97,7 +101,7 @@ Email {email} and we'll reply as soon as we can. If you're not satisfied with ou
 
 <h2 id="security">Keeping it safe</h2>
 
-Booking requests arrive in a password-protected business email account, and we never ask for card numbers through this website. No method of sending or storing information is perfectly secure, but we take care to protect yours.
+Booking requests arrive in a password-protected business email account, and anything our form keeps on our web host is stored outside the public website. We never ask for card numbers through this website. No method of sending or storing information is perfectly secure, but we take care to protect yours.
 
 <h2 id="changes">Changes to this policy</h2>
 

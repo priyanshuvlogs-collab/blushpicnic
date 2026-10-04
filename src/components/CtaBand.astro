@@ -1,7 +1,7 @@
 ---
 // Closing call-to-action. Every page ends with one; pass occasion/package to pre-select the form.
 import Icon from './Icon.astro';
-import { getSettings, bookUrl, smsUrl } from '../lib/site';
+import { getSettings, bookUrl, smsUrl, smartQuotes } from '../lib/site';
 interface Props {
   title?: string;
   text?: string;
@@ -19,16 +19,19 @@ const {
 } = Astro.props;
 ---
 <section class="container-x section-y" aria-labelledby="cta-title">
-  <div class="relative overflow-hidden rounded-[var(--radius-card)] bg-plum px-6 py-14 text-center text-cream sm:px-12 md:py-20 on-dark">
-    <svg aria-hidden="true" class="pointer-events-none absolute left-1/2 top-6 h-[140%] w-auto -translate-x-1/2 text-gold/30" viewBox="0 0 200 300" fill="none">
-      <path d="M10 300V100a90 90 0 0 1 180 0v200" stroke="currentColor" stroke-width="0.8" />
-    </svg>
-    <div class="relative mx-auto max-w-2xl">
-      <h2 id="cta-title" class="text-cream">{title}</h2>
-      <p class="mx-auto mt-4 max-w-xl text-cream/85">{text}</p>
+  <div class="on-dark relative isolate overflow-hidden rounded-[var(--radius-card)] bg-plum px-6 pb-14 pt-10 text-center text-cream sm:px-12 md:pb-20 md:pt-14">
+    {/* The arch motif: a soft, lighter window the words sit in (a fill, so no line runs through the
+        text), crowned by a small gold arch. */}
+    <div aria-hidden="true" class="pointer-events-none absolute inset-x-3 bottom-0 top-3 -z-10 mx-auto max-w-[56rem] rounded-t-full bg-cream/[0.05] sm:inset-x-10 sm:top-5"></div>
+    <div class="mx-auto max-w-2xl">
+      <svg aria-hidden="true" class="mx-auto mb-5 h-10 w-7 text-gold md:mb-6" viewBox="0 0 28 40" fill="none">
+        <path d="M1 40V14a13 13 0 0 1 26 0v26" stroke="currentColor" stroke-width="1.25" />
+      </svg>
+      <h2 id="cta-title" class="text-cream">{smartQuotes(title)}</h2>
+      <p class="mx-auto mt-4 max-w-xl text-cream/85">{smartQuotes(text)}</p>
       <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <a href={bookUrl({ occasion, package: pkg })} class="btn btn-light btn-lg w-full sm:w-auto" data-track="booking_cta" data-track-location="cta_band">{buttonLabel}</a>
-        <a href={smsUrl(s)} class="btn btn-lg w-full border-cream/60 text-cream hover:bg-cream hover:text-plum sm:w-auto" data-track="click_text"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
+        <a href={bookUrl({ occasion, package: pkg })} class="btn btn-light btn-lg w-full sm:w-auto" data-track="booking_cta" data-track-location="cta_band" data-astro-prefetch>{buttonLabel}</a>
+        <a href={smsUrl(s)} class="btn btn-lg w-full whitespace-nowrap border-cream/60 px-4 text-cream hover:bg-cream hover:text-plum sm:w-auto sm:px-[1.9rem]" data-track="click_text"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
       </div>
       <p class="mt-6 text-sm text-cream/75">Starting prices are {s.taxNote}. {s.locationNote}</p>
     </div>

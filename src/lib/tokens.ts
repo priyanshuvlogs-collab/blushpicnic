@@ -7,9 +7,9 @@
 //   {deposit} {depositPercent} {depositSummary} {securityDeposit} {securityReturned} {securityDepositSummary}
 //   Per package (ids: signature, proposal-romance, celebration):
 //   {price:signature} → $375   {guests:signature} → 2 guests   {hours:signature} → 2 hours
-//   {extraGuest:signature} → $35   {package:signature} → Signature Picnic
+//   {extraGuest:signature} → $35   {package:signature} → Signature Picnic   {guestsMax:celebration} → 8
 // Unknown {words} are left exactly as written.
-import { getSettings, getPackages, money, hours, mailUrl, smsUrl, telUrl, type Settings, type Package } from './site';
+import { getSettings, getPackages, money, hours, mailUrl, smsUrl, telUrl, smartQuotes, type Settings, type Package } from './site';
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const TOKEN = /\{([a-zA-Z]+(?::[a-z0-9-]+)?)\}/g;
@@ -47,7 +47,10 @@ export function buildTokenMaps(s: Settings, packages: Package[]): TokenMaps {
     text[`hours:${p.id}`] = hours(d.durationHours);
     text[`package:${p.id}`] = d.name;
     if (d.extraGuestPrice !== null) text[`extraGuest:${p.id}`] = money(d.extraGuestPrice);
+    if (d.guestsMax !== null) text[`guestsMax:${p.id}`] = String(d.guestsMax);
   }
+
+  for (const k of Object.keys(text)) text[k] = smartQuotes(text[k]);
 
   const html: Record<string, string> = Object.fromEntries(Object.entries(text).map(([k, v]) => [k, esc(v)]));
   html.phone = `<a href="${esc(telUrl(s))}" data-track="click_call">${esc(s.phoneDisplay)}</a>`;
@@ -73,9 +76,12 @@ export function fillHtml(html: string, maps: TokenMaps): string {
     .join('');
 }
 
-/** Replace tokens in plain text (the result is still plain text; escape it as usual when rendering). */
+/**
+ * Replace tokens in plain text (the result is still plain text; escape it as usual when rendering).
+ * Straight quotes become typographer's quotes, so YAML copy matches the Markdown bodies.
+ */
 export function fillText(text: string, maps: TokenMaps): string {
-  return text.replace(TOKEN, (m, key: string) => maps.text[key] ?? m);
+  return smartQuotes(text.replace(TOKEN, (m, key: string) => maps.text[key] ?? m));
 }
 
 /** Recursively fill tokens in every string of a data object (frontmatter, YAML entries). */

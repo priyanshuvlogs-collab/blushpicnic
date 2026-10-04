@@ -76,8 +76,10 @@ final class Mailer
         }
         $mail->Subject = Booking::oneLine($m->subject);
         $mail->isHTML(true);
-        $mail->Body = $m->html;
-        $mail->AltBody = $m->text;
+        // CRLF line ends before encoding: quoted-printable would otherwise turn every bare LF
+        // into "=0A" and leave each part as one long logical line (RFC 2045 wants CRLF text).
+        $mail->Body = PHPMailer::normalizeBreaks($m->html, PHPMailer::CRLF);
+        $mail->AltBody = PHPMailer::normalizeBreaks($m->text, PHPMailer::CRLF);
         foreach ($m->headers as $name => $value) {
             $mail->addCustomHeader((string) $name, Booking::oneLine((string) $value));
         }

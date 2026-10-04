@@ -56,7 +56,7 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
       </p>
       <div class="overflow-x-auto" data-compare-scroller>
         <table class="compare w-full min-w-[18rem] table-fixed border-collapse text-left text-[0.88rem] sm:text-[0.98rem]">
-          <caption class="sr-only">Comparison of {pkgs.map((p) => p.data.name).join(', ')}: price, guests, time and what's included</caption>
+          <caption class="sr-only">Comparison of {pkgs.map((p) => p.data.name).join(', ')}: price, guests, time and what’s included</caption>
           <colgroup>
             <col class="w-[27%] sm:w-[34%]" />
             {pkgs.map(() => <col />)}
@@ -106,7 +106,7 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
                   <td class={colClass(p)}>
                     {has(p, item)
                       ? <><Icon name="check" size={22} class="mx-auto text-sage-ink" /><span class="sr-only">Included</span></>
-                      : <><span aria-hidden="true" class="text-plum-soft/70">—</span><span class="sr-only">Not listed</span></>}
+                      : <span class="ask text-plum-soft">Ask us<span class="sr-only"> — confirmed in your quote</span></span>}
                   </td>
                 ))}
               </tr>
@@ -132,7 +132,7 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
     </div>
 
     <div class="mt-6 grid gap-2 text-[0.95rem] text-plum-soft md:max-w-[52rem]">
-      {anyMissing && <p>— means it isn't part of that package as listed. Want it anyway? Mention it in your booking request and we'll include it in your quote.</p>}
+      {anyMissing && <p>“Ask us” means it isn’t listed for that package — mention it in your booking request and we’ll confirm it in your quote.</p>}
       <p>{s.locationNote}</p>
     </div>
   </div>
@@ -152,6 +152,8 @@ const colClass = (p: Package) => (p.id === featured ? HL : '');
     line-height: 1.3;
   }
   .compare :global(tbody tr) { border-bottom: 1px solid var(--color-line); }
+  /* Quieter than a tick, so the ticks still carry the table. */
+  .compare .ask { font-size: 0.8rem; font-weight: 500; line-height: 1.2; }
   .compare :global(.group-head) {
     padding: 2rem 0 0.6rem;
     font-family: var(--font-display);

@@ -83,10 +83,12 @@ final class Config
             'rate_limit_max' => 5,
             'rate_limit_window' => 3600,
             'min_seconds' => 4,
+            'confirm_max_per_hour' => 20,
             'site_url' => 'https://blushpicnic.com',
             'allowed_origins' => ['https://blushpicnic.com', 'https://www.blushpicnic.com'],
             'allow_localhost' => false,
             'client_ip_header' => '',
+            'trusted_proxies' => [],
         ];
     }
 

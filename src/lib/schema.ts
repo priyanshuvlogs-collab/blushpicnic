@@ -1,13 +1,37 @@
 // JSON-LD builders. Pass the results to <BaseLayout jsonLd={[...]}>.
 import type { Settings, Package, Occasion } from './site';
-import { plainMd } from './site';
+import { plainMd, money } from './site';
+import { picnicPhrase, capitalize } from '../components/occasion/text';
 
 type Thing = Record<string, unknown>;
 
 export const businessId = (s: Settings) => `${s.url}/#business`;
 
-/** Service-area business: no street address is published. */
-export function localBusiness(s: Settings, opts: { image?: string } = {}): Thing {
+/** The business's social profiles (Google Business Profile can be added here once it exists). */
+const profiles = (s: Settings) => [s.instagramUrl, s.tiktokUrl].filter(Boolean);
+
+/**
+ * A small LocalBusiness node for `provider` / `about`. The full node is only on the home page, and
+ * Google doesn't follow an @id to another page, so each page names the business itself.
+ */
+export const businessRef = (s: Settings): Thing => ({
+  '@type': 'LocalBusiness',
+  '@id': businessId(s),
+  name: s.name,
+  url: s.url,
+  telephone: s.phoneE164,
+});
+
+/** "From $375 before HST" — from the lowest package price (pass to localBusiness as priceRange). */
+export const priceRange = (s: Settings, packages: Package[]) =>
+  `From ${money(Math.min(...packages.map((p) => p.data.priceFrom)))} ${s.taxNote}`;
+
+// Former municipalities that are now part of the City of Toronto: places within Toronto, not cities.
+const TORONTO_DISTRICTS = new Set(['north york', 'scarborough', 'etobicoke', 'east york', 'york', 'downtown toronto', 'midtown toronto']);
+const toronto = { '@type': 'City', name: 'Toronto' };
+
+/** Service-area business: city, province and country only — no street address is published. */
+export function localBusiness(s: Settings, opts: { image?: string; priceRange?: string } = {}): Thing {
   return {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -19,12 +43,17 @@ export function localBusiness(s: Settings, opts: { image?: string } = {}): Thing
     telephone: s.phoneE164,
     image: opts.image,
     logo: `${s.url}/logo.png`,
-    priceRange: '$$$',
-    sameAs: [s.instagramUrl],
+    priceRange: opts.priceRange,
+    address: { '@type': 'PostalAddress', addressLocality: 'Toronto', addressRegion: 'ON', addressCountry: 'CA' },
+    sameAs: profiles(s),
     areaServed: [
-      { '@type': 'City', name: 'Toronto' },
+      toronto,
       { '@type': 'AdministrativeArea', name: 'Greater Toronto Area' },
-      ...s.serviceAreaList.filter((c) => c !== 'Toronto').map((name) => ({ '@type': 'City', name })),
+      ...s.serviceAreaList
+        .filter((name) => name !== 'Toronto')
+        .map((name) =>
+          TORONTO_DISTRICTS.has(name.toLowerCase()) ? { '@type': 'Place', name, containedInPlace: toronto } : { '@type': 'City', name },
+        ),
     ],
   };
 }
@@ -49,7 +78,7 @@ export function service(s: Settings, p: Package, opts: { image?: string } = {}):
     serviceType: 'Luxury picnic setup',
     description: d.summary,
     image: opts.image,
-    provider: { '@id': businessId(s) },
+    provider: businessRef(s),
     areaServed: { '@type': 'AdministrativeArea', name: 'Greater Toronto Area' },
     offers: {
       '@type': 'Offer',
@@ -62,7 +91,7 @@ export function service(s: Settings, p: Package, opts: { image?: string } = {}):
         minPrice: d.priceFrom,
         valueAddedTaxIncluded: false,
       },
-      description: `Starting at $${d.priceFrom} ${d.guestsLabel}, ${s.taxNote}. ${s.locationNote}`,
+      description: `Starting at ${money(d.priceFrom)} ${d.guestsLabel}, ${s.taxNote}. ${s.locationNote}`,
       url: `${s.url}/book?package=${p.id}`,
     },
   };
@@ -99,11 +128,12 @@ export function occasionService(s: Settings, o: Occasion, pkg: Package, opts: { 
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    name: `${o.data.name} picnic setup in Toronto`,
+    // "Proposal picnic in Toronto", "Picnic date in Toronto" — the phrase the page's headings use
+    name: `${capitalize(picnicPhrase(o))} in Toronto`,
     serviceType: 'Luxury picnic setup',
     description: o.data.metaDescription,
     image: opts.image,
-    provider: { '@id': businessId(s) },
+    provider: businessRef(s),
     areaServed: { '@type': 'AdministrativeArea', name: 'Greater Toronto Area' },
     offers: {
       '@type': 'Offer',
@@ -116,7 +146,7 @@ export function occasionService(s: Settings, o: Occasion, pkg: Package, opts: { 
         minPrice: pkg.data.priceFrom,
         valueAddedTaxIncluded: false,
       },
-      description: `${pkg.data.name} starting at $${pkg.data.priceFrom} ${pkg.data.guestsLabel}, ${s.taxNote}.`,
+      description: `${pkg.data.name} starting at ${money(pkg.data.priceFrom)} ${pkg.data.guestsLabel}, ${s.taxNote}. ${s.locationNote}`,
       url: `${s.url}/book?occasion=${o.id}&package=${pkg.id}`,
     },
   };
