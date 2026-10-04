@@ -38,7 +38,8 @@ export default defineConfig({
       'OUT_DIR=dist-e2e CACHE_DIR=node_modules/.astro-e2e npx astro build && php -S 127.0.0.1:4455 -t dist-e2e tests/router.php',
     url: `http://127.0.0.1:${PORT}/book`,
     reuseExistingServer: !process.env.CI,
-    timeout: 300_000,
+    // A cold build encodes every photo (~1,500 AVIF/WebP/JPEG files) and takes several minutes on CI.
+    timeout: 900_000,
     stdout: 'ignore',
     stderr: 'ignore',
   },

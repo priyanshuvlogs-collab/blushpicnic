@@ -26,7 +26,7 @@ jobs:
   build:
     name: Check, build and test
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v5
 
@@ -46,6 +46,15 @@ jobs:
 
       - name: Install packages
         run: npm ci
+
+      # Astro keeps every resized/encoded photo (AVIF, WebP, JPEG: ~1,500 files) in its cache dir.
+      # Real photos take minutes to encode, so reuse them between runs; only changed photos are redone.
+      - name: Reuse optimised images
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.astro
+          key: astro-images-${{ hashFiles('src/assets/**', 'astro.config.mjs', 'package-lock.json') }}
+          restore-keys: astro-images-
 
       - name: Type-check (astro check)
         run: npx astro check
@@ -106,6 +115,15 @@ jobs:
 
       - name: Install packages
         run: npm ci
+
+      # Astro keeps every resized/encoded photo (AVIF, WebP, JPEG: ~1,500 files) in its cache dir.
+      # Real photos take minutes to encode, so reuse them between runs; only changed photos are redone.
+      - name: Reuse optimised images
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.astro-e2e
+          key: astro-images-e2e-${{ hashFiles('src/assets/**', 'astro.config.mjs', 'package-lock.json') }}
+          restore-keys: astro-images-e2e-
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

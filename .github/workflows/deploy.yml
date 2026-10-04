@@ -54,7 +54,7 @@ jobs:
   deploy:
     name: Build and upload
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     environment:
       name: production
       url: ${{ vars.SITE_URL || 'https://blushpicnic.com' }}
@@ -147,6 +147,15 @@ jobs:
 
       - name: Install packages
         run: npm ci
+
+      # Astro keeps every resized/encoded photo (AVIF, WebP, JPEG: ~1,500 files) in its cache dir.
+      # Real photos take minutes to encode, so reuse them between runs; only changed photos are redone.
+      - name: Reuse optimised images
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.astro
+          key: astro-images-${{ hashFiles('src/assets/**', 'astro.config.mjs', 'package-lock.json') }}
+          restore-keys: astro-images-
 
       - name: Build the site
         run: npm run build
