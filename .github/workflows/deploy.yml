@@ -86,15 +86,32 @@ jobs:
           FTP_PORT: ${{ vars.FTP_PORT || 21 }}
           FTP_CERT_DOMAIN: ${{ vars.FTP_CERT_DOMAIN || 'hstgr.io' }}
         run: |
-          host="${FTP_SERVER#ftp://}"; host="${host#ftps://}"; host="${host%%/*}"
-          out="$(timeout 30 openssl s_client -starttls ftp -connect "$host:$FTP_PORT" -servername "$host" \
-                   -verify_return_error -verify_hostname "deploy-check.$FTP_CERT_DOMAIN" </dev/null 2>&1 || true)"
-          if ! grep -q 'Verify return code: 0 (ok)' <<<"$out"; then
-            echo "$out" | grep -E 'subject=|issuer=|Verify return code|error' | head -5 || true
-            echo "::error::The FTP server didn't present a valid certificate for *.$FTP_CERT_DOMAIN — not uploading. Check FTP_SERVER (or the FTP_CERT_DOMAIN variable) and run the 'Check Hostinger connection' workflow."
+          # Tidy the secret: spaces, ftp:// or ftps://, a :port or /path are all tolerated.
+          host="$(printf '%s' "$FTP_SERVER" | tr -d '[:space:]')"
+          host="${host#ftp://}"; host="${host#ftps://}"; host="${host#sftp://}"; host="${host%%/*}"; host="${host%%:*}"
+          [ -n "$host" ] || { echo "::error::The FTP_SERVER secret is empty after removing spaces."; exit 1; }
+          # Connect over IPv4 (GitHub's runners have no IPv6 route, which makes connections hang).
+          if [[ "$host" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            ip="$host"; echo "FTP_SERVER is an IP address."
+          else
+            ip="$(getent ahostsv4 "$host" | awk 'NR==1{print $1}')"
+            echo "FTP_SERVER is a host name; its IPv4 address is ${ip:-(none found)}."
+            [ -n "$ip" ] || { echo "::error::The FTP_SERVER host name doesn't resolve to an IPv4 address. Use the \"FTP IP\" from hPanel → Files → FTP Accounts."; exit 1; }
+          fi
+          if ! timeout 10 bash -c "exec 3<>/dev/tcp/$ip/$FTP_PORT" 2>/dev/null; then
+            echo "::error::Can't reach $ip on port $FTP_PORT. Check the FTP_SERVER secret matches the \"FTP IP\" in hPanel → Files → FTP Accounts (and the FTP_PORT variable, if set)."
             exit 1
           fi
-          echo "Certificate OK: valid and trusted for *.$FTP_CERT_DOMAIN"
+          out="$(timeout 30 openssl s_client -starttls ftp -connect "$ip:$FTP_PORT" -servername "deploy-check.$FTP_CERT_DOMAIN" \
+                   -verify_return_error -verify_hostname "deploy-check.$FTP_CERT_DOMAIN" </dev/null 2>&1 || true)"
+          if ! grep -q 'Verify return code: 0 (ok)' <<<"$out"; then
+            echo "$out" | grep -E 'subject=|issuer=|Verify return code|verify error|errno' | head -6 || true
+            echo "::error::The FTP server at $ip didn't present a valid certificate for *.$FTP_CERT_DOMAIN — not uploading. Run the 'Check Hostinger connection' workflow with the FTP IP from hPanel."
+            exit 1
+          fi
+          echo "Certificate OK: valid and trusted for *.$FTP_CERT_DOMAIN (server $ip)"
+          # Later steps connect to this IPv4 address.
+          echo "FTP_HOST_IPV4=$ip" >> "$GITHUB_ENV"
           if [[ "$host" == "$FTP_CERT_DOMAIN" || "$host" == *".$FTP_CERT_DOMAIN" ]]; then
             echo "security=strict" >> "$GITHUB_OUTPUT"
           else
@@ -161,7 +178,7 @@ jobs:
       - name: Upload to Hostinger (FTPS)
         uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ env.FTP_HOST_IPV4 }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ vars.FTP_PORT || 21 }}
@@ -198,10 +215,9 @@ jobs:
           fi
           umask 077
           work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT
-          host="${FTP_SERVER#ftp://}"; host="${host#ftps://}"; host="${host%%/*}"
+          host="$FTP_HOST_IPV4"
           # Connect by IP but verify TLS against a name under the certificate's domain (checked above).
           name="deploy-check.$FTP_CERT_DOMAIN"
-          case "$host" in "$FTP_CERT_DOMAIN"|*".$FTP_CERT_DOMAIN") name="$host" ;; esac
           printf 'machine %s\nlogin "%s"\npassword "%s"\n' "$name" "$FTP_USERNAME" "$FTP_PASSWORD" > "$work/netrc"
           ftp() { curl -sS --ssl-reqd --netrc-file "$work/netrc" --connect-to "$name:$FTP_PORT:$host:$FTP_PORT" "$@"; }
           # Only write the file next to public_html, never anywhere else.
