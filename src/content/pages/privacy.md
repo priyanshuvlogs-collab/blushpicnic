@@ -30,9 +30,9 @@ If you have a question about your information, email {email}.
 **When you send a booking request**, the form asks for:
 
 - **Your contact details** — your name, phone number and email, and optionally your Instagram handle and the best way to reach you.
-- **Event details** — the occasion and package, your preferred and backup dates, start time, number of adults and kids, where you'd like the picnic and your budget range.
-- **Details that personalize the setup**, depending on the occasion — for example the names of the people being celebrated, favourite colours and flowers, the words for your sign or letter board, surprise plans, kids' ages, or a company name if you need an invoice.
-- **Food plans and allergies**, if you choose to tell us, so we can plan any food add-ons safely.
+- **Event details** — what you'd like us to set up (a picnic, a proposal, room decor or a hamper), the occasion and package, your preferred and backup dates, start time or delivery time, number of adults and kids, which area you're in, where you'd like the picnic, the address of the room or the delivery address, your picnic style and add-ons, and your budget range.
+- **Details that personalize the setup**, depending on the occasion — for example the names of the people being celebrated, favourite colours and flowers, the words for your sign or letter board, a message for a hamper card or your vision for a custom hamper, surprise plans, kids' ages, or a company name if you need an invoice.
+- **Food plans and allergies**, if you choose to tell us, so we can plan any food add-ons or a hamper safely.
 - **Your choice about photos** — whether we may share photos of your setup on Instagram.
 - **How you heard about us** and any notes you add.
 
@@ -60,7 +60,7 @@ We won't add you to a mailing list or send you marketing messages unless you ask
 
 When you press send, your answers travel over an encrypted (HTTPS) connection to our website, which emails them through our hosting provider's mail server to our business inbox. You also receive an automatic confirmation email with a summary of your request.
 
-We share your information only with the services that help us run the business — our website host and email provider, and, if you accept analytics cookies, Google and Meta (see below) — and only so they can provide that service. If you add something provided by a partner (for example a photographer, cake or grazing board), we share just the details they need. When the law requires it, we may also have to share information with the authorities.
+We share your information only with the services that help us run the business — our website host and email provider, and, if you accept analytics cookies, Google and Meta (see below) — and only so they can provide that service. If you add something provided by a partner (for example a cake or a charcuterie board), we share just the details they need. When the law requires it, we may also have to share information with the authorities.
 
 **We never sell your personal information.**
 

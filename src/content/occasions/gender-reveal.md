@@ -22,15 +22,15 @@ highlights:
     text: "Share the parents' names and the due date or month, and tell us how you'd like them to appear on the custom signage."
 faqs:
   - q: "Which reveal methods can we choose from?"
-    a: "Whichever suits you and your spot: a balloon box or balloon pop, a cake cut, smoke, confetti (not in public parks), or “Not sure yet”. Tell us how you'd like to reveal in the booking form and we'll style the setup around it. If you'd like help sourcing something for the reveal, ask and we'll tell you what's possible. A custom cake for a cake-cut reveal is available as an add-on."
+    a: "Whichever suits you and your spot: a balloon box or balloon pop, a cake cut, smoke, confetti (not in public parks), or “Not sure yet”. Tell us how you'd like to reveal in the booking form and we'll style the setup around it. If you'd like help sourcing something for the reveal, ask and we'll tell you what's possible. A cake for a cake-cut reveal is available as an add-on."
   - q: "Is smoke or confetti allowed in Toronto parks?"
     a: "Confetti, glitter and party poppers aren't permitted in public parks, and some parks don't allow smoke either. If they're used, you're responsible for cleaning the area completely. Tell us your spot in the booking form and we'll suggest a park-friendly reveal. See our [confetti policy](/policies#confetti)."
   - q: "Can the result stay secret, even from the parents?"
     a: "Yes. Turn on the surprise section and tell us who's being surprised and who else knows, so we're clear on exactly who's in on it."
   - q: "How many guests does the Celebration package cover?"
     a: "Celebration covers {guests:celebration} for {hours:celebration}, with a full themed setup, a backdrop, a balloon garland or flower arch, custom signage and games. It starts at {price:celebration}, before HST, and varies by location. Inviting a bigger crowd? We'll quote your group."
-  - q: "Could we add a custom cake or a photographer?"
-    a: "Both are available as add-ons, along with a neon sign. Tick the ones you'd like in the booking form and we'll include them in your quote. Note any allergies while you're there."
+  - q: "Could we add a cake or helium balloons?"
+    a: "Both are available as add-ons, along with a charcuterie board and beverages. Tick the ones you'd like in the booking form and we'll include them in your quote. Note any allergies while you're there."
 related: ["baby-shower", "announcement", "new-baby"]
 ---
 
@@ -52,10 +52,10 @@ If even you don't know the result yet, turn on the surprise section and tell us 
 
 We recommend our Celebration package for a reveal: a themed backdrop to stand in front of when the colour appears, a balloon garland or flower arch, custom signage with your names and due month, and games for the wait. It starts at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST. Inviting more people than that? We'll quote your group. Prices vary by location across the GTA, and we confirm your exact quote by message.
 
-Want both a balloon garland and a flower arch? Add whichever one isn't in your setup. A custom cake, a neon sign and a photographer are optional too. Tick them in the form and we'll include them in your quote.
+Helium balloons, a cake for a cake-cut reveal, a charcuterie board and beverages are optional too. Tick them in the form and we'll include them in your quote.
 
 ## Countdown to the reveal
 
 1. **Tell us the plan.** The parents' names, due date or month, your reveal of choice, a date, a backup date and the area.
-2. **Hear from us within 24 hours.** We confirm availability and your quote, and suggest a park-friendly reveal if your spot needs one. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
+2. **Hear from us {replyTime}.** We confirm availability and your quote, and suggest a park-friendly reveal if your spot needs one. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
 3. **Three, two, one.** Everything is styled when your guests arrive, and we take care of the clean-up afterwards.

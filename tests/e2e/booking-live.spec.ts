@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { torontoDate, escapeRe, type FormSchema, type ResolvedField, type ResolvedGroup, type Occasion } from './booking-helpers';
+import { showIfConditions, showIfMatches, lockedValue } from '../../src/scripts/booking/conditions';
 
 const BASE_URL = process.env.LIVE_BASE_URL ?? 'http://127.0.0.1:4506';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -204,18 +205,27 @@ interface Plan {
 function applies(g: ResolvedGroup, f: ResolvedField, occ: Occasion, values: Map<string, string | string[]>): boolean {
   if (!(g.appliesTo.includes('*') || g.appliesTo.includes(occ.formGroup))) return false;
   if (f.onlyFor && !f.onlyFor.includes(occ.id)) return false;
-  if (f.showIf) {
-    const v = values.get(f.showIf.field);
-    const vals = (Array.isArray(v) ? v : [v ?? '']).filter(Boolean);
-    return f.showIf.equals === undefined ? vals.length > 0 : vals.includes(f.showIf.equals);
-  }
-  return true;
+  return showIfConditions(f.showIf).every((c) => {
+    const v = values.get(c.field);
+    return showIfMatches(c, Array.isArray(v) ? v : [v ?? '']);
+  });
 }
+
+/** A question the service locks (the browser answers it and hides it), e.g. Proposals → occasion "proposal". */
+const isLocked = (f: ResolvedField, values: Map<string, string | string[]>) => {
+  const dep = f.lockBy && values.get(f.lockBy.field);
+  return !!f.lockBy && lockedValue(f.lockBy, Array.isArray(dep) ? dep : [dep ?? '']) !== null;
+};
+
+/** These picnic tests book Proposals for a proposal and Picnics for everything else. */
+const serviceFor = (occ: Occasion) => (occ.id === 'proposal' ? 'proposals' : 'picnics');
 
 function sample(f: ResolvedField, occ: Occasion, i: number, client: Plan['client'], pkgId: string): string | string[] | null {
   const opts = f.options ?? [];
   const rotate = (k = 0) => opts[(i + k) % opts.length].value;
   switch (f.id) {
+    case 'service':
+      return serviceFor(occ);
     case 'occasion':
       return occ.id;
     case 'package':
@@ -318,7 +328,7 @@ async function openBook(page: Page, query = '') {
 async function answer(page: Page, a: Answer) {
   const { f, value } = a;
   const box = fieldBox(page, f.id);
-  if (f.id === 'package') return box.locator(`input[value="${value}"]`).check();
+  if (f.id === 'service' || f.id === 'package') return box.locator(`input[value="${value}"]`).check();
   switch (f.type) {
     case 'radio':
     case 'select': {
@@ -338,7 +348,9 @@ async function answer(page: Page, a: Answer) {
 
 async function fillStep(page: Page, plan: Plan, step: number, skip: string[] = []) {
   await expect(stepTitle(page, step)).toBeVisible();
-  for (const a of plan.answers) if (a.g.step === step && !skip.includes(a.f.id)) await answer(page, a);
+  const values = new Map(plan.answers.map((a) => [a.f.id, a.value]));
+  // A locked question (the occasion, once Proposals is chosen) is answered by the browser and hidden.
+  for (const a of plan.answers) if (a.g.step === step && !skip.includes(a.f.id) && !isLocked(a.f, values)) await answer(page, a);
 }
 
 async function continueTo(page: Page, step: number) {

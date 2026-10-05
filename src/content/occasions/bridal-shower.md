@@ -17,7 +17,7 @@ highlights:
   - title: "A preview of the wedding palette"
     text: "Add the wedding colours under “Colours and vibe”, and the shower can be a first glimpse of the style to come."
   - title: "Arch or balloons: you choose"
-    text: "Celebration comes with a flower arch or a balloon garland behind the group. Want both? Add the other in the booking form."
+    text: "Celebration comes with a flower arch or a balloon garland behind the group. Tell us which you'd prefer when you book."
   - title: "One request for the whole bridal party"
     text: "One person sends the details, we reply with one quote, and you share it with everyone chipping in."
 faqs:
@@ -29,8 +29,8 @@ faqs:
     a: "Yes. Switch on the surprise section, tell us who else is in on it and how she'll arrive, and choose whether our team waits out of sight or leaves before she gets there."
   - q: "Can the setup match the wedding colours?"
     a: "Add the palette under “Colours and vibe” in the booking form, along with any wedding details you'd love echoed, and we'll use them to plan the styling."
-  - q: "Can we add a cake, a grazing board or a photographer?"
-    a: "All three are available, as are a neon sign and a rose bouquet for the bride. Tick the ones you'd like in the booking form and we'll include them in your quote."
+  - q: "Can we add a cake, a charcuterie board or flowers?"
+    a: "All three are available, as are beverages, helium balloons and a candle walkway. Tick the ones you'd like in the booking form and we'll include them in your quote."
 related: ["just-engaged", "baby-shower", "birthday"]
 ---
 
@@ -48,10 +48,10 @@ If it's a surprise, switch on the surprise section and tell us who else is in on
 
 Our Celebration package is made for a gathering like this: a themed backdrop for the bridal party's photos, a balloon garland or flower arch, custom signage with her name on it, and games for the whole group, starting at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST. Bridal parties have a way of growing, and when yours does, we'll quote the larger group. Prices vary by location across the GTA.
 
-Food isn't part of the packages, so bring a spread, or add a custom cake or a grazing board to your request. A photographer, a neon sign or a rose bouquet for the bride can be added the same way, each one priced into your quote.
+Food isn't part of the packages, so bring a spread, or add a cake, a charcuterie board or beverages to your request. Fresh flowers for the bride, helium balloons or a canopy over the table can be added the same way, each one priced into your quote.
 
 ## The maid of honour's checklist
 
 1. **Collect the details.** The bride's name, the wedding date, the colours, a shower date and a backup date.
-2. **Share the quote.** We reply within 24 hours with availability and a quote to pass around the bridal party. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
+2. **Share the quote.** We reply {replyTime} with availability and a quote to pass around the bridal party. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
 3. **Celebrate her.** Everything is styled when the guests arrive, and the pack-up is ours.

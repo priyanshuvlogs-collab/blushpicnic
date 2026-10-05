@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaBand from '../components/CtaBand.astro';
 import ReviewsSection from '../components/ReviewsSection.astro';
 import HomeHero from '../components/home/HomeHero.astro';
+import HomeServices from '../components/home/HomeServices.astro';
 import HomeOccasions from '../components/home/HomeOccasions.astro';
 import HomePackages from '../components/home/HomePackages.astro';
 import HomeHow from '../components/home/HomeHow.astro';
@@ -20,7 +21,7 @@ const pkgs = await getPackages();
 const lowest = Math.min(...pkgs.map((p) => p.data.priceFrom));
 
 const title = 'Luxury Picnics in Toronto & the GTA | Blush Picnic';
-const description = `Luxury picnic setups in Toronto and the GTA for proposals, birthdays and dates. We deliver, set up, style and clean up. Starting at ${money(lowest)}, ${s.taxNote}.`;
+const description = `Luxury picnics, proposals, room decor and birthday hampers across ${s.serviceArea}. We deliver, set up, style and clean up. Picnics from ${money(lowest)}, ${s.taxNote}.`;
 
 // While the hero is a stand-in (alt starts "Placeholder") or an AI illustration (src/lib/photos.ts),
 // structured data uses the brand share image: Google shows it without the on-page label.
@@ -32,6 +33,7 @@ const jsonLd = [localBusiness(s, { image: businessImage, priceRange: priceRange(
 ---
 <BaseLayout {title} {description} {jsonLd}>
   <HomeHero />
+  <HomeServices />
   <HomeOccasions />
   <HomePackages />
   <HomeHow />

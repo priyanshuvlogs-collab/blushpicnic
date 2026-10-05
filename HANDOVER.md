@@ -10,7 +10,7 @@ where the mistake is, so the live site never breaks.
 
 - [How editing works](#how-editing-works)
 - [Editing on GitHub in your browser](#editing-on-github-in-your-browser)
-- [Common changes](#common-changes): prices, add-ons, FAQs, occasion pages, booking questions, photos, reviews, contact details and analytics, policies and About
+- [Common changes](#common-changes): prices, add-ons, picnic styles, travel fee, services, reply time, FAQs, occasion pages, booking questions, photos, reviews, contact details and analytics, policies and About
 - [Publishing your changes](#publishing-your-changes)
 - [One-time setup](#one-time-setup) (do this once, in order)
 - [Waiting on you](#waiting-on-you): everything still marked "Placeholder"
@@ -64,7 +64,7 @@ To **upload photos** through GitHub instead of the photo tool, see [Photos](#pho
 | What | Line to change | Example |
 | --- | --- | --- |
 | Starting price | `priceFrom:` | `priceFrom: 375` → `priceFrom: 395` (numbers only, no `$`) |
-| Price per extra guest (Signature) | `extraGuestPrice:` | `extraGuestPrice: 35` |
+| Price per extra guest | `extraGuestPrice:` | `extraGuestPrice: 35` (the Signature). `extraGuestPrice: null` shows "we'll quote extra guests" instead (the Simple Picnic, Proposal & Romance and Celebration) |
 | An extra note under the price (no amounts!) | `priceNote:` | `priceNote: "More than 8 guests? We'll quote your group."` |
 | Guests included / maximum | `guestsIncluded:`, `guestsMax:`, `guestsLabel:` | `guestsLabel: "for 6–8 guests"` |
 | Length | `durationHours:` | `durationHours: 2.5` |
@@ -72,16 +72,22 @@ To **upload photos** through GitHub instead of the photo tool, see [Photos](#pho
 
 The site adds "Starting at" and "before HST" by itself, and the booking estimate updates automatically.
 
+There are four packages: `simple` (the Simple Picnic), `signature`, `proposal-romance` and `celebration`.
+`includesFrom:` is the line shown above a package's list ("Everything in the Simple Picnic, plus:"): the
+Signature inherits the Simple Picnic's list, and Proposal & Romance inherits the Signature's. The travel fee
+(see [Travel fee by area](#travel-fee-by-area)) is added to every quote on top of these prices.
+
 **That's the only place you change a price.** Occasion pages, FAQs and policies never have
 prices typed into them — they use little placeholders in curly brackets that the website fills
 in from this file when it's published:
 
 | Write this in copy | It shows |
 | --- | --- |
-| `{price:signature}` / `{price:proposal-romance}` / `{price:celebration}` | $375 / $495 / $1,200 |
+| `{price:simple}` / `{price:signature}` / `{price:proposal-romance}` / `{price:celebration}` | $250 / $375 / $495 / $1,200 |
 | `{guests:celebration}` · `{hours:signature}` · `{guestsMax:celebration}` | 6–8 guests · 2 hours · 8 |
-| `{extraGuest:signature}` | $35 |
+| `{extraGuest:signature}` | $35 (only for a package with a number in `extraGuestPrice:`) |
 | `{deposit}` · `{depositPercent}` · `{securityDeposit}` | $100 · 50% · $100 |
+| `{replyTime}` · `{locationNote}` · `{travelNote}` | "within 5 hours" and the two price sentences from `settings.yaml` |
 | `{phone}` · `{email}` · `{instagram}` · `{tiktok}` | your contact details |
 
 If you ever type a dollar amount into an occasion page or FAQ by hand, the publish log shows a
@@ -91,17 +97,82 @@ friendly warning so it doesn't go out of date.
 
 **File:** `src/content/addons.yaml`
 
-Every add-on has `price: null`, which shows **"Price on request"**. When you know a price, put the number instead:
+The add-ons are: balloon garland, fresh flowers, canopy or teepee, music system, umbrella, helium balloons,
+charcuterie board, cake, beverages, red carpet walk, candle walkway and glassware. They're offered for
+picnics and room decor (the booking form lists them for both).
+
+The umbrella and the helium balloons already have a price. Every other add-on has `price: null`, which
+shows **"Price on request"**. When you know a price, put the number instead:
 
 ```yaml
-- id: flower-arch
-  name: "Flower arch"
+- id: balloon-garland
+  name: "Balloon garland"
   …
   price: 150          # was: null
   priceSuffix: ""     # optional, e.g. " each" or " per hour"
 ```
 
-Prices you set here also appear in the booking form's estimate. To go back to "Price on request", write `null` again.
+The site adds "Starting at" and "before HST" by itself, so every add-on price is a starting price
+(helium balloons: "Starting at $20" covers "$20 and up"). Prices you set here also appear in the booking
+form's estimate. To go back to "Price on request", write `null` again.
+
+**Glassware** is an add-on, not part of a package: its `description` says the tableware in the setups is
+styled for the look and that disposable cutlery is available on request. If that's not quite how you'd
+put it, change the words in `description:`.
+
+### Picnic styles (dome, table & chairs)
+
+**File:** `src/content/styles.yaml`
+
+The three ways a picnic can be set: the **classic low table** (comes with every package), a **table & chair
+setup** and a **dome picnic**. The booking form asks "How should we set your picnic?" and lists these.
+
+- `price: null` shows **"quoted"**: the style is left out of the live estimate and you price it in your reply.
+  When you know a price, put the number instead (e.g. `price: 150`); the site adds "Starting at" and
+  "before HST", and the estimate includes it.
+- `included: true` marks the one that comes with every package. Leave that on the classic low table only.
+- `description:` is the sentence shown under the name. `image:` / `imageAlt:` are its photo (see [Photos](#photos)).
+
+### Travel fee by area
+
+**File:** `src/content/settings.yaml` → `travel:`
+
+A travel fee is added to every quote (picnics, room decor and hamper deliveries), and the booking form asks
+which area the client is in. For each area under `areas:`, `fee: null` means **"quoted by area"**: the
+estimate says the travel fee is confirmed in your quote. Once you've decided a fee, put the number next to
+the area (numbers only, no `$`):
+
+```yaml
+      - name: "Mississauga"
+        fee: 40          # was: null
+```
+
+The sentence shown on the site is `note:` ("A travel fee is added by area. We confirm it with your quote.").
+It also fills the `{travelNote}` placeholder in FAQs and policies. The form's area list is these areas plus
+"Somewhere else in the GTA" and "Not sure yet", which never carry a fee.
+
+### Services (room decor, hampers)
+
+**File:** `src/content/services.yaml`
+
+What Blush Picnic offers, shown on the home page and on `/services`, and as the first question of the
+booking form ("What can we set up for you?"): **Picnics**, **Proposals**, **Room decor**, **Birthday hamper
+delivery** (at midnight or during the day) and **Custom hamper** (DM with your vision).
+
+- `name`, `short` (the line under the name), `summary` and `cta` (the button text) are safe to change.
+- `href` is the page that explains the service: `/packages`, the proposal page, `/room-decor`, `/hampers`
+  and `/hampers#custom`. Don't change the `id:` lines; booking links use them (`/book?service=room-decor`).
+- `dm: true` (custom hamper) turns the button into an Instagram DM instead of the booking form.
+- Pricing and what's included for room decor and the hampers aren't on the site yet: see
+  [Waiting on you](#waiting-on-you).
+
+### Reply time
+
+**File:** `src/content/settings.yaml` → `replyTime: "within 5 hours"`
+
+This one line is the reply promise everywhere: the header, the booking form and its confirmation email,
+every occasion page, the FAQs and the policies (through the `{replyTime}` placeholder). If 5 hours ever
+becomes hard to keep, change it here once; nothing else needs editing.
 
 ### Deposit, phone, email, Instagram, analytics
 
@@ -111,7 +182,8 @@ Prices you set here also appear in the booking form's estimate. To go back to "P
 - `email`, `instagramHandle`, `instagramUrl`, `tiktokHandle`, `tiktokUrl`.
 - `smsBody`: the message pre-typed when someone taps "Text us".
 - `deposit` and `securityDeposit`: the amounts and the sentences shown on the site.
-- `replyTime`: "within 24 hours".
+- `replyTime`: "within 5 hours" — see [Reply time](#reply-time).
+- `travel`: the travel fee by area — see [Travel fee by area](#travel-fee-by-area).
 - `serviceAreaList`: the towns listed as served.
 - `analytics`: your **Google Analytics 4** ID (`G-…`) and **Meta Pixel** ID (digits only). See
   [One-time setup](#one-time-setup), step 9. They only switch on after a visitor accepts cookies.
@@ -171,7 +243,7 @@ The top part, between the two `---` lines, holds the page's settings and short t
 | `faqs` | This page's questions (`q`) and answers (`a`) |
 | `metaTitle` | The title Google shows. **Up to 65 characters**, ending in "\| Blush Picnic" |
 | `metaDescription` | The grey text under it in Google. **70–160 characters** |
-| `recommendedPackage` | Which package the page suggests (`signature`, `proposal-romance` or `celebration`) |
+| `recommendedPackage` | Which package the page suggests (`simple`, `signature`, `proposal-romance` or `celebration`) |
 | `related` | Up to 4 other occasions to suggest |
 
 Below the second `---` is the page's main text. Write it like an email: a blank line between
@@ -187,6 +259,17 @@ or `formGroup` (it decides which booking questions appear).
 The form has 4 steps. Each block lists questions for everyone (`appliesTo: ["*"]`) or for some
 occasions only (e.g. `appliesTo: ["birthday"]`).
 
+**The first question is "What can we set up for you?"**: picnics, proposals, room decor, birthday hamper
+delivery or a custom hamper (the list comes from `services.yaml`). The rest of the form follows that answer:
+the picnic questions (package, guests, where, picnic style) only appear for picnics and proposals; room decor
+asks what kind of room and its address; hampers ask whether to deliver at midnight or during the day, the
+delivery address, a card message and allergies. The `showIf:` line under a question is what decides this.
+
+Some answers are filled in for the client and the question hidden (the `lockBy:` lines under the occasion
+question): choosing **Proposals** sets the occasion to "Proposal", **Birthday hamper delivery** sets it to
+"Birthday", and **Custom hamper** sets it to "Something else". Everyone is also asked which area they're in
+(for the travel fee), and picnic bookers choose their picnic style (classic low table, table & chairs or dome).
+
 **Safe to change:** `label` (the question), `help` (the small hint under it), `placeholder` (the
 grey example text), `options` (the choices), and `required: true` / `false`.
 
@@ -197,8 +280,8 @@ The server checks every request against this same file, so there's never any cod
 
 ### Photos
 
-Your own photos so far: the home page photo, the top photos of the Birthday and Anniversary pages,
-and four in the gallery (Birthdays and Anniversaries). Client names on the letter boards are blurred.
+Your own photos so far: the home page photo, the top photos of the Birthday, Anniversary and Proposal
+pages, and five in the gallery (Birthdays, Anniversaries and Proposals). Client names on the letter boards are blurred.
 The rest are still **AI illustrations** made with Grok (xAI) to show the style of your setups. They
 are not photos of real Blush Picnic events. The photos themselves carry no label,
 but the site says so in one place each: a short note on the gallery, the home gallery, the occasion
@@ -206,7 +289,8 @@ pages and /occasions, and one line in the footer. Link previews (WhatsApp, Faceb
 your logo image instead of an AI one. Replace them with your own photos as soon as you can (below):
 a real photo takes over its spot, the notes update by themselves, and it's used in link previews and
 for Google too. The About photo is still a placeholder,
-because it should be you.
+because it should be you. So are the Simple Picnic, the room decor and hamper pictures and the two picnic
+styles (table & chairs, dome): labelled placeholders until you send those photos.
 
 **The easy way: the photo tool (on a computer with the project).**
 
@@ -216,7 +300,9 @@ because it should be you.
    | --- | --- |
    | `hero.jpg` | The big photo on the home page (also on your Instagram links page) |
    | `about.jpg` | The About page: you, or your hands styling a setup |
-   | `pkg-signature.jpg`, `pkg-proposal-romance.jpg`, `pkg-celebration.jpg` | The three packages |
+   | `pkg-simple.jpg`, `pkg-signature.jpg`, `pkg-proposal-romance.jpg`, `pkg-celebration.jpg` | The four packages |
+   | `service-room-decor.jpg`, `service-birthday-hamper.jpg`, `service-custom-hamper.jpg` | Room decor and the hampers (services page and home) |
+   | `style-table-chairs.jpg`, `style-dome.jpg` | The table & chair setup and the dome picnic (picnic styles) |
    | `occasion-proposal.jpg`, `occasion-birthday.jpg`, … | The top of each occasion page (any name from `src/content/occasions/`) |
    | `gallery/proposal/` (a folder) with any photos inside | Gallery photos for that occasion. Make one folder per occasion |
 
@@ -410,17 +496,24 @@ https://blushpicnic.com/policies once and confirm every line is right.**
 - [ ] **Accepted payment methods** (still a placeholder on /policies).
 - [ ] **About page**: your story in your own words (3–4 short paragraphs) and a photo of you (`about.jpg`).
 - [ ] **More real photos**: packages, the other occasions, gallery (home, Birthday and Anniversary are done). Use `npm run photos` (see [Photos](#photos)).
-- [ ] **Add-on prices**: rose bouquets, neon signs, balloon garlands, flower arch, custom cakes, grazing boards, photographer (`addons.yaml`).
+- [ ] **Add-on prices**: balloon garland, fresh flowers, canopy or teepee, music system, charcuterie board, cake, beverages, red carpet walk, candle walkway and glassware still show "Price on request" (`addons.yaml`). The umbrella and helium balloons are priced.
+- [ ] **Glassware and cutlery wording**: the site says glassware is an add-on, the tableware in the setups is styled for the look, and disposable cutlery is available on request. Confirm that's right (`addons.yaml` → glassware → `description`).
+- [ ] **Simple Picnic — what's included?** The site lists a low picnic table, rugs and cushions, tableware, florals and a letter board, for 2 guests and 2 hours. Confirm the list and the length (`packages.yaml` → `simple`).
+- [ ] **Simple Picnic — extra guests**: there's no published price, so the site says "we'll quote extra guests". Give us a number if you'd like one shown (`extraGuestPrice:`).
+- [ ] **Signature Picnic — does it keep $375?** With the Simple Picnic at $250 underneath it, confirm the Signature stays at $375 (+$35 per extra guest) for the umbrella, speaker and games.
+- [ ] **Dome and table & chair prices**: both show "quoted" (`styles.yaml`).
+- [ ] **Travel fee per area**: the site says a travel fee is added by area and confirmed with the quote. Add the number for each area once you've decided (`settings.yaml` → `travel` → `areas`).
+- [ ] **Room decor — pricing and what's included**: nothing is on the site yet beyond the description in `services.yaml`.
+- [ ] **Hampers — pricing and contents**: what's in a birthday hamper, its price, and how a custom hamper is priced.
 - [ ] **Reviews**: real ones only, with the client's permission (`reviews.yaml`).
 - [ ] **GA4 Measurement ID** (`settings.yaml` → `ga4Id`).
 - [ ] **Meta Pixel ID** (`settings.yaml` → `metaPixelId`).
 - [ ] **Privacy policy review**: have it checked, then fill in: the date it takes effect, who handles privacy questions, where your email and hosting providers store data (`privacy.md`).
 - [ ] **How long you keep booking emails and records** (retention period, `privacy.md`).
-- [ ] **Celebration package — what's included?** Does it include the Signature basics (low table, rugs and cushions, tableware and glassware, florals, letter board, speaker)? If yes, add `includesFrom: "Everything in the Signature Picnic, plus:"` to `celebration` in `packages.yaml` — the comparison table on /packages then shows ticks instead of "Ask us".
+- [ ] **Celebration package — what's included?** Does it include the Signature basics (low table, rugs and cushions, tableware, florals, letter board, umbrella, speaker, games)? If yes, add `includesFrom: "Everything in the Signature Picnic, plus:"` to `celebration` in `packages.yaml` — the comparison table on /packages then shows ticks instead of "Ask us".
 - [ ] **Kids and the extra-guest price**: are kids charged the $35 extra-guest rate on the Signature Picnic? For now the booking estimate prices extra adults and says "we'll confirm pricing" for kids.
 - [ ] **Invoices for companies**: do you issue invoices (and do they show HST)? The corporate page only says "tell us if you need an invoice".
 - [ ] **Instagram photo promise**: the About and Privacy pages say you only share photos of a setup if the client says yes (the booking form asks), and that you'll take a photo down on request. Confirm you're happy with that.
-- [ ] **Delivery fee**: your confirmation email lists a delivery charge. The site only says "prices vary by location" — tell us if you'd like the fee explained.
 
 <!-- PLACEHOLDERS:END -->
 

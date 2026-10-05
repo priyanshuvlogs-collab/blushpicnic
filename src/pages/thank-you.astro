@@ -1,17 +1,20 @@
 ---
 // /thank-you — shown after a booking request is sent. Not indexed (and excluded from the sitemap).
-// Personalised from sessionStorage "bp-booking-done" ({ firstName, occasion, ref }) when present;
-// reads fine without JS. A ?ref=BP-… query (e.g. from a no-JS redirect) also shows the reference.
+// Personalised from sessionStorage "bp-booking-done" ({ firstName, occasion, service, ref }) when
+// present; reads fine without JS. A ?ref=BP-… query (e.g. from a no-JS redirect) also shows the reference.
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import { getSettings, getOccasions, money, smsUrl, telUrl, mailUrl } from '../lib/site';
+import { getSettings, getOccasions, getServices, money, smsUrl, telUrl, mailUrl } from '../lib/site';
 import { picnicPhrase } from '../components/occasion/text';
 import hero from '../assets/photos/hero.jpg';
 
 const s = await getSettings();
+// "…planning your proposal picnic" for picnics and proposals; "…your room decor" / "…your custom hamper" otherwise.
 const phrases = Object.fromEntries((await getOccasions()).map((o) => [o.id, picnicPhrase(o)]));
 const phrasesJson = JSON.stringify(phrases).replace(/</g, '\\u003c');
+const servicePhrases = Object.fromEntries((await getServices()).map((x) => [x.id, x.data.name.toLowerCase()]));
+const servicesJson = JSON.stringify(servicePhrases).replace(/</g, '\\u003c');
 
 const next: { title: string; text: string; link?: { href: string; label: string } }[] = [
   {
@@ -24,8 +27,8 @@ const next: { title: string; text: string; link?: { href: string; label: string 
     link: { href: '/policies', label: 'Read our booking policies' },
   },
   {
-    title: 'We style it, you arrive',
-    text: 'The balance is due before your event. On the day we deliver, set up, style and clean up — you just arrive.',
+    title: 'We take care of the day',
+    text: 'The balance is due before your event. Then we deliver — and for picnics and room decor, set up, style and clean up — so you can simply enjoy it.',
   },
 ];
 
@@ -108,7 +111,7 @@ const heroSources = await Promise.all(
 
       <div class="md:border-l md:border-line md:pl-16">
         <h2 class="text-[1.9rem] md:text-[2.3rem]">While you wait</h2>
-        <p class="mt-4 max-w-md text-plum-soft">See recent setups and ideas on Instagram, or take another look at what each package includes.</p>
+        <p class="mt-4 max-w-md text-plum-soft">See recent setups and ideas on Instagram, or take another look at what we offer and what each package includes.</p>
         <ul class="mt-6 grid gap-1">
           <li>
             <a href={s.instagramUrl} rel="noopener" class="link-arrow" data-track="click_instagram">
@@ -116,17 +119,19 @@ const heroSources = await Promise.all(
             </a>
           </li>
           <li><a href="/gallery" class="link-arrow">Browse the gallery<Icon name="arrow-right" size={18} /></a></li>
-          <li><a href="/packages" class="link-arrow">Packages &amp; prices<Icon name="arrow-right" size={18} /></a></li>
+          <li><a href="/services" class="link-arrow">Everything we set up<Icon name="arrow-right" size={18} /></a></li>
+          <li><a href="/packages" class="link-arrow">Picnic packages &amp; prices<Icon name="arrow-right" size={18} /></a></li>
         </ul>
       </div>
     </div>
   </section>
 
-  <span hidden data-thanks-phrases={phrasesJson}></span>
+  <span hidden data-thanks-phrases={phrasesJson} data-thanks-services={servicesJson}></span>
 </BaseLayout>
 
 <script>
   import { loadDone } from '../scripts/booking/storage';
+  import { isPricedService } from '../scripts/booking/estimate';
 
   const done = loadDone();
   const refParam = new URLSearchParams(location.search).get('ref');
@@ -137,14 +142,19 @@ const heroSources = await Promise.all(
   if (nameEl && first) nameEl.textContent = `, ${first}`;
 
   const occEl = document.querySelector<HTMLElement>('[data-thanks-occasion]');
-  const phrasesRaw = document.querySelector<HTMLElement>('[data-thanks-phrases]')?.dataset.thanksPhrases;
-  let phrases: Record<string, string> = {};
-  try {
-    phrases = phrasesRaw ? JSON.parse(phrasesRaw) : {};
-  } catch {
-    /* ignore */
-  }
-  const phrase = done?.occasion ? phrases[done.occasion] : undefined;
+  const dataEl = document.querySelector<HTMLElement>('[data-thanks-phrases]');
+  const parse = (raw: string | undefined): Record<string, string> => {
+    try {
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+  const phrases = parse(dataEl?.dataset.thanksPhrases);
+  const services = parse(dataEl?.dataset.thanksServices);
+  // A picnic or proposal is named after its occasion ("proposal picnic"); any other service after itself.
+  const phrase =
+    done?.service && !isPricedService(done.service) ? services[done.service] : done?.occasion ? phrases[done.occasion] : undefined;
   if (occEl && phrase) {
     occEl.textContent = ` — we can’t wait to start planning your ${phrase}`;
     occEl.hidden = false;

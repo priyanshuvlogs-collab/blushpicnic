@@ -25,8 +25,11 @@ interface Props {
   /** Hide the mobile sticky Book / Text bar (e.g. on /book itself). */
   hideStickyBar?: boolean;
   ogType?: 'website' | 'article';
-  /** Pre-select this occasion/package in the site-wide Book buttons (header, menu, sticky bar). */
-  book?: { occasion?: string; package?: string };
+  /**
+   * Pre-select this service/occasion/package in the site-wide Book buttons (header, menu, sticky
+   * bar). `label` renames the header and menu button (default "Book your picnic").
+   */
+  book?: { service?: string; occasion?: string; package?: string; label?: string };
 }
 
 const {

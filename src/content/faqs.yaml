@@ -33,7 +33,7 @@
 
 - id: cost
   question: "How much does a luxury picnic cost?"
-  answer: "Our **Signature Picnic** starts at {price:signature} for {guests:signature} (+{extraGuest:signature} per extra guest), **Proposal & Romance** starts at {price:proposal-romance} for {guests:proposal-romance}, and **Celebration** starts at {price:celebration} for {guests:celebration}. All prices are starting prices, before HST, and vary by location. See [all packages](/packages)."
+  answer: "Our **Simple Picnic** starts at {price:simple} for {guests:simple}, the **Signature Picnic** at {price:signature} for {guests:signature} (+{extraGuest:signature} per extra guest), **Proposal & Romance** at {price:proposal-romance} for {guests:proposal-romance}, and **Celebration** at {price:celebration} for {guests:celebration}. All prices are starting prices, before HST, and vary by location, and a travel fee is added by area. See [all packages](/packages)."
   category: pricing
   order: 1
   showOnHome: true
@@ -44,6 +44,12 @@
   category: pricing
   order: 2
 
+- id: travel-fee
+  question: "Is there a travel fee?"
+  answer: "{travelNote} {locationNote} The booking form asks which area you're in, so your quote is right from the start."
+  category: pricing
+  order: 2.5
+
 - id: hst
   question: "Is HST included?"
   answer: "No — all prices on our site are before HST."
@@ -52,19 +58,25 @@
 
 - id: extra-guests
   question: "Can I add more guests?"
-  answer: "Yes. The Signature Picnic is {extraGuest:signature} per extra guest, before HST. The Celebration package covers {guests:celebration}, and we'll quote larger groups. For the Proposal & Romance package, tell us who's joining and we'll include them in your quote."
+  answer: "Yes. The Signature Picnic is {extraGuest:signature} per extra guest, before HST. On the Simple Picnic and Proposal & Romance, tell us who's joining and we'll quote the extra guests. The Celebration package covers {guests:celebration}, and we'll quote larger groups."
   category: pricing
   order: 4
 
 - id: whats-included
   question: "What's included in a picnic?"
-  answer: "We deliver, set up, style and clean up. The Signature Picnic includes a low table, rugs, cushions, tableware, glassware, florals, a letter board message, a Bluetooth speaker and games. The other packages build on it — see [packages](/packages)."
+  answer: "We deliver, set up, style and clean up. The Simple Picnic includes a low picnic table, rugs and cushions, tableware, florals and a letter board with your message. The Signature Picnic adds a fringe umbrella, a Bluetooth speaker and games, and the other packages build on it — see [packages](/packages). Glassware is an add-on: the tableware in our setups is styled for the look, and disposable cutlery is available on request."
   category: the-day
   order: 1
 
+- id: picnic-styles
+  question: "Can we have a table and chairs, or a dome picnic?"
+  answer: "Yes. The classic low table with rugs and cushions comes with every package. A table & chair setup or a dome picnic can be chosen in the booking form, and we quote it with your request."
+  category: the-day
+  order: 1.5
+
 - id: food
   question: "Is food included?"
-  answer: "Food isn't part of the packages, so you're welcome to bring your own. You can also add a grazing board or a custom cake when you book — just tick them in the form, along with any allergies."
+  answer: "Food isn't part of the packages, so you're welcome to bring your own. You can also add a charcuterie board, a cake or beverages when you book — just tick them in the form, along with any allergies."
   category: the-day
   order: 2
   showOnHome: true
@@ -77,7 +89,7 @@
 
 - id: duration
   question: "How long is a picnic?"
-  answer: "The Signature Picnic is {hours:signature}, Proposal & Romance is {hours:proposal-romance}, and Celebration is {hours:celebration}. Extra time is subject to availability, must be requested before your booking ends, and has an additional charge."
+  answer: "The Simple Picnic is {hours:simple}, the Signature Picnic {hours:signature}, Proposal & Romance {hours:proposal-romance}, and Celebration {hours:celebration}. Extra time is subject to availability, must be requested before your booking ends, and has an additional charge."
   category: the-day
   order: 4
 
@@ -86,6 +98,24 @@
   answer: "Full payment is due before your event begins — we start setting up once payment is complete."
   category: booking
   order: 5
+
+- id: room-decor
+  question: "Do you do room decor?"
+  answer: "Yes. We style birthdays, anniversaries and proposals in a room — at home, in a hotel or in a rental — in your colours, with your words. See [room decor](/room-decor), or choose it as the first question of the [booking form](/book)."
+  category: booking
+  order: 6
+
+- id: birthday-hampers
+  question: "Do you deliver birthday hampers?"
+  answer: "Yes. We put a birthday hamper together for them and deliver it at midnight or during the day, anywhere in {serviceArea}. See [hampers](/hampers), and choose the delivery time in the booking form."
+  category: booking
+  order: 7
+
+- id: custom-hampers
+  question: "What about a custom hamper?"
+  answer: "Something specific in mind? DM us your vision on Instagram at {instagram}, or describe it in the [booking form](/book), and we'll put the hamper together and quote it."
+  category: booking
+  order: 8
 
 - id: late
   question: "What if we're running late?"

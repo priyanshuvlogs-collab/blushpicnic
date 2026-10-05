@@ -1,7 +1,8 @@
 ---
 // "What each package includes" — an accessible comparison table built entirely from packages.yaml.
 // A package whose includesFrom line names another package ("Everything in the Signature Picnic,
-// plus:") inherits that package's list. Rows appear in the order packages introduce them.
+// plus:") inherits that package's list, and whatever that package inherits in turn (Proposal &
+// Romance → Signature → Simple). Rows appear in the order packages introduce them.
 import Icon from '../Icon.astro';
 import { getSettings, getPackages, money, hours, bookUrl, type Package } from '../../lib/site';
 
@@ -9,17 +10,23 @@ const s = await getSettings();
 const pkgs = await getPackages();
 const norm = (t: string) => t.trim().toLowerCase();
 
-const effective = new Map<string, Set<string>>();
-for (const p of pkgs) {
-  const set = new Set(p.data.includes.map(norm));
+// The package an includesFrom line names (the first other package whose name it contains).
+const parentOf = (p: Package) => {
   const from = p.data.includesFrom?.toLowerCase();
-  if (from) {
-    for (const other of pkgs) {
-      if (other.id !== p.id && from.includes(other.data.name.toLowerCase())) other.data.includes.forEach((i) => set.add(norm(i)));
-    }
-  }
+  return from ? pkgs.find((o) => o.id !== p.id && from.includes(o.data.name.toLowerCase())) : undefined;
+};
+const effective = new Map<string, Set<string>>();
+const resolve = (p: Package, trail: string[] = []): Set<string> => {
+  const done = effective.get(p.id);
+  if (done) return done;
+  const set = new Set(p.data.includes.map(norm));
+  const parent = parentOf(p);
+  // a cycle (A inherits B inherits A) would loop forever: stop at a package already on the trail
+  if (parent && !trail.includes(parent.id)) resolve(parent, [...trail, p.id]).forEach((i) => set.add(i));
   effective.set(p.id, set);
-}
+  return set;
+};
+for (const p of pkgs) resolve(p);
 
 const rows: string[] = [];
 const seen = new Set<string>();

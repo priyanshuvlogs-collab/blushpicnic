@@ -1,7 +1,8 @@
 # Getting found on Google: your checklist
 
 The website is already built to rank locally: fast pages, one page per occasion
-("proposal picnic Toronto", "baby shower picnic Toronto"…), structured data that tells Google
+("proposal picnic Toronto", "baby shower picnic Toronto"…), a page per service (`/services`,
+`/room-decor`, `/hampers`), structured data that tells Google
 you're a local business serving the GTA, a sitemap, and clean addresses. What's left is done
 outside the website, mostly once. Tick things off as you go.
 
@@ -34,15 +35,16 @@ Go to **business.google.com** and create (or claim) **Blush Picnic**.
 - [ ] **Hours:** the hours you actually answer messages and book (people see "Open now").
 - [ ] **Description** (750 characters max): what you do, where, for which occasions, in plain
   words. You can adapt the "About" page text.
-- [ ] **Products:** add each package as a product: Signature Picnic, Proposal & Romance,
+- [ ] **Products:** add each package as a product: Simple Picnic, Signature Picnic, Proposal & Romance,
   Celebration, with a real photo, the "starting at" price **before HST** (as on /packages), and a
-  link to `https://blushpicnic.com/packages`.
+  link to `https://blushpicnic.com/packages`. Add room decor and birthday hamper delivery as services,
+  linking to `https://blushpicnic.com/room-decor` and `https://blushpicnic.com/hampers`.
 - [ ] **Photos:** add real setups regularly (aim for a few new ones every month), plus your logo
   (`public/logo.png`) and a cover photo. Real photos only.
 - [ ] **Posts:** a short post every week or two: a recent setup, a seasonal idea, a new add-on.
   Use the "Book" button pointing to `/book`.
-- [ ] **Messages / Q&A:** turn on chat only if you'll answer within a day. Your website promises
-  replies within 24 hours.
+- [ ] **Messages / Q&A:** turn on chat only if you'll answer as fast as the website promises: a reply
+  within 5 hours (`settings.yaml` → `replyTime`).
 
 ## 2. Reviews: ask every happy client
 
@@ -88,7 +90,8 @@ Google cross-checks your details across the internet. Use exactly:
   was made for visitors from your bio: big buttons for booking, packages, texting you and the
   gallery, fast on phones.
 - [ ] In story links and posts, link straight to the right page, e.g.
-  `https://blushpicnic.com/proposal-picnic-toronto` or `https://blushpicnic.com/book?occasion=birthday`.
+  `https://blushpicnic.com/proposal-picnic-toronto`, `https://blushpicnic.com/book?occasion=birthday`,
+  `https://blushpicnic.com/room-decor` or `https://blushpicnic.com/hampers`.
 
 ## 5. Google Search Console and Bing
 

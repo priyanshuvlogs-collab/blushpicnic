@@ -36,7 +36,7 @@ final class Emails
             $actions[] = self::button($b->mapsUrl(), 'Map', false);
         }
 
-        $sub = implode(' · ', array_filter([$b->occasionName(), $b->dateLabel(), 'from ' . $b->clientName()], 'strlen'));
+        $sub = self::subline($b);
 
         $html = ($spamNote !== '' ? self::notice(self::spamNoticeText($spamNote)) : '')
             . self::h1('New booking request')
@@ -58,8 +58,14 @@ final class Emails
         $footer = 'Sent by the booking form on ' . self::e(self::host($b->business['url'])) . '. '
             . 'Hit reply to answer ' . self::e($first !== '' ? $first : 'the client') . ' directly.';
 
-        $preheader = implode(' · ', array_filter([$b->packageName(), $b->timeLabel(), $b->guestsLabel(), $b->answers->get('location')], 'strlen'));
+        $preheader = implode(' · ', array_filter([$b->packageName(), $b->timeLabel(), $b->deliverySlot(), $b->guestsLabel(), $b->place()], 'strlen'));
         return self::layout($b->businessSubject(), $preheader, $html, $footer, $b->business['url'] ?? 'https://blushpicnic.com');
+    }
+
+    /** "Room decor · Birthday · Sat Jun 13, 2026 · from Priya Sharma" (the service is left out for a plain picnic, as in the subject). */
+    private static function subline(Booking $b): string
+    {
+        return implode(' · ', array_filter([...$b->headlineParts(), $b->dateLabel(), 'from ' . $b->clientName()], 'strlen'));
     }
 
     public static function businessText(Booking $b, string $spamNote = ''): string
@@ -70,7 +76,7 @@ final class Emails
             $out[] = '';
         }
         $out[] = 'NEW BOOKING REQUEST — ' . $b->ref;
-        $out[] = implode(' · ', array_filter([$b->occasionName(), $b->dateLabel(), 'from ' . $b->clientName()], 'strlen'));
+        $out[] = self::subline($b);
         $out[] = '';
         foreach ($b->summaryRows(true) as [$label, $value]) {
             $out[] = $label . ': ' . $value;
@@ -123,7 +129,7 @@ final class Emails
 
         $html = self::label('Request received')
             . self::h1($first !== '' ? 'Thank you, ' . $first . '.' : 'Thank you.')
-            . self::p('We’ve received your picnic request. Here’s a summary:', 'margin:10px 0 18px;')
+            . self::p(self::e('We’ve received your ' . $b->requestNoun() . '. Here’s a summary:'), 'margin:10px 0 18px;')
             . self::rows($b->summaryRows(false))
             . self::h2('What happens next')
             . self::steps($steps)
@@ -146,7 +152,7 @@ final class Emails
         $out = [];
         $out[] = $first !== '' ? "Thank you, {$first}." : 'Thank you.';
         $out[] = '';
-        $out[] = 'We’ve received your picnic request. Here’s a summary:';
+        $out[] = 'We’ve received your ' . $b->requestNoun() . '. Here’s a summary:';
         $out[] = '';
         foreach ($b->summaryRows(false) as [$label, $value]) {
             $out[] = $label . ': ' . $value;
@@ -171,6 +177,7 @@ final class Emails
 
     /**
      * The client's "What happens next": the two deposits are separate steps so they can't be read as one.
+     * The last step says what we do: set up a picnic or a room, or deliver a hamper at the time they chose.
      *
      * @return list<array{0:string,1:string,2:bool}> [title, text, end with the policies link]
      */
@@ -178,11 +185,14 @@ final class Emails
     {
         $biz = $b->business;
         $security = $biz['securityDepositSummary'];
+        $last = $b->isHamper()
+            ? ['We deliver your hamper', 'We put it together and deliver it at the time you chose.']
+            : ['We set up, you arrive', 'We deliver, set up, style and clean up — you just arrive.'];
         return array_values(array_filter([
             ['We reply with your quote', sprintf('We’ll get back to you %s with availability and your quote.', $biz['replyTime']), false],
             ['Your booking deposit', $biz['bookingDepositSummary'], $security === ''],
             $security !== '' ? ['Your security deposit', $security, true] : null,
-            ['We set up, you arrive', 'We deliver, set up, style and clean up — you just arrive.', false],
+            [$last[0], $last[1], false],
         ]));
     }
 

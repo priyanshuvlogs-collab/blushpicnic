@@ -1,5 +1,6 @@
 ---
-// /book — the booking request form. Deep links pre-fill it: /book?occasion=proposal&package=proposal-romance
+// /book — the booking request form for every service (picnics, proposals, room decor, hampers).
+// Deep links pre-fill it: /book?service=room-decor, /book?occasion=proposal&package=proposal-romance
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import BookingForm from '../components/book/BookingForm.astro';
@@ -8,8 +9,8 @@ import { breadcrumbs } from '../lib/schema';
 
 const s = await getSettings();
 const crumbs = [{ name: 'Book', path: '/book' }];
-const title = 'Book a Luxury Picnic in Toronto | Blush Picnic';
-const description = `Request a luxury picnic in Toronto or the GTA. Choose your occasion, package, date and spot, and we reply ${s.replyTime} with availability and a quote.`;
+const title = 'Book a Picnic, Room Decor or Hamper in Toronto | Blush Picnic';
+const description = `Request a luxury picnic, room decor or a hamper delivery in Toronto or the GTA. Tell us what you’d like, the date and where, and we reply ${s.replyTime} with availability and a quote.`;
 ---
 <BaseLayout {title} {description} jsonLd={[breadcrumbs(s, crumbs)]} hideStickyBar>
   <Fragment slot="head">
@@ -31,9 +32,9 @@ const description = `Request a luxury picnic in Toronto or the GTA. Choose your 
     <header class="book-hero">
       <div class="book-hero-arch" aria-hidden="true"></div>
       <p class="hero-enter label-caps book-hero-label">Booking request</p>
-      <h1 class="hero-enter book-hero-title">Let’s plan your picnic</h1>
+      <h1 class="hero-enter book-hero-title">Let’s plan your moment</h1>
       <p class="hero-enter-delay book-hero-lede">
-        Tell us the occasion, the date and the spot. We reply {s.replyTime} with availability and your quote — no payment is taken here.
+        Tell us what you’d like, the date and where. We reply {s.replyTime} with availability and your quote — no payment is taken here.
       </p>
       <p class="hero-enter-delay book-hero-text">
         Rather text? <a href={smsUrl(s)} data-track="click_text">Text {s.phoneDisplay}</a>

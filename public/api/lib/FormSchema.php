@@ -7,6 +7,14 @@ namespace Blush;
 
 final class FormSchema
 {
+    /** Services (services.yaml ids) that book a picnic package: the ones with a package, guests and a picnic location. */
+    public const PICNIC_SERVICES = ['picnics', 'proposals'];
+    /** Services that are delivered (a delivery slot and address instead of a setup time and place). */
+    public const HAMPER_SERVICES = ['birthday-hampers', 'custom-hampers'];
+    /** The two "area" answers after the travel areas (AREA_OTHER / AREA_UNSURE in src/lib/form.ts); neither has a fee. */
+    public const AREA_OTHER = 'Somewhere else in the GTA';
+    public const AREA_UNSURE = 'Not sure yet';
+
     /** @var array<string, array{0: array<string,mixed>, 1: array<string,mixed>}> field id => [group, field] */
     private array $fieldIndex = [];
 
@@ -37,6 +45,15 @@ final class FormSchema
             if (!is_string($v) || trim($v) === '') {
                 throw new \RuntimeException("form-schema.json has no business.{$k} (rebuild the site: src/lib/form.ts writes it from settings.yaml)");
             }
+        }
+        // The service question, picnic styles and travel areas (services.yaml, styles.yaml, settings.yaml → travel).
+        foreach (['services', 'styles'] as $k) {
+            if (!is_array($data[$k] ?? null) || !array_is_list($data[$k])) {
+                throw new \RuntimeException("form-schema.json has no {$k} list (rebuild the site: src/lib/form.ts writes it from {$k}.yaml)");
+            }
+        }
+        if (!is_array($data['travel'] ?? null) || !is_array($data['travel']['areas'] ?? null)) {
+            throw new \RuntimeException('form-schema.json has no travel.areas (rebuild the site: src/lib/form.ts writes it from settings.yaml)');
         }
         return new self($data);
     }
@@ -77,11 +94,68 @@ final class FormSchema
         return $this->find('addons', $id);
     }
 
+    /** One of what the business offers (services.yaml): {id, name, short, dm}. @return array<string,mixed>|null */
+    public function service(string $id): ?array
+    {
+        return $this->find('services', $id);
+    }
+
+    /** A picnic style (styles.yaml): {id, name, price, included}. @return array<string,mixed>|null */
+    public function style(string $id): ?array
+    {
+        return $this->find('styles', $id);
+    }
+
+    /** @return list<array<string,mixed>> services in display order */
+    public function services(): array
+    {
+        return array_values(array_filter((array) ($this->data['services'] ?? []), 'is_array'));
+    }
+
+    /** @return list<array<string,mixed>> picnic styles in display order */
+    public function styles(): array
+    {
+        return array_values(array_filter((array) ($this->data['styles'] ?? []), 'is_array'));
+    }
+
+    /**
+     * Travel fee by area (settings.yaml → travel). fee null = quoted by area.
+     *
+     * @return array{note: string, areas: list<array{name: string, fee: float|null}>}
+     */
+    public function travel(): array
+    {
+        $t = is_array($this->data['travel'] ?? null) ? $this->data['travel'] : [];
+        $areas = [];
+        foreach ((array) ($t['areas'] ?? []) as $area) {
+            if (!is_array($area) || !isset($area['name']) || trim((string) $area['name']) === '') {
+                continue;
+            }
+            $fee = $area['fee'] ?? null;
+            $areas[] = ['name' => trim((string) $area['name']), 'fee' => is_numeric($fee) ? (float) $fee : null];
+        }
+        return ['note' => is_string($t['note'] ?? null) ? trim($t['note']) : '', 'areas' => $areas];
+    }
+
+    /** The travel area with this name, or null for "Somewhere else in the GTA", "Not sure yet" and anything unknown. @return array{name: string, fee: float|null}|null */
+    public function travelArea(string $name): ?array
+    {
+        foreach ($this->travel()['areas'] as $area) {
+            if ($area['name'] === $name) {
+                return $area;
+            }
+        }
+        return null;
+    }
+
     /** @return array<string,mixed>|null */
     private function find(string $list, string $id): ?array
     {
+        if ($id === '') {
+            return null;
+        }
         foreach ((array) ($this->data[$list] ?? []) as $item) {
-            if (is_array($item) && ($item['id'] ?? null) === $id) {
+            if (is_array($item) && (string) ($item['id'] ?? '') === $id) {
                 return $item;
             }
         }

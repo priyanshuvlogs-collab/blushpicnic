@@ -1,10 +1,12 @@
 ---
-// Closing call-to-action. Every page ends with one; pass occasion/package to pre-select the form.
+// Closing call-to-action. Every page ends with one; pass service/occasion/package to pre-select the form.
 import Icon from './Icon.astro';
 import { getSettings, bookUrl, smsUrl, smartQuotes } from '../lib/site';
 interface Props {
   title?: string;
   text?: string;
+  /** services.yaml id, e.g. "room-decor" */
+  service?: string;
   occasion?: string;
   package?: string;
   buttonLabel?: string;
@@ -13,6 +15,7 @@ const s = await getSettings();
 const {
   title = 'Tell us about your moment',
   text = `Send a booking request in about three minutes. We reply ${s.replyTime} with availability and your quote.`,
+  service,
   occasion,
   package: pkg,
   buttonLabel = 'Book your picnic',
@@ -30,7 +33,7 @@ const {
       <h2 id="cta-title" class="text-cream">{smartQuotes(title)}</h2>
       <p class="mx-auto mt-4 max-w-xl text-cream/85">{smartQuotes(text)}</p>
       <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <a href={bookUrl({ occasion, package: pkg })} class="btn btn-light btn-lg w-full sm:w-auto" data-track="booking_cta" data-track-location="cta_band" data-astro-prefetch>{buttonLabel}</a>
+        <a href={bookUrl({ service, occasion, package: pkg })} class="btn btn-light btn-lg w-full sm:w-auto" data-track="booking_cta" data-track-location="cta_band" data-astro-prefetch>{buttonLabel}</a>
         <a href={smsUrl(s)} class="btn btn-lg w-full whitespace-nowrap border-cream/60 px-4 text-cream hover:bg-cream hover:text-cocoa sm:w-auto sm:px-[1.9rem]" data-track="click_text"><Icon name="message" size={18} />Text {s.phoneDisplay}</a>
       </div>
       <p class="mt-6 text-sm text-cream/75">Starting prices are {s.taxNote}. {s.locationNote}</p>

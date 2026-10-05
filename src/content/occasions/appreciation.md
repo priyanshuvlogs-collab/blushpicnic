@@ -30,7 +30,7 @@ faqs:
   - q: "Can we mark years of service?"
     a: "Yes. The booking form has a field for a message or years of service, such as “Thank you for 10 years, Sam”, and the letter board can carry it on the day."
   - q: "How do we confirm the booking?"
-    a: "Send a request and we'll reply within 24 hours with availability and your quote. A {deposit} booking deposit holds your date, or {depositPercent} for larger events, with the balance due before the picnic. The booking deposit is non-refundable. A {securityDeposit} refundable security deposit is also required, returned within {securityReturned} after your picnic once everything is collected and checked."
+    a: "Send a request and we'll reply {replyTime} with availability and your quote. A {deposit} booking deposit holds your date, or {depositPercent} for larger events, with the balance due before the picnic. The booking deposit is non-refundable. A {securityDeposit} refundable security deposit is also required, returned within {securityReturned} after your picnic once everything is collected and checked."
 related: ["retirement", "corporate", "birthday"]
 ---
 
@@ -44,14 +44,14 @@ For a team, it's a change of scene that doesn't feel like another meeting. For o
 
 If you're organizing for work, the booking form keeps it simple: who's being honoured, your company name, the message or years of service you'd like to mark, and whether you need an invoice. We deliver, set up and style everything in a park, on a beach or in an indoor venue across the GTA, then pack up and clean up afterwards. Nobody has to stay late folding tables.
 
-**The Signature Picnic** suits a small thank-you. It starts at {price:signature} for {guests:signature} and {hours:signature}, plus {extraGuest:signature} per extra guest, before HST, with a low table, rugs, cushions, tableware, glassware, florals, a letter board, a Bluetooth speaker and games.
+**The Signature Picnic** suits a small thank-you. It starts at {price:signature} for {guests:signature} and {hours:signature}, plus {extraGuest:signature} per extra guest, before HST, with a low table, rugs, cushions, tableware, florals, a letter board, a fringe umbrella, a Bluetooth speaker and games. For a quieter thank-you for two, the Simple Picnic starts at {price:simple}.
 
 **Celebration** is for a bigger team moment: a full themed setup with a backdrop, a balloon garland or flower arch, custom signage and games, starting at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST. For a larger group, we'll quote you. Prices vary by location.
 
-To make it feel even more generous, add a grazing board to share, a custom cake that says thank you on your behalf, or a photographer for the team photo. Every extra is optional, and we'll add it to your quote.
+To make it feel even more generous, add a charcuterie board to share, a cake that says thank you on your behalf, or a balloon garland behind the table for the team photo. Every extra is optional, and we'll add it to your quote.
 
 ## Planning a thank-you
 
 1. **Tell us who it's for.** The person or team, the message, a date and a backup. Three minutes, give or take.
-2. **Get a quote within 24 hours.** A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
+2. **Get a quote {replyTime}.** A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
 3. **Bring them in.** Everything is styled when they arrive, and we take care of the pack-up afterwards.

@@ -4,6 +4,7 @@
 export const STATE_KEY = 'bp-booking-v1';
 export const DONE_KEY = 'bp-booking-done';
 
+/** Every question's answer by field id — including `service`, so a reload restores the whole step 1. */
 export type Answers = Record<string, string | string[]>;
 
 export interface BookingState {
@@ -25,6 +26,8 @@ export interface DoneInfo {
   firstName: string;
   occasion: string;
   occasionName?: string;
+  /** service id (services.yaml), so /thank-you can speak of a hamper or room decor, not a picnic */
+  service?: string;
   ref?: string;
 }
 

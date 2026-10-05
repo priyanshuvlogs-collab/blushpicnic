@@ -11,7 +11,7 @@ hasPlaceholders: true
   • Words in {curly braces} are filled in automatically from src/content/settings.yaml
     (for example {deposit} becomes "$100"), so the numbers always match the rest of the site.
     Available: {deposit} {depositPercent} {depositSummary} {securityDeposit} {securityReturned}
-               {securityDepositSummary} {taxNote} {locationNote} {replyTime}
+               {securityDepositSummary} {taxNote} {locationNote} {travelNote} {replyTime}
                {phone} {text} {email} {instagram} {tiktok} {serviceArea} {name}
   • Keep every heading's id="…" exactly as it is — FAQ answers link to them (/policies#weather).
     You can change the words between <h2 …> and </h2>. A new section needs its own <h2 id="…">.
@@ -36,6 +36,8 @@ Full payment is due before your event begins. We start setting up once payment i
 Every price on our site is a starting price, {taxNote}. HST is added to your quote.
 
 {locationNote} Because we bring everything to you and set up on site, travel and setup differ from place to place.
+
+{travelNote} The booking form asks which area you're in.
 
 Want add-ons or more guests? Tick them or mention them in the [booking form](/book) and we'll include them in your quote.
 

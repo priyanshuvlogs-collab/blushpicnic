@@ -1,16 +1,18 @@
 // Booking form controller (progressive enhancement).
 //
 // Without JS the page is one long form that POSTs to settings.booking.endpoint. With JS it becomes a
-// 4-step flow + Review & send: conditional questions per occasion, inline validation, a live estimate,
-// progress saved in sessionStorage, deep links (/book?occasion=…&package=…) and a fetch() submit that
-// never loses answers when something goes wrong.
+// 4-step flow + Review & send: conditional questions per service and occasion (showIf / lockBy in the
+// data), inline validation, a live estimate, progress saved in sessionStorage, deep links
+// (/book?service=…&occasion=…&package=…) and a fetch() submit that never loses answers when something
+// goes wrong.
 //
 // The questions are data (src/content/booking-form.yaml → buildFormSchema()); this file only knows the
-// handful of structural ids the brief defines: occasion, package, date, guests_adults, guests_kids,
-// addons, name, email.
+// handful of structural ids the brief defines: service, occasion, package, date, guests_adults,
+// guests_kids, picnic_style, area, addons, name, email.
 import type { ResolvedField, ResolvedGroup } from '../../lib/form';
 import type { BookingConfig } from './config';
-import { computeEstimate, money, type Estimate } from './estimate';
+import { showIfConditions, showIfMatches, lockedValue } from './conditions';
+import { computeEstimate, money, QUOTE_HEADLINE, type Estimate } from './estimate';
 import { validateField, torontoToday, wordCount } from './validate';
 import { loadState, saveState, clearState, saveDone, type BookingState, type Answers } from './storage';
 
@@ -89,9 +91,14 @@ export function initBooking(root: HTMLElement): void {
   const entries = new Map<string, Entry>();
   for (const group of schema.groups) for (const field of group.fields) entries.set(field.id, { field, group });
   const occasionsById = new Map(schema.occasions.map((o) => [o.id, o]));
+  const servicesById = new Map(schema.services.map((x) => [x.id, x]));
   const packageIds = new Set(schema.packages.map((p) => p.id));
-  const showIfSources = new Set(schema.groups.flatMap((g) => g.fields.map((f) => f.showIf?.field ?? '')).filter(Boolean));
-  const estimateSources = new Set(['package', 'guests_adults', 'guests_kids', 'addons']);
+  // Answers other questions depend on (showIf / lockBy), plus the occasion (its group decides step 3).
+  const conditionSources = new Set([
+    'occasion',
+    ...schema.groups.flatMap((g) => g.fields.flatMap((f) => [...showIfConditions(f.showIf).map((c) => c.field), f.lockBy?.field ?? ''])).filter(Boolean),
+  ]);
+  const estimateSources = new Set(['service', 'package', 'guests_adults', 'guests_kids', 'picnic_style', 'area', 'addons']);
   const serverErrors = new Map<string, string>();
 
   const stepEls = new Map<number, HTMLElement>();
@@ -168,35 +175,67 @@ export function initBooking(root: HTMLElement): void {
   const groupApplies = (g: ResolvedGroup, occ?: Occasion) =>
     g.appliesTo.includes('*') || (!!occ && g.appliesTo.includes(occ.formGroup));
 
+  /** Does this question apply (shown, validated and submitted)? A locked question applies too — it's only hidden. */
   function applies(e: Entry, occ = currentOccasion(), depth = 0): boolean {
     const { field: f, group: g } = e;
     if (!groupApplies(g, occ)) return false;
     if (f.onlyFor && !(occ && f.onlyFor.includes(occ.id))) return false;
-    if (f.showIf) {
-      const dep = entries.get(f.showIf.field);
+    // Every condition must hold, and each one's question must itself apply.
+    for (const c of showIfConditions(f.showIf)) {
+      const dep = entries.get(c.field);
       if (!dep || depth > 5 || !applies(dep, occ, depth + 1)) return false;
       const v = readValue(dep.field);
-      const vals = (Array.isArray(v) ? v : [v]).filter(Boolean);
-      return f.showIf.equals === undefined ? vals.length > 0 : vals.includes(f.showIf.equals);
+      if (!showIfMatches(c, Array.isArray(v) ? v : [v])) return false;
     }
     return true;
   }
 
-  /** Show/enable only the questions that apply. Disabled controls are neither validated nor submitted. */
+  /**
+   * The answer a lockBy forces on this question right now (e.g. service "proposals" → occasion
+   * "proposal"), or null when it's the visitor's to answer. Only values the question actually offers
+   * can lock it, so a typo in the data never hides a question with an answer the server would refuse.
+   */
+  function lockOf(e: Entry): string | null {
+    const lock = e.field.lockBy;
+    if (!lock) return null;
+    const dep = entries.get(lock.field);
+    if (!dep || !applies(dep)) return null;
+    const v = lockedValue(lock, readValue(dep.field));
+    return v !== null && (!e.field.options || e.field.options.some((o) => o.value === v)) ? v : null;
+  }
+
+  /** Write every locked answer (before anything that depends on it, like the occasion's step-3 groups, is evaluated). */
+  function applyLocks(): void {
+    for (const e of entries.values()) {
+      const v = lockOf(e);
+      if (v !== null && textOf(e.field.id) !== v) writeValue(e.field, v);
+    }
+  }
+
+  /**
+   * Show/enable only the questions that apply. Disabled controls are neither validated nor submitted.
+   * A locked question stays enabled (its answer is sent and checked) but its wrapper is hidden.
+   */
   function applyConditions() {
+    applyLocks();
     const occ = currentOccasion();
     for (const g of schema.groups) {
       let visible = 0;
       for (const f of g.fields) {
-        const on = applies({ field: f, group: g }, occ);
-        if (on) visible++;
+        const e = { field: f, group: g };
+        const on = applies(e, occ);
+        const locked = on && lockOf(e) !== null;
+        if (on && !locked) visible++;
         const wrap = wrapOf(f.id);
-        if (wrap) wrap.hidden = !on;
+        if (wrap) {
+          wrap.hidden = !on || locked;
+          wrap.dataset.locked = locked ? 'true' : 'false';
+        }
         for (const c of controlsOf(f.id)) {
           c.disabled = !on;
           if (f.required) c.required = on;
         }
-        if (!on) setError(f.id, null);
+        if (!on || locked) setError(f.id, null);
       }
       const gEl = form!.querySelector<HTMLElement>(`[data-group="${CSS.escape(g.id)}"]`);
       if (gEl) gEl.hidden = visible === 0;
@@ -204,6 +243,9 @@ export function initBooking(root: HTMLElement): void {
     root.querySelectorAll<HTMLElement>('[data-suggested-for]').forEach((b) => {
       b.hidden = !occ?.recommendedPackage || b.dataset.suggestedFor !== occ.recommendedPackage;
     });
+    // "Prefer Instagram? DM us" under the service chooser, for the chosen service only.
+    const service = textOf('service');
+    root.querySelectorAll<HTMLElement>('[data-dm-for]').forEach((p) => p.classList.toggle('is-shown', p.dataset.dmFor === service));
   }
 
   // ───────────────────────── Errors ─────────────────────────
@@ -502,32 +544,49 @@ export function initBooking(root: HTMLElement): void {
   const estimatePackages = schema.packages.map((p) => ({ ...p, guestsLabel: cfg.guestsLabels[p.id] }));
 
   function currentEstimate(): Estimate {
-    const num = (id: string) => {
+    // Only answers to questions that currently apply count (a package picked before switching to
+    // room decor is still checked, but it's disabled and never sent).
+    const applying = (id: string) => {
       const e = entries.get(id);
-      if (!e || !applies(e)) return null;
+      return !!e && applies(e);
+    };
+    const num = (id: string) => {
+      if (!applying(id)) return null;
       const n = parseInt(textOf(id), 10);
       return Number.isFinite(n) ? n : null;
     };
-    const addons = entries.get('addons');
+    const text = (id: string) => (applying(id) ? textOf(id) : '');
     return computeEstimate(
-      { packages: estimatePackages, addons: schema.addons },
+      { packages: estimatePackages, addons: schema.addons, styles: schema.styles, travel: schema.travel },
       {
-        packageId: textOf('package'),
+        service: text('service'),
+        packageId: text('package'),
         adults: num('guests_adults'),
         kids: num('guests_kids'),
-        addons: addons && applies(addons) ? (valueOf('addons') as string[]) : [],
+        addons: applying('addons') ? (valueOf('addons') as string[]) : [],
+        styleId: text('picnic_style'),
+        area: text('area'),
       },
     );
   }
 
   const shortEstimate = (est: Estimate) =>
-    est.kind === 'priced' ? `Starting at ${money(est.total ?? 0)}` : est.kind === 'recommend' ? 'We’ll recommend a package' : 'Choose a package';
+    est.kind === 'priced'
+      ? `Starting at ${money(est.total ?? 0)}`
+      : est.kind === 'quote'
+        ? QUOTE_HEADLINE
+        : est.kind === 'recommend'
+          ? 'We’ll recommend a package'
+          : 'Choose a package';
 
   function renderEstimate(box: HTMLElement, est: Estimate) {
     const nodes: Node[] = [];
     const sub = est.minPrice !== null ? h('p', { class: 'bk-est-sub' }, `Packages start at ${money(est.minPrice)}, ${cfg.taxNote}.`) : null;
     if (est.kind === 'priced') {
       nodes.push(h('p', { class: 'bk-est-kicker' }, 'Starting at'), h('p', { class: 'bk-est-total' }, money(est.total ?? 0)));
+    } else if (est.kind === 'quote') {
+      // Room decor and hampers: no package price, so no "Packages start at" either.
+      nodes.push(h('p', { class: 'bk-est-total is-text' }, QUOTE_HEADLINE));
     } else if (est.kind === 'recommend') {
       nodes.push(h('p', { class: 'bk-est-total is-text' }, 'We’ll recommend a package'));
       if (sub) nodes.push(sub);
@@ -630,9 +689,13 @@ export function initBooking(root: HTMLElement): void {
     statusBox.hidden = true;
   }
 
+  const currentService = () => servicesById.get(textOf('service'));
+
   function smsHref(): string {
     const date = textOf('date');
     const lines = [cfg.smsBody + (date ? formatDate(date) : '')];
+    const svc = currentService();
+    if (svc) lines.push(`For: ${svc.name}`);
     const occ = currentOccasion();
     if (occ) lines.push(`Occasion: ${occ.name}`);
     const name = textOf('name');
@@ -752,9 +815,10 @@ export function initBooking(root: HTMLElement): void {
       }
     }
     const occ = currentOccasion();
+    const what = [currentService()?.name, occ?.name].filter(Boolean).join(' · ') || 'Booking';
     const body: Record<string, unknown> = {
       access_key: cfg.web3formsAccessKey,
-      subject: `New booking request: ${occ?.name ?? 'Picnic'} — ${textOf('name')}`,
+      subject: `New booking request: ${what} — ${textOf('name')}`,
       from_name: `${cfg.businessName} website`,
       replyto: textOf('email'),
       ...answers,
@@ -784,9 +848,12 @@ export function initBooking(root: HTMLElement): void {
   function succeed(ref?: string) {
     done = true;
     const occ = currentOccasion();
-    saveDone({ firstName: textOf('name').split(/\s+/)[0] ?? '', occasion: occ?.id ?? '', occasionName: occ?.name, ref });
+    const service = textOf('service');
+    const pkgEntry = entries.get('package');
+    const pkg = pkgEntry && applies(pkgEntry) ? textOf('package') : '';
+    saveDone({ firstName: textOf('name').split(/\s+/)[0] ?? '', occasion: occ?.id ?? '', occasionName: occ?.name, service, ref });
     clearState();
-    track('booking_submit', { occasion: occ?.id ?? '', package: textOf('package') });
+    track('booking_submit', { service, occasion: occ?.id ?? '', package: pkg });
     primaryLabel!.textContent = 'Sent';
     announce('Request sent. Taking you to the confirmation page…');
     window.location.assign(cfg.thankYouUrl);
@@ -836,7 +903,8 @@ export function initBooking(root: HTMLElement): void {
     if (!wrap || !id || !e) return;
     wrap.dataset.dirty = 'true';
     serverErrors.delete(id);
-    if (id === 'occasion' || showIfSources.has(id)) applyConditions();
+    const conditions = conditionSources.has(id);
+    if (conditions) applyConditions();
     if (hasError(id) || (ev.type === 'change' && isChoice(e.field))) {
       setError(id, check(e));
       refreshSummary();
@@ -845,8 +913,11 @@ export function initBooking(root: HTMLElement): void {
       const b = entries.get('backup_date');
       if (b) setError('backup_date', check(b));
     }
+    if (id === 'service' && ev.type === 'change') track('service_select', { service: textOf('service') });
     if (id === 'package' && ev.type === 'change') track('package_select', { package: textOf('package') });
-    if (estimateSources.has(id)) updateEstimate(true);
+    // A condition change can take an answer out of the estimate (e.g. the package, after switching to
+    // room decor), so the estimate follows those too; it only speaks when its text changed.
+    if (estimateSources.has(id) || conditions) updateEstimate(true);
     if (wordLimit(e.field)) updateWordCount(e.field, ev.type === 'input');
     persist();
   }
@@ -919,13 +990,16 @@ export function initBooking(root: HTMLElement): void {
     const e = entries.get(id);
     if (e) writeValue(e.field, v);
   }
-  // 2. Deep link (/book?occasion=proposal&package=proposal-romance) wins over saved answers — once per
-  //    distinct link, so reloading the same URL doesn't undo changes made since.
+  // 2. Deep link (/book?service=room-decor, /book?occasion=proposal&package=proposal-romance) wins over
+  //    saved answers — once per distinct link, so reloading the same URL doesn't undo changes made since.
+  //    An occasion/package link without a service is a picnic link (a proposal link means Proposals).
   if (location.search && location.search !== state.query) {
     const params = new URLSearchParams(location.search);
+    const svc = params.get('service');
     const occ = params.get('occasion');
     const pkg = params.get('package');
     let applied = false;
+    const svcEntry = entries.get('service');
     const occEntry = entries.get('occasion');
     const pkgEntry = entries.get('package');
     if (occ && occasionsById.has(occ) && occEntry) {
@@ -935,6 +1009,15 @@ export function initBooking(root: HTMLElement): void {
     if (pkg && packageIds.has(pkg) && pkgEntry) {
       writeValue(pkgEntry.field, pkg);
       applied = true;
+    }
+    if (svcEntry) {
+      const implied = occ === 'proposal' ? 'proposals' : 'picnics';
+      if (svc && servicesById.has(svc)) {
+        writeValue(svcEntry.field, svc);
+        applied = true;
+      } else if (applied && servicesById.has(implied)) {
+        writeValue(svcEntry.field, implied);
+      }
     }
     state.query = location.search;
     if (applied) state.step = 1;

@@ -14,11 +14,15 @@ const pkgs = await getPackages();
 const featuredId = (pkgs.find((p) => p.data.featured) ?? pkgs[Math.min(1, pkgs.length - 1)]).id;
 // "Book the Signature Picnic" / "Book the Celebration package"; the featured button stays short.
 const bookLabel = (name: string) => `Book the ${name}${/picnic$/i.test(name) ? '' : ' package'}`;
+// "Four ways to picnic" follows packages.yaml (1–9 spelled out, larger counts as digits).
+const WORDS = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+const count = WORDS[pkgs.length - 1] ?? String(pkgs.length);
+const heading = pkgs.length === 1 ? 'One way to picnic, priced in plain sight' : `${count} ways to picnic, priced in plain sight`;
 ---
 <section aria-labelledby="packages-title" class="section-y">
   <div class="container-x">
     <div class="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-10">
-      <h2 id="packages-title" class="max-w-[16ch] lg:col-span-6">Three ways to picnic, priced in plain sight</h2>
+      <h2 id="packages-title" class="max-w-[16ch] lg:col-span-6">{heading}</h2>
       <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
         Every package is delivered, set up, styled and cleared away by us. Each price shows the guests and time it includes — all starting prices, {s.taxNote}.
       </p>

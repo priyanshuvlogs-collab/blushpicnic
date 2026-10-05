@@ -8,8 +8,10 @@ import { getPackages, getSettings, money, hours } from '../../lib/site';
 
 interface Props {
   field: ResolvedField;
+  /** No-JS note when the question depends on the service ("Only for Picnics or Proposals."). */
+  onlyIf?: string;
 }
-const { field: f } = Astro.props;
+const { field: f, onlyIf } = Astro.props;
 const s = await getSettings();
 const pkgs = new Map((await getPackages()).map((p) => [p.id, p]));
 const id = `f-${f.id}`;
@@ -18,6 +20,7 @@ const helpId = f.help ? `${id}-help` : undefined;
 <fieldset class="bk-field is-radio is-package" data-field={f.id} data-type={f.type} aria-describedby={helpId}>
   <legend class="bk-label bk-label-lg">{f.label}{!f.required && <span class="bk-optional"> (optional)</span>}</legend>
   {f.help && <p id={helpId} class="bk-help">{f.help}</p>}
+  {onlyIf && <p class="bk-only-for nojs-only">{onlyIf}</p>}
   <p id={`${id}-error`} class="bk-error" data-field-error hidden>
     <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
     <span data-error-text></span>
@@ -27,7 +30,8 @@ const helpId = f.help ? `${id}-help` : undefined;
       const d = pkgs.get(o.value)?.data;
       return (
         <label class:list={['bk-pkg', !d && 'is-help']} for={`${id}-${i}`}>
-          <input id={`${id}-${i}`} type="radio" name={f.id} value={o.value} required={f.required} class="bk-pkg-input" />
+          {/* Not natively required when it depends on the service, or it would block a no-JS hamper request. */}
+          <input id={`${id}-${i}`} type="radio" name={f.id} value={o.value} required={f.required && !f.showIf} class="bk-pkg-input" />
           <span class="bk-pkg-face">
             <span class="bk-pkg-dot" aria-hidden="true"></span>
             {d && (

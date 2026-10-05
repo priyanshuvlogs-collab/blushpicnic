@@ -110,7 +110,7 @@ final class Handler
         $received = new \DateTimeImmutable('now', new \DateTimeZone(Booking::TZ));
         $booking = new Booking(Booking::newRef($received), $received, $schema, $result);
         $mailer = new Mailer($config, $this->apiDir . '/lib');
-        $logCtx = ['ref' => $booking->ref, 'occasion' => $result->get('occasion'), 'package' => $result->get('package'), 'ip' => substr($ipKey, 0, 12)];
+        $logCtx = ['ref' => $booking->ref, 'service' => $result->get('service'), 'occasion' => $result->get('occasion'), 'package' => $result->get('package'), 'ip' => substr($ipKey, 0, 12)];
         $spamNote = self::SPAM_NOTES[$suspect] ?? '';
         if ($suspect !== '') {
             $logCtx['flag'] = $suspect;
