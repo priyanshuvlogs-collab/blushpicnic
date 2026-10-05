@@ -379,6 +379,7 @@ function assertEmails(ref, payload) {
     const { field, group } = FIELDS.get(id);
     if (id in SUMMARY_ROWS) {
       if (field.type === 'toggle' && value !== 'yes' && value !== true) continue;
+      if (id === 'occasion' && implied) continue; // a locked "Something else" is not a row
       assert.ok(biz.text.includes(`\n${SUMMARY_ROWS[id]}: `), `business summary has "${SUMMARY_ROWS[id]}" for ${id}`);
       assert.ok(!biz.text.includes(`\n${field.label}: `), `"${field.label}" is not repeated below the summary`);
     } else {
@@ -792,6 +793,11 @@ describe('booking handler (file transport)', () => {
         const p = { ...payload };
         delete p[id];
         const r = await post(p);
+        // The server fills a locked occasion from the service (proposals → proposal, hampers → birthday / other).
+        if (id === 'occasion' && lockedOccasion(svc.id)) {
+          assert.equal(r.status, 200, `${svc.id} without occasion is filled in by the lock: ${r.text}`);
+          continue;
+        }
         assert.equal(r.status, 422, `${svc.id} without ${id}: ${r.text}`);
         assert.ok(r.data.errors?.[id], `${svc.id}: errors.${id} present`);
         checked++;
@@ -1042,10 +1048,16 @@ describe('booking handler (file transport)', () => {
     assert.equal(mailFiles().length, before + 2);
   });
 
-  test('plain form post with errors → 303 to /book?error=1', async () => {
+  test('plain form post with errors → 303 to /book?error=invalid (answers to fix, not a failed send)', async () => {
     const r = await post({ ...validPayload('birthday'), email: 'nope' }, { json: false });
     assert.equal(r.status, 303);
-    assert.equal(r.headers.get('location'), '/book?error=1#booking-error');
+    assert.equal(r.headers.get('location'), '/book?error=invalid#booking-error');
+  });
+
+  test('the server applies the occasion lock: a hamper sent with a corporate occasion is filed under Birthday', async () => {
+    const r = await post({ ...validPayload('birthday', { service: 'birthday-hampers' }), occasion: 'corporate' });
+    assert.equal(r.status, 200, r.text);
+    assert.ok(readMail(r.data.ref, 'business').text.includes('\nOccasion: Birthday\n'), 'occasion follows the service');
   });
 
   test('X-Requested-With also gets JSON', async () => {
