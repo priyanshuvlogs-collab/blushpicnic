@@ -42,10 +42,15 @@ const description = `Request a picnic, room decor or a hamper delivery in Toront
     </header>
 
     <div id="booking-error" class="book-error" tabindex="-1" data-booking-error>
-      <p class="book-error-title">Your request didn’t go through</p>
-      <p>
+      <p class="book-error-title" data-error-generic>Your request didn’t go through</p>
+      <p data-error-generic>
         Sorry — something went wrong while sending it. Please try again below, or
         <a href={smsUrl(s)} data-track="click_text">text {s.phoneDisplay}</a> and we’ll take it from there.
+      </p>
+      <p class="book-error-title" data-error-invalid hidden>A few answers are missing</p>
+      <p data-error-invalid hidden>
+        Some questions that need an answer were left blank or didn’t look right. Please go through the form once more and send it again, or
+        <a href={smsUrl(s)} data-track="click_text">text {s.phoneDisplay}</a>.
       </p>
     </div>
 
@@ -55,8 +60,13 @@ const description = `Request a picnic, room decor or a hamper delivery in Toront
 
 <script>
   // The booking handler sends no-JS visitors back to /book?error=1 when sending fails.
-  if (new URLSearchParams(location.search).has('error')) {
+  const error = new URLSearchParams(location.search).get('error');
+  if (error) {
     document.querySelector<HTMLElement>('[data-booking-error]')?.classList.add('is-shown');
+    // error=invalid: unanswered questions, not a failed send
+    const invalid = error === 'invalid';
+    document.querySelectorAll<HTMLElement>('[data-error-generic]').forEach((el) => (el.hidden = invalid));
+    document.querySelectorAll<HTMLElement>('[data-error-invalid]').forEach((el) => (el.hidden = !invalid));
   }
 </script>
 

@@ -10,7 +10,7 @@ import { getSettings, getStyles, money, type Style } from '../../lib/site';
 const s = await getSettings();
 const styles = await getStyles();
 const priceText = (x: Style) =>
-  x.data.included ? 'Included with every package' : x.data.price !== null ? `Starting at ${money(x.data.price)}, ${s.taxNote}` : 'Quoted — choose it in the booking form';
+  x.data.included ? 'Comes with your picnic package' : x.data.price !== null ? `Starting at ${money(x.data.price)}, ${s.taxNote}` : 'Quoted — choose it in the booking form';
 const widths = (x: Style) => [400, 560, 720, 960, 1200].filter((w) => w <= x.data.image.width);
 const anyPriced = styles.some((x) => !x.data.included && x.data.price !== null);
 ---
@@ -20,7 +20,7 @@ const anyPriced = styles.some((x) => !x.data.included && x.data.price !== null);
       <div class="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
         <h2 id="styles-title" class="lg:col-span-6">Picnic styles</h2>
         <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
-          How the picnic is set. Every package comes with the classic low table; choose another setup in the booking form and we’ll include it in your quote.
+          How the picnic is set. The classic low table comes with your picnic package; choose another setup in the booking form and we’ll include it in your quote.
         </p>
       </div>
 

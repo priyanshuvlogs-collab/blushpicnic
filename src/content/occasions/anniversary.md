@@ -26,7 +26,7 @@ faqs:
   - q: "Can you include printed photos of us?"
     a: "Yes. Answer “Yes please” to printed photos in the booking form and send us the photos after booking. Choose “Maybe — tell me more” if you'd like to talk it through first."
   - q: "Is there a simpler option?"
-    a: "Yes. The Signature Picnic starts at {price:signature} for {guests:signature} and {hours:signature}, before HST, with a letter board for your anniversary message instead of a custom sign, rose petals and candles. Lighter still is the Simple Picnic at {price:simple}: the low table, rugs, cushions, tableware, florals and letter board, without the umbrella, speaker and games."
+    a: "Yes. The Signature Picnic starts at {price:signature} for {guests:signature} and {hours:signature}, before HST, with a letter board for your anniversary message instead of a custom sign, rose petals and candles. Lighter still is the Simple Picnic, starting at {price:simple} for {guests:simple}, before HST: the low table, rugs, cushions, tableware, florals and letter board, without the umbrella, speaker and games."
   - q: "Can I plan it without my partner finding out?"
     a: "Absolutely. Mark it as a surprise in the booking form, tell us who else knows and how your partner will arrive, and choose whether our team stays hidden nearby or leaves before you get there."
   - q: "Can we add flowers or a cake?"

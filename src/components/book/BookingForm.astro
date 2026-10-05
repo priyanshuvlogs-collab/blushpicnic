@@ -19,7 +19,9 @@ const pkgs = await getPackages();
 
 const minPrice = Math.min(...pkgs.map((p) => p.data.priceFrom));
 const estimateNote = `Estimate only — starting price ${s.taxNote}. ${s.locationNote}`;
-const depositLine = `${money(s.deposit.standard)} booking deposit holds your date (${s.deposit.largeEventPercent}% for larger events), plus a ${money(s.securityDeposit.amount)} refundable security deposit`;
+const depositLineBooking = `${money(s.deposit.standard)} booking deposit holds your date (${s.deposit.largeEventPercent}% for larger events)`;
+// The refundable security deposit is for rented decor and equipment: services.yaml says which services carry it.
+const depositLine = `${depositLineBooking}, plus a ${money(s.securityDeposit.amount)} refundable security deposit`;
 
 const config: BookingConfig = {
   schema,
@@ -33,6 +35,7 @@ const config: BookingConfig = {
   email: s.email,
   estimateNote,
   depositLine,
+  depositLineBooking,
   taxNote: s.taxNote,
   guestsLabels: Object.fromEntries(pkgs.map((p) => [p.id, p.data.guestsLabel])),
   thankYouUrl: '/thank-you',
@@ -151,8 +154,9 @@ const sameTitle = (a: string, b: string) => a.replace(/'/g, '’').trim() === b.
               <p><strong>This is a request, not a payment.</strong> We reply {s.replyTime} with availability and your quote.</p>
               <p>
                 Once you’re happy, a {money(s.deposit.standard)} booking deposit (or {s.deposit.largeEventPercent}% for larger events) holds your
-                date&nbsp;— it’s non-refundable. There’s also a {money(s.securityDeposit.amount)} refundable security deposit, returned within
-                {s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.
+                date&nbsp;— it’s non-refundable.{' '}
+                <span data-security-deposit>There’s also a {money(s.securityDeposit.amount)} refundable security deposit, returned within
+                {s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.</span>{' '}
                 <a href="/policies" class="bk-link">Read our booking policies</a>
               </p>
             </div>

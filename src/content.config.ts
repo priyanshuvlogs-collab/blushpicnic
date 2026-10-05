@@ -152,6 +152,8 @@ const services = defineCollection({
       imageAlt: z.string().min(10),
       // true: the call to action is an Instagram DM (custom hampers), not the booking form
       dm: z.boolean().default(false),
+      // the refundable security deposit (rented decor and equipment) applies to this service
+      securityDeposit: z.boolean().default(true),
     }),
 });
 

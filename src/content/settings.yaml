@@ -11,7 +11,7 @@ site:
   phoneDisplay: "(647) 878-0539"
   phoneE164: "+16478780539"
   # Pre-written text message for the "Text us" buttons
-  smsBody: "Hi Blush Picnic! I'd love to book a picnic. My date is: "
+  smsBody: "Hi Blush Picnic! I'd love to make a booking. My date is: "
   instagramHandle: "@blush.picnic"
   instagramUrl: "https://www.instagram.com/blush.picnic/"
   tiktokHandle: "@blush.picnic"
@@ -50,7 +50,8 @@ site:
     summary: "A {securityDeposit} refundable security deposit is required for every booking. It’s returned within {securityReturned} after the event, once all rental items are collected and checked."
   taxNote: "before HST"
   locationNote: "Prices vary by location across the GTA. We confirm your exact quote by message."
-  # Travel fee by area, added to every quote (picnics, room decor and hamper deliveries).
+  # Travel fee by area, added to every quote. (You gave it for the Simple Picnic; the site applies it to
+  # every package, room decor and hamper deliveries until you say otherwise — see HANDOVER.md.)
   # Put a number next to an area once you've decided it (numbers only, no $). null shows
   # "quoted by area": the booking estimate then says the travel fee is confirmed in the quote.
   # The booking form lists these areas, plus "Somewhere else in the GTA" and "Not sure yet".

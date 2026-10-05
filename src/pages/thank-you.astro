@@ -14,16 +14,19 @@ const s = await getSettings();
 const phrases = Object.fromEntries((await getOccasions()).map((o) => [o.id, picnicPhrase(o)]));
 const phrasesJson = JSON.stringify(phrases).replace(/</g, '\\u003c');
 const servicePhrases = Object.fromEntries((await getServices()).map((x) => [x.id, x.data.name.toLowerCase()]));
+const noSecurityDeposit = (await getServices()).filter((x) => !x.data.securityDeposit).map((x) => x.id);
 const servicesJson = JSON.stringify(servicePhrases).replace(/</g, '\\u003c');
 
-const next: { title: string; text: string; link?: { href: string; label: string } }[] = [
+const next: { title: string; text: string; security?: string; link?: { href: string; label: string } }[] = [
   {
     title: `We reply ${s.replyTime}`,
     text: 'By text or email, with availability for your date and your quote. If you don’t see it, check your spam folder or text us.',
   },
   {
     title: 'A booking deposit holds your date',
-    text: `Once you’re happy with your quote, a ${money(s.deposit.standard)} booking deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date. It’s non-refundable. There’s also a ${money(s.securityDeposit.amount)} refundable security deposit, returned within ${s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.`,
+    text: `Once you’re happy with your quote, a ${money(s.deposit.standard)} booking deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date. It’s non-refundable.`,
+    // only for services with rented decor (services.yaml securityDeposit); hidden by the script for the others
+    security: `There’s also a ${money(s.securityDeposit.amount)} refundable security deposit, returned within ${s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.`,
     link: { href: '/policies', label: 'Read our booking policies' },
   },
   {
@@ -68,7 +71,7 @@ const heroSources = await Promise.all(
             <span class="ty-num" aria-hidden="true">{i + 1}</span>
             <div>
               <h2 class="ty-step-title">{step.title}</h2>
-              <p class="mt-1.5 text-plum-soft">{step.text}</p>
+              <p class="mt-1.5 text-plum-soft">{step.text}{step.security && <span data-security-deposit> {step.security}</span>}</p>
               {step.link && <a href={step.link.href} class="ty-link">{step.link.label}</a>}
             </div>
           </li>
@@ -126,7 +129,7 @@ const heroSources = await Promise.all(
     </div>
   </section>
 
-  <span hidden data-thanks-phrases={phrasesJson} data-thanks-services={servicesJson}></span>
+  <span hidden data-thanks-phrases={phrasesJson} data-thanks-services={servicesJson} data-thanks-no-security={noSecurityDeposit.join(" ")}></span>
 </BaseLayout>
 
 <script>
@@ -155,6 +158,9 @@ const heroSources = await Promise.all(
   // A picnic or proposal is named after its occasion ("proposal picnic"); any other service after itself.
   const phrase =
     done?.service && !isPricedService(done.service) ? services[done.service] : done?.occasion ? phrases[done.occasion] : undefined;
+  // No security deposit for a hamper (nothing is rented): drop that sentence.
+  const noSecurity = (dataEl?.dataset.thanksNoSecurity ?? '').split(/\s+/).filter(Boolean);
+  if (done?.service && noSecurity.includes(done.service)) document.querySelectorAll<HTMLElement>('[data-security-deposit]').forEach((el) => (el.hidden = true));
   if (occEl && phrase) {
     occEl.textContent = ` — we can’t wait to start planning your ${phrase}`;
     occEl.hidden = false;

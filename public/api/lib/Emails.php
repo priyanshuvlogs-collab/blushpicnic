@@ -184,7 +184,7 @@ final class Emails
     private static function nextSteps(Booking $b): array
     {
         $biz = $b->business;
-        $security = $biz['securityDepositSummary'];
+        $security = $b->hasSecurityDeposit() ? $biz['securityDepositSummary'] : '';
         $last = $b->isHamper()
             ? ['We deliver your hamper', 'We put it together and deliver it at the time you chose.']
             : ['We set up, you arrive', 'We deliver, set up, style and clean up — you just arrive.'];

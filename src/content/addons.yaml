@@ -43,7 +43,7 @@
 - id: helium-balloons
   name: "Helium balloons"
   order: 6
-  description: "Helium balloons in your colours — the price depends on how many."
+  description: "Helium balloons in your colours."
   price: 20
   priceSuffix: ""
 

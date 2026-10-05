@@ -70,6 +70,14 @@ final class Validator
         $values = [];
         $errors = [];
 
+        // The occasion follows the service where the form locks it (proposals → proposal, hampers → birthday /
+        // other), so a hand-made post can't pair a hamper with, say, a corporate occasion.
+        $lock = $this->schema->field('occasion')['lockBy'] ?? null;
+        $service = $this->firstScalar($input['service'] ?? '');
+        if (is_array($lock) && ($lock['field'] ?? '') === 'service' && is_string($lock['values'][$service] ?? null)) {
+            $input['occasion'] = $lock['values'][$service];
+            $this->input = $input;
+        }
         $occasionId = $this->firstScalar($input['occasion'] ?? '');
         $occasion = $occasionId !== '' ? $this->schema->occasion($occasionId) : null;
         $this->occasionId = $occasion ? (string) $occasion['id'] : null;
@@ -171,6 +179,10 @@ final class Validator
         $type = (string) ($field['type'] ?? 'text');
         if ($type === 'checkboxes') {
             return array_values(array_filter(array_map(fn ($v) => $this->clean((string) $v, false), (array) ($raw ?? [])), 'strlen'));
+        }
+        // Two answers to a single-answer question are rejected by check(); for showIf they count as none.
+        if (is_array($raw) && count(array_filter($raw, static fn ($x) => trim((string) $x) !== '')) > 1) {
+            return '';
         }
         $v = $this->clean($this->firstScalar($raw ?? ''), false);
         if ($type === 'toggle') {

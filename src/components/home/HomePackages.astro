@@ -8,10 +8,13 @@ import Icon from '../Icon.astro';
 import PriceTag from '../PriceTag.astro';
 import PackagePhoto from '../packages/PackagePhoto.astro';
 import { getSettings, getPackages, bookUrl } from '../../lib/site';
+import { photoKind } from '../photoNote';
 
 const s = await getSettings();
 const pkgs = await getPackages();
 const featuredId = (pkgs.find((p) => p.data.featured) ?? pkgs[Math.min(1, pkgs.length - 1)]).id;
+// The package pictures are AI illustrations until the owner's photos replace them (one note for the block).
+const aiCount = pkgs.filter((p) => photoKind(p.data.image, p.data.imageAlt) === 'ai').length;
 // "Book the Signature Picnic" / "Book the Celebration package"; the featured button stays short.
 const bookLabel = (name: string) => `Book the ${name}${/picnic$/i.test(name) ? '' : ' package'}`;
 // "Four ways to picnic" follows packages.yaml (1–9 spelled out, larger counts as digits).
@@ -90,6 +93,11 @@ const heading = pkgs.length === 1 ? 'One way to picnic, priced in plain sight' :
       })}
     </div>
 
+    {aiCount > 0 && (
+      <p class="placeholder-note mt-8 max-w-2xl">
+        <strong>AI illustrations —</strong> {aiCount === pkgs.length ? 'the' : 'some of the'} package pictures were created with AI to show the style of each package. Photos from real Blush Picnic setups are coming soon.
+      </p>
+    )}
     <div class="mt-8 flex flex-col gap-2 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
       <p class="max-w-[42rem] text-[0.95rem] text-plum-soft">{s.locationNote}</p>
       <a href="/packages" class="link-arrow shrink-0">Compare packages &amp; add-ons<Icon name="arrow-right" size={18} /></a>

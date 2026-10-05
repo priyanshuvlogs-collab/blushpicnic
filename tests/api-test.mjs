@@ -356,7 +356,9 @@ function assertEmails(ref, payload) {
   assert.match(biz.headers['reply-to'], new RegExp(payload.name.split(' ')[0]), 'business Reply-To carries the client name');
   assert.equal(addressOf(biz.headers.from), CFG.from, 'business From');
   // A picnic or a proposal is named by its occasion; room decor and hampers lead with the service name.
-  const head = picnic ? occ.name : `${svc.name} · ${occ.name}`;
+  // A custom hamper locks the pseudo occasion "other": not the visitor's choice, so it is left out of the subject and rows.
+  const implied = lockedOccasion(svc.id) === 'other' && occ.id === 'other';
+  const head = picnic ? occ.name : implied ? svc.name : `${svc.name} · ${occ.name}`;
   assert.equal(biz.headers.subject, `New booking: ${head} · ${fmtDate(payload.date)} · ${CLIENT.short}`, 'business Subject');
   assert.ok(!/[\r\n]/.test(biz.headers.subject));
 
@@ -389,9 +391,13 @@ function assertEmails(ref, payload) {
       for (const v of [].concat(value)) assert.ok(biz.text.includes(optionLabel(field, v)), `business text shows option label for ${id}=${v}`);
     }
   }
-  assert.ok(biz.text.includes(occ.name));
   for (const m of [biz, cli]) assert.ok(m.text.includes(`\nService: ${svc.name}\n`), 'the Service row comes first in both summaries');
-  assert.ok(biz.text.indexOf('\nService: ') < biz.text.indexOf('\nOccasion: '), 'Service before Occasion');
+  if (implied) {
+    for (const m of [biz, cli]) assert.ok(!m.text.includes('\nOccasion: '), 'no Occasion row for a locked "Something else"');
+  } else {
+    assert.ok(biz.text.includes(occ.name));
+    assert.ok(biz.text.indexOf('\nService: ') < biz.text.indexOf('\nOccasion: '), 'Service before Occasion');
+  }
   assert.ok(biz.text.includes(ref) && biz.html.includes(ref), 'business email has the reference');
   assert.match(biz.text, /\(Toronto time\)/);
   assert.match(biz.text, /STARTING ESTIMATE: (Starting at \$[\d,]+ before HST|To be quoted)/);
@@ -400,7 +406,7 @@ function assertEmails(ref, payload) {
   assert.ok(biz.html.includes('#3B2A26') && biz.html.includes('#F6E6E1'), 'brand colours');
 
   assert.ok(cli.text.includes(`Thank you, ${CLIENT.first}.`));
-  assert.ok(cli.text.includes(occ.name) && cli.text.includes(fmtDate(payload.date)));
+  assert.ok((implied || cli.text.includes(occ.name)) && cli.text.includes(fmtDate(payload.date)));
   if (applicable('start_time', payload)) assert.ok(cli.text.includes('5:30 PM'), 'client copy has the start time');
   if (applicable('delivery_slot', payload)) assert.ok(cli.text.includes(`When it arrives: ${optionLabel(FIELDS.get('delivery_slot').field, payload.delivery_slot)}`), 'client copy has the delivery slot');
   if (payload.area) assert.ok(cli.text.includes(`\nArea: ${payload.area}\n`) && biz.text.includes(`\nArea: ${payload.area}\n`), 'Area row in both');
@@ -408,9 +414,15 @@ function assertEmails(ref, payload) {
   assert.ok(cli.text.includes(`We’ll get back to you ${SCHEMA.business.replyTime} with availability and your quote.`), 'reply time from settings.yaml (via form-schema.json)');
   // The two deposits are separate steps, word for word from settings.yaml (via form-schema.json).
   assert.ok(cli.text.includes(`Your booking deposit\n   ${SCHEMA.deposit.summary}`), 'booking deposit step');
-  assert.ok(cli.text.includes(`Your security deposit\n   ${SCHEMA.securityDeposit.summary}`), 'security deposit step');
-  assert.ok(cli.html.includes(escHtml(SCHEMA.deposit.summary)) && cli.html.includes(escHtml(SCHEMA.securityDeposit.summary)));
-  assert.match(cli.text, /\$100 booking deposit \(or 50% for larger events\) holds your date[\s\S]*\$100 refundable security deposit/);
+  assert.ok(cli.html.includes(escHtml(SCHEMA.deposit.summary)));
+  assert.match(cli.text, /\$100 booking deposit \(or 50% for larger events\) holds your date/);
+  // The security deposit (rented items) only for services that carry it (services.yaml securityDeposit) — not hampers.
+  if (svc.securityDeposit !== false) {
+    assert.ok(cli.text.includes(`Your security deposit\n   ${SCHEMA.securityDeposit.summary}`), 'security deposit step');
+    assert.ok(cli.html.includes(escHtml(SCHEMA.securityDeposit.summary)));
+  } else {
+    assert.ok(!cli.text.includes('security deposit') && !cli.html.includes('security deposit'), `no security deposit for ${svc.name}`);
+  }
   assert.match(cli.text, /non-refundable/);
   assert.ok(cli.text.includes(`${SCHEMA.business.url}/policies`) && cli.html.includes(`href="${SCHEMA.business.url}/policies"`), 'policies link');
   assert.match(cli.text, /\(647\) 878-0539/);
@@ -421,6 +433,11 @@ function assertEmails(ref, payload) {
     if (!payload[id]) continue;
     assert.ok(!cli.raw.includes(payload[id]) && !cli.text.includes(payload[id]) && !cli.html.includes(payload[id]), `client copy has no free-text ${id}`);
     if (applicable(id, payload)) assert.ok(biz.text.includes(`\nLocation: `) && biz.text.includes(payload[id]), `business summary shows the ${id}`);
+  }
+  // …and no free text of any kind: a card message, dietary note, hamper vision, "other" occasion, notes, letter board.
+  for (const [id, { field }] of FIELDS) {
+    if (!['text', 'textarea'].includes(field.type) || ['name', 'email', 'phone', 'instagram'].includes(id) || !payload[id] || id in PLACE) continue;
+    assert.ok(!cli.text.includes(payload[id]) && !cli.html.includes(payload[id]), `client copy has no free-text ${id}`);
   }
   for (const s of ['Budget', 'Starting estimate', 'To quote', 'Possible spam']) assert.ok(!cli.text.includes(s), `client copy has no "${s}"`);
   return { biz, cli };

@@ -207,8 +207,17 @@ export function initBooking(root: HTMLElement): void {
   /** Write every locked answer (before anything that depends on it, like the occasion's step-3 groups, is evaluated). */
   function applyLocks(): void {
     for (const e of entries.values()) {
+      if (!e.field.lockBy) continue;
       const v = lockOf(e);
-      if (v !== null && textOf(e.field.id) !== v) writeValue(e.field, v);
+      const wrap = wrapOf(e.field.id);
+      if (v !== null) {
+        if (textOf(e.field.id) !== v) writeValue(e.field, v);
+        if (wrap) wrap.dataset.lockValue = v;
+      } else if (wrap?.dataset.lockValue !== undefined) {
+        // The lock is gone (service switched): an answer we wrote is not the visitor's — clear it.
+        if (textOf(e.field.id) === wrap.dataset.lockValue) writeValue(e.field, '');
+        delete wrap.dataset.lockValue;
+      }
     }
   }
 
@@ -219,6 +228,7 @@ export function initBooking(root: HTMLElement): void {
   function applyConditions() {
     applyLocks();
     const occ = currentOccasion();
+    document.querySelectorAll<HTMLElement>('[data-security-deposit]').forEach((el) => (el.hidden = !hasSecurityDeposit()));
     for (const g of schema.groups) {
       let visible = 0;
       for (const f of g.fields) {
@@ -577,7 +587,9 @@ export function initBooking(root: HTMLElement): void {
         ? QUOTE_HEADLINE
         : est.kind === 'recommend'
           ? 'We’ll recommend a package'
-          : 'Choose a package';
+          : textOf('service')
+            ? 'Choose a package'
+            : 'Choose a service';
 
   function renderEstimate(box: HTMLElement, est: Estimate) {
     const nodes: Node[] = [];
@@ -591,7 +603,7 @@ export function initBooking(root: HTMLElement): void {
       nodes.push(h('p', { class: 'bk-est-total is-text' }, 'We’ll recommend a package'));
       if (sub) nodes.push(sub);
     } else {
-      nodes.push(h('p', { class: 'bk-est-empty' }, 'Choose a package to see a starting estimate.'));
+      nodes.push(h('p', { class: 'bk-est-empty' }, textOf('service') ? 'Choose a package to see a starting estimate.' : 'Choose a service to see a starting estimate.'));
       if (sub) nodes.push(sub);
     }
     const lines = h('ul', { class: 'bk-est-lines' });
@@ -599,7 +611,7 @@ export function initBooking(root: HTMLElement): void {
     for (const n of est.notes) lines.append(h('li', { class: 'is-note' }, h('span', {}, n)));
     for (const name of est.onRequest) lines.append(h('li', {}, h('span', {}, name), h('span', { class: 'bk-est-amt is-muted' }, 'Price on request')));
     if (lines.childElementCount) nodes.push(lines);
-    nodes.push(h('p', { class: 'bk-est-note' }, cfg.estimateNote), h('p', { class: 'bk-est-deposit' }, cfg.depositLine));
+    nodes.push(h('p', { class: 'bk-est-note' }, cfg.estimateNote), h('p', { class: 'bk-est-deposit' }, hasSecurityDeposit() ? cfg.depositLine : cfg.depositLineBooking));
     box.replaceChildren(...nodes);
   }
 
@@ -690,6 +702,8 @@ export function initBooking(root: HTMLElement): void {
   }
 
   const currentService = () => servicesById.get(textOf('service'));
+  /** The refundable security deposit (rented items) applies unless the chosen service says otherwise. */
+  const hasSecurityDeposit = () => currentService()?.securityDeposit !== false;
 
   function smsHref(): string {
     const date = textOf('date');

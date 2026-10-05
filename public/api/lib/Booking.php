@@ -57,6 +57,13 @@ final class Booking
     }
 
     /** A hamper: delivered (at midnight or during the day) rather than set up. */
+    /** The refundable security deposit (rented decor and equipment) applies unless the service says otherwise (services.yaml). */
+    public function hasSecurityDeposit(): bool
+    {
+        $s = $this->schema->service($this->serviceId());
+        return $s === null || !array_key_exists('securityDeposit', $s) || (bool) $s['securityDeposit'];
+    }
+
     public function isHamper(): bool
     {
         return in_array($this->serviceId(), FormSchema::HAMPER_SERVICES, true);
@@ -66,6 +73,18 @@ final class Booking
     public function requestNoun(): string
     {
         return $this->isPicnic() ? 'picnic request' : 'request';
+    }
+
+    /**
+     * True when the service locked the occasion to the pseudo occasion "other" (custom hampers): the visitor
+     * never chose it, so it is left out of the subject and the client's summary (the business copy has
+     * "What’s the occasion?" instead).
+     */
+    public function occasionImplied(): bool
+    {
+        $lock = $this->schema->field('occasion')['lockBy'] ?? null;
+        return is_array($lock) && ($lock['field'] ?? '') === 'service'
+            && (($lock['values'][$this->serviceId()] ?? null) === 'other') && ($this->answers->occasion['id'] ?? '') === 'other';
     }
 
     public function occasionName(): string
@@ -262,7 +281,9 @@ final class Booking
         // A picnic or a proposal is named by its occasion ("Proposals · Proposal" would say it twice);
         // room decor and hampers lead with the service.
         $parts = $this->isPicnic() ? [] : [$this->serviceName()];
-        $parts[] = $this->occasionName();
+        if (!$this->occasionImplied()) {
+            $parts[] = $this->occasionName();
+        }
         return array_values(array_filter($parts, 'strlen'));
     }
 
@@ -286,7 +307,7 @@ final class Booking
         $notSure = $this->answers->get('package') === 'not-sure';
         $rows = [
             ['Service', $this->serviceName()],
-            ['Occasion', $this->occasionName()],
+            ['Occasion', $this->occasionImplied() ? '' : $this->occasionName()],
             ['Package', $forBusiness ? $this->packageWithPrice() : ($notSure ? 'Not sure yet — we’ll recommend one' : $this->packageName())],
             ['Date', $date . ($backup !== '' ? ($forBusiness ? " (backup: {$backup})" : " · backup {$backup}") : '')],
             ['Start time', $this->timeLabel()],

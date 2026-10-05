@@ -567,7 +567,10 @@ const isHamper = (plan: Plan) => HAMPER_SERVICES.includes(plan.service.id);
 /** "picnic request" for picnics and proposals, "request" otherwise (Booking::requestNoun). */
 const requestNoun = (plan: Plan) => (isPicnic(plan) ? 'picnic request' : 'request');
 /** [service, occasion] for everything but a plain picnic, where the occasion says it all (Booking::headlineParts). */
-const headline = (plan: Plan) => [...(['picnics', 'proposals'].includes(plan.service.id) ? [] : [plan.service.name]), plan.occ.name].join(' · ');
+/** A custom hamper locks the pseudo occasion "other": not the visitor's choice, so it is left out of the subject and rows. */
+const impliedOccasion = (plan: Plan) => plan.occ.id === 'other' && lockedOccasion(plan.service.id) === 'other';
+const headline = (plan: Plan) =>
+  [...(['picnics', 'proposals'].includes(plan.service.id) ? [] : [plan.service.name]), ...(impliedOccasion(plan) ? [] : [plan.occ.name])].join(' · ');
 
 /**
  * The starting estimate in the business email (Estimate::compute): a package total only for picnics and
@@ -653,7 +656,7 @@ function summaryRows(plan: Plan, forBusiness: boolean): [string, string][] {
   const place = d('location') || d('room_address') || d('delivery_address');
   const rows: [string, string][] = [
     ['Service', plan.service.name],
-    ['Occasion', plan.occ.name],
+    ...(impliedOccasion(plan) ? [] : [['Occasion', plan.occ.name] as [string, string]]),
     ['Package', pkgLine],
     ['Date', d('date') + (backup ? (forBusiness ? ` (backup: ${backup})` : ` · backup ${backup}`) : '')],
     ['Start time', d('start_time')],
@@ -795,8 +798,8 @@ async function checkBusinessEmail(context: BrowserContext, plan: Plan, ref: stri
   expect.soft(dom.text).toMatch(/Received \w{3} \w{3} \d{1,2}, \d{4} at \d{1,2}:\d{2} [AP]M \(Toronto time\)/);
 
   // Plain-text alternative carries the same essentials: the summary rows and every other answer.
-  for (const s of [ref, plan.service.name, plan.occ.name, date, client.email, est.headline]) expect.soft(e.text, `business plain text has “${s}”`).toContain(s);
-  expect.soft(e.text.indexOf('\nService: ') < e.text.indexOf('\nOccasion: '), 'plain text: Service before Occasion').toBe(true);
+  for (const s of [ref, plan.service.name, ...(impliedOccasion(plan) ? [] : [plan.occ.name]), date, client.email, est.headline]) expect.soft(e.text, `business plain text has “${s}”`).toContain(s);
+  if (!impliedOccasion(plan)) expect.soft(e.text.indexOf('\nService: ') < e.text.indexOf('\nOccasion: '), 'plain text: Service before Occasion').toBe(true);
   for (const [label, value] of summary) expect.soft(e.text, `business plain text summary: ${label}`).toContain(`\n${label}: ${value}\n`);
   for (const a of plan.answers.filter((x) => !SUMMARY_FIELDS[x.f.id])) {
     const value = a.display.includes('\n') ? `\n  ${a.display.replace(/\n/g, '\n  ')}` : a.display;
@@ -832,15 +835,18 @@ async function checkClientEmail(context: BrowserContext, plan: Plan, ref: string
   const [lastTitle, lastText] = isHamper(plan)
     ? ['We deliver your hamper', 'We put it together and deliver it at the time you chose.']
     : ['We set up, you arrive', 'We deliver, set up, style and clean up — you just arrive.'];
-  expect.soft(dom.text, 'What happens next: quote → booking deposit → security deposit → set-up / delivery').toMatch(
+  // The security deposit (rented items) is a step only for services that carry it (services.yaml) — not hampers.
+  const hasSecurity = plan.service.securityDeposit !== false;
+  expect.soft(dom.text, 'What happens next: quote → booking deposit → (security deposit) → set-up / delivery').toMatch(
     new RegExp(
-      ['What happens next', 'We reply with your quote', 'Your booking deposit', deposit, 'Your security deposit', security, lastTitle, lastText]
+      ['What happens next', 'We reply with your quote', 'Your booking deposit', deposit, ...(hasSecurity ? ['Your security deposit', security] : []), lastTitle, lastText]
         .map(escapeRe)
         .join('[\\s\\S]*'),
     ),
   );
+  if (!hasSecurity) expect.soft(dom.text, 'no security deposit for a hamper').not.toContain('security deposit');
   expect.soft(dom.text, 'only one kind of last step').not.toContain(isHamper(plan) ? 'you just arrive' : 'We deliver your hamper');
-  for (const s of [schema.deposit.summary, schema.securityDeposit.summary]) expect.soft(dom.text, 'deposit sentences from settings.yaml').toContain(s);
+  for (const s of [schema.deposit.summary, ...(hasSecurity ? [schema.securityDeposit.summary] : [])]) expect.soft(dom.text, 'deposit sentences from settings.yaml').toContain(s);
   expect.soft(dom.links).toContainEqual({ href: `${biz.url.replace(/\/$/, '')}/policies`, text: 'Read our booking policies' });
   expect.soft(dom.text).toContain(biz.phoneDisplay);
   expect.soft(dom.text).toContain(biz.instagramHandle);
@@ -869,7 +875,7 @@ async function checkClientEmail(context: BrowserContext, plan: Plan, ref: string
   }
   const budget = plan.byId.get('budget')?.display;
   if (budget && !summary.some(([, v]) => v.includes(budget))) expect.soft(dom.text, 'client email must not show the budget').not.toContain(budget);
-  for (const s of [ref, biz.phoneDisplay, biz.instagramHandle, biz.replyTime, schema.deposit.summary, schema.securityDeposit.summary, deposit, security, `${biz.url.replace(/\/$/, '')}/policies`, lastTitle])
+  for (const s of [ref, biz.phoneDisplay, biz.instagramHandle, biz.replyTime, schema.deposit.summary, ...(hasSecurity ? [schema.securityDeposit.summary, security] : []), deposit, `${biz.url.replace(/\/$/, '')}/policies`, lastTitle])
     expect.soft(e.text, `client plain text has “${s}”`).toContain(s);
   for (const [label, value] of summary) expect.soft(e.text, `client plain text summary: ${label}`).toContain(`\n${label}: ${value}\n`);
   expect.soft(e.text, 'client plain text: We’ve received your …').toContain(`We’ve received your ${requestNoun(plan)}. Here’s a summary:`);
@@ -920,7 +926,7 @@ test('deep link /book?occasion=birthday&package=celebration is pre-filled and bo
   await openBook(page, '?occasion=birthday&package=celebration');
   await expect(fieldBox(page, 'occasion').getByRole('radio', { name: 'Birthday', exact: true })).toBeChecked();
   await expect(page.locator('input[name="package"][value="celebration"]')).toBeChecked();
-  await expect(page.locator('[data-estimate-total]')).toHaveText(`Starting at ${money(plan.pkg.priceFrom!)}`);
+  await expect(page.locator('[data-estimate-total]')).toHaveText(`Starting at ${money(plan.pkg?.priceFrom ?? 0)}`);
   const { ref } = await completeBooking(page, plan, { preselected: true });
   const { business, client } = await emailsFor(ref);
   await checkBusinessEmail(context, plan, ref, business);

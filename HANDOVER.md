@@ -285,12 +285,13 @@ pages, and five in the gallery (Birthdays, Anniversaries and Proposals). Client 
 The rest are still **AI illustrations** made with Grok (xAI) to show the style of your setups. They
 are not photos of real Blush Picnic events. The photos themselves carry no label,
 but the site says so in one place each: a short note on the gallery, the home gallery, the occasion
-pages and /occasions, and one line in the footer. Link previews (WhatsApp, Facebook…) and Google get
+pages, /occasions, /packages, /services, /room-decor and /hampers, and one line in the footer. Link previews (WhatsApp, Facebook…) and Google get
 your logo image instead of an AI one. Replace them with your own photos as soon as you can (below):
 a real photo takes over its spot, the notes update by themselves, and it's used in link previews and
 for Google too. The About photo is still a placeholder,
-because it should be you. So are the Simple Picnic, the room decor and hamper pictures and the two picnic
-styles (table & chairs, dome): labelled placeholders until you send those photos.
+because it should be you. The Simple Picnic, the room decor and hamper pictures and the two picnic
+styles (table & chairs, dome) are AI illustrations like the rest, labelled on /services, /room-decor,
+/hampers and /packages until you send those photos.
 
 **The easy way: the photo tool (on a computer with the project).**
 
@@ -478,8 +479,9 @@ Follow [SEO.md](SEO.md): Google Business Profile, Search Console, reviews.
 
 ## Waiting on you
 
-Everything below is shown on the site as a clearly marked "Placeholder" until you send it.
-Nothing has been made up in its place.
+Items marked **(draft)** are shown on the site as our best reading of what you told us — please
+confirm or correct them. Everything else shows a visible "Placeholder" until you send it; nothing
+has been made up in its place.
 
 <!-- PLACEHOLDERS:START -->
 
@@ -498,13 +500,15 @@ https://blushpicnic.com/policies once and confirm every line is right.**
 - [ ] **More real photos**: packages, the other occasions, gallery (home, Birthday and Anniversary are done). Use `npm run photos` (see [Photos](#photos)).
 - [ ] **Add-on prices**: balloon garland, fresh flowers, canopy or teepee, music system, charcuterie board, cake, beverages, red carpet walk, candle walkway and glassware still show "Price on request" (`addons.yaml`). The umbrella and helium balloons are priced.
 - [ ] **Glassware and cutlery wording**: the site says glassware is an add-on, the tableware in the setups is styled for the look, and disposable cutlery is available on request. Confirm that's right (`addons.yaml` → glassware → `description`).
-- [ ] **Simple Picnic — what's included?** The site lists a low picnic table, rugs and cushions, tableware, florals and a letter board, for 2 guests and 2 hours. Confirm the list and the length (`packages.yaml` → `simple`).
+- [ ] **Simple Picnic — what's included? (draft)** The site lists a low picnic table, rugs and cushions, tableware, florals and a letter board, for 2 guests and 2 hours. Confirm the list and the length (`packages.yaml` → `simple`).
 - [ ] **Simple Picnic — extra guests**: there's no published price, so the site says "we'll quote extra guests". Give us a number if you'd like one shown (`extraGuestPrice:`).
 - [ ] **Signature Picnic — does it keep $375?** With the Simple Picnic at $250 underneath it, confirm the Signature stays at $375 (+$35 per extra guest) for the umbrella, speaker and games.
-- [ ] **Dome and table & chair prices**: both show "quoted" (`styles.yaml`).
+- [ ] **Dome and table & chair prices**: both show "quoted" (`styles.yaml`). **(draft)** Their one-line descriptions are ours — correct them if a dome or the table & chair setup is something different.
 - [ ] **Travel fee per area**: the site says a travel fee is added by area and confirmed with the quote. Add the number for each area once you've decided (`settings.yaml` → `travel` → `areas`).
-- [ ] **Room decor — pricing and what's included**: nothing is on the site yet beyond the description in `services.yaml`.
-- [ ] **Hampers — pricing and contents**: what's in a birthday hamper, its price, and how a custom hamper is priced.
+- [ ] **Travel fee — which bookings? (draft)** You gave it for the Simple Picnic. The site applies it to every package, to room decor and to hamper deliveries. Tell us if any of those shouldn't carry it.
+- [ ] **Room decor (draft)** — the /room-decor page is our draft: confirm where you set up (we say at home, in a hotel room or a rental), which occasions, which add-ons you offer in a room (we list balloon garland, fresh flowers, helium balloons, candle walkway, red carpet walk, cake, charcuterie board, beverages), whether the decor is rented and collected afterwards (the site applies the $100 security deposit to room decor), and how it's priced (`services.yaml`, `src/pages/room-decor.astro`).
+- [ ] **Hampers (draft)** — what's in a birthday hamper, its price, how a custom hamper is priced, and whether any deposit applies to a hamper delivery (the site asks for the $100 booking deposit but **no security deposit** for hampers, since nothing is collected; `services.yaml` → `securityDeposit`).
+- [ ] **Cake & beverage**: you listed it as one add-on; the site shows "Cake" and "Beverages" separately. Say if you'd rather they were one (`addons.yaml`).
 - [ ] **Reviews**: real ones only, with the client's permission (`reviews.yaml`).
 - [ ] **GA4 Measurement ID** (`settings.yaml` → `ga4Id`).
 - [ ] **Meta Pixel ID** (`settings.yaml` → `metaPixelId`).

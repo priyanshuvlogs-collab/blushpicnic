@@ -282,7 +282,8 @@ final class Handler
     {
         $this->corsHeaders();
         if (!$json && $status !== 405) {
-            Response::redirect('/book?error=1#booking-error', $headers);
+            // A plain form post: unanswered or invalid questions (422) are not a sending failure.
+            Response::redirect($status === 422 ? '/book?error=invalid#booking-error' : '/book?error=1#booking-error', $headers);
             return;
         }
         $body = ['ok' => false, 'message' => $message];

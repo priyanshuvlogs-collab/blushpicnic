@@ -24,7 +24,7 @@ faqs:
   - q: "What do I get with a Be My Girlfriend picnic?"
     a: "We recommend our Proposal & Romance package: everything in the Signature Picnic (low table, rugs, cushions, tableware, florals, a letter board, a fringe umbrella, a Bluetooth speaker and games) plus a custom sign, rose petals, candles and a fresh flower arrangement. It starts at {price:proposal-romance} for {guests:proposal-romance} and {hours:proposal-romance}, before HST, and varies by location."
   - q: "Is there a lower-key way to ask?"
-    a: "Yes. The Signature Picnic starts at {price:signature} for {guests:signature} and {hours:signature}, before HST, and its letter board can carry your question instead of a custom sign. The Simple Picnic, at {price:simple}, is lighter still: the same table, rugs, cushions, tableware, florals and letter board, without the umbrella, speaker and games."
+    a: "Yes. The Signature Picnic starts at {price:signature} for {guests:signature} and {hours:signature}, before HST, and its letter board can carry your question instead of a custom sign. The Simple Picnic, starting at {price:simple} for {guests:simple} before HST, is lighter still: the same table, rugs, cushions, tableware, florals and letter board, without the umbrella, speaker and games."
   - q: "What should the sign say?"
     a: "Whatever sounds like you. “Be My Girlfriend?” is the classic, but her name, an inside joke or a question only she'd get all work. Add your wording under “Sign wording” in the booking form."
   - q: "Can her friends come over once she says yes?"

@@ -1,7 +1,7 @@
 ---
 import Wordmark from './Wordmark.astro';
 import Icon from './Icon.astro';
-import { getSettings, telUrl, smsUrl, bookUrl } from '../lib/site';
+import { getSettings, getOccasions, telUrl, smsUrl, bookUrl, occasionUrl } from '../lib/site';
 
 interface Props {
   book?: { service?: string; occasion?: string; package?: string; label?: string };
@@ -14,7 +14,7 @@ const s = await getSettings();
 const nav: { href: string; label: string; also?: string[] }[] = [
   { href: '/services', label: 'Services', also: ['/room-decor', '/hampers'] },
   { href: '/packages', label: 'Picnics' },
-  { href: '/occasions', label: 'Occasions' },
+  { href: '/occasions', label: 'Occasions', also: (await getOccasions()).map(occasionUrl) },
   { href: '/gallery', label: 'Gallery' },
   { href: '/about', label: 'About' },
   { href: '/faq', label: 'FAQ' },

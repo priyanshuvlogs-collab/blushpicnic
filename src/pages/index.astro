@@ -21,7 +21,7 @@ const pkgs = await getPackages();
 const lowest = Math.min(...pkgs.map((p) => p.data.priceFrom));
 
 const title = 'Luxury Picnics in Toronto & the GTA | Blush Picnic';
-const description = `Luxury picnics, proposals, room decor and birthday hampers across ${s.serviceArea}. We deliver, set up, style and clean up. Picnics from ${money(lowest)}, ${s.taxNote}.`;
+const description = `Luxury picnics, proposals, room decor and birthday hampers across ${s.serviceArea}. Delivered, set up, styled and cleaned up. Picnics starting at ${money(lowest)}, ${s.taxNote}.`;
 
 // While the hero is a stand-in (alt starts "Placeholder") or an AI illustration (src/lib/photos.ts),
 // structured data uses the brand share image: Google shows it without the on-page label.

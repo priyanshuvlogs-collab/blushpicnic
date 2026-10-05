@@ -33,7 +33,7 @@
 
 - id: cost
   question: "How much does a luxury picnic cost?"
-  answer: "Our **Simple Picnic** starts at {price:simple} for {guests:simple}, the **Signature Picnic** at {price:signature} for {guests:signature} (+{extraGuest:signature} per extra guest), **Proposal & Romance** at {price:proposal-romance} for {guests:proposal-romance}, and **Celebration** at {price:celebration} for {guests:celebration}. All prices are starting prices, before HST, and vary by location, and a travel fee is added by area. See [all packages](/packages)."
+  answer: "Our **Simple Picnic** starts at {price:simple} for {guests:simple}, the **Signature Picnic** at {price:signature} for {guests:signature} (+{extraGuest:signature} per extra guest), **Proposal & Romance** at {price:proposal-romance} for {guests:proposal-romance}, and **Celebration** at {price:celebration} for {guests:celebration}. All prices are starting prices, before HST; they vary by location, and a travel fee is added by area. See [all packages](/packages)."
   category: pricing
   order: 1
   showOnHome: true
@@ -46,7 +46,7 @@
 
 - id: travel-fee
   question: "Is there a travel fee?"
-  answer: "{travelNote} {locationNote} The booking form asks which area you're in, so your quote is right from the start."
+  answer: "{travelNote} The booking form asks which area you're in, so your quote is right from the start."
   category: pricing
   order: 2.5
 

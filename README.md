@@ -130,7 +130,7 @@ instead of shipping. The main rules (details in [CLAUDE.md](CLAUDE.md)):
 - **Deep links into the form**: `bookUrl({ service, occasion, package })` → `/book?occasion=proposal&package=proposal-romance`
   or `/book?service=room-decor`.
 - **Analytics**: add `data-track="<event>"` (plus `data-track-*` params) to links, or call
-  `window.bpTrack(event, params)`. Events: `booking_start`, `booking_step`, `booking_submit`, `click_call`,
+  `window.bpTrack(event, params)`. Events: `booking_start`, `booking_step`, `service_select`, `booking_submit`, `click_call`,
   `click_text`, `click_instagram`, `package_select`, `booking_cta`. GA4 and the Meta Pixel load only
   after the visitor accepts cookies. Their IDs come from `settings.yaml`, or from the env vars
   `PUBLIC_GA4_ID` / `PUBLIC_META_PIXEL_ID`.

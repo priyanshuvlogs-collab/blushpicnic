@@ -16,8 +16,10 @@ export interface BookingConfig {
   email: string;
   /** "Estimate only — starting price before HST. Prices vary by location…" */
   estimateNote: string;
-  /** "$100 deposit holds your date (50% for larger events)" */
+  /** "$100 deposit holds your date (50% for larger events), plus a $100 refundable security deposit" */
   depositLine: string;
+  /** The same without the security deposit, for services that rent nothing (hampers). */
+  depositLineBooking: string;
   taxNote: string;
   /** package id → "for 2 guests" */
   guestsLabels: Record<string, string>;

@@ -22,7 +22,7 @@ highlights:
     text: "Mark it as a surprise and tell us who already knows. We reply to you, the way you've asked us to get in touch."
 faqs:
   - q: "What's included in a pregnancy announcement picnic?"
-    a: "We recommend the Signature Picnic: a low table, rugs, cushions, tableware, florals, a letter board with your message, a fringe umbrella, a Bluetooth speaker and games. It starts at {price:signature} for {guests:signature} and {hours:signature}, plus {extraGuest:signature} per extra guest, before HST, and the price varies by location. Telling just your partner? The Simple Picnic is the lighter option at {price:simple}."
+    a: "We recommend the Signature Picnic: a low table, rugs, cushions, tableware, florals, a letter board with your message, a fringe umbrella, a Bluetooth speaker and games. It starts at {price:signature} for {guests:signature} and {hours:signature}, plus {extraGuest:signature} per extra guest, before HST, and the price varies by location. Telling just your partner? The Simple Picnic is the lighter option, starting at {price:simple} for {guests:simple}, before HST."
   - q: "We want to tell both families together. Is there room?"
     a: "Yes. Add everyone to your guest count in the booking form; extra guests on the Signature Picnic are {extraGuest:signature} each, before HST. For a fully themed gathering with a backdrop and custom signage, Celebration starts at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST, and larger groups are quoted."
   - q: "Any ideas for the letter board message?"

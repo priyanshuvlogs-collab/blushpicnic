@@ -23,7 +23,7 @@ hasPlaceholders: true
 
 **Booking deposit.** A {deposit} booking deposit holds your date, or {depositPercent} of the total for larger events. We ask for it once you're happy with your quote. The booking deposit is non-refundable.
 
-**Security deposit.** Every booking also has a {securityDeposit} refundable security deposit for the rented decor and equipment. It's returned within {securityReturned} after your event, once all rental items are collected and checked.
+**Security deposit.** Every picnic, proposal and room decor booking also has a {securityDeposit} refundable security deposit for the rented decor and equipment. It's returned within {securityReturned} after your event, once all rental items are collected and checked.
 
 <h2 id="payment">Payment</h2>
 

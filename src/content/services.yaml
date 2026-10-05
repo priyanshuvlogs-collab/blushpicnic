@@ -3,6 +3,8 @@
 #  of the booking form ("What can we set up for you?"). Keep the id lines as they are —
 #  booking links use them (/book?service=room-decor).
 #  href: the page that explains the service. dm: true adds an Instagram DM button.
+#  securityDeposit: whether the refundable security deposit (for rented decor and equipment) applies —
+#  true for picnics, proposals and room decor; false for hampers (nothing is collected afterwards).
 # ─────────────────────────────────────────────────────────────
 - id: picnics
   name: "Picnics"
@@ -14,6 +16,7 @@
   image: "../assets/photos/hero.jpg"
   imageAlt: "Picnic on Toronto Island facing the CN Tower and city skyline: a low table with white roses and pink peonies, a white teepee, cream fringed parasol and pink cushions"
   dm: false
+  securityDeposit: true
 
 - id: proposals
   name: "Proposals"
@@ -25,6 +28,7 @@
   image: "../assets/photos/occasion-proposal.jpg"
   imageAlt: "Will You Marry Me letter board with white roses, candles and a gold heart on a low table by the lake, and a hand showing the ring"
   dm: false
+  securityDeposit: true
 
 - id: room-decor
   name: "Room decor"
@@ -36,6 +40,7 @@
   image: "../assets/photos/service-room-decor.jpg"
   imageAlt: "Bedroom styled for a surprise: a blush, cream and gold balloon garland above the bed, rose petals on cream linen, pink roses and candles on the side table and a cake on a tray"
   dm: false
+  securityDeposit: true
 
 - id: birthday-hampers
   name: "Birthday hamper delivery"
@@ -47,6 +52,7 @@
   image: "../assets/photos/service-birthday-hamper.jpg"
   imageAlt: "Birthday hamper in a wicker basket with blush tissue paper, a small cake in a clear box, wrapped chocolates, pink and cream roses, a satin bow and a blank card"
   dm: false
+  securityDeposit: false
 
 - id: custom-hampers
   name: "Custom hamper"
@@ -58,3 +64,4 @@
   image: "../assets/photos/service-custom-hamper.jpg"
   imageAlt: "Custom gift hamper in a rattan basket: blush and gold wrapped gifts, dried flowers, a candle, a jar of honey and a kraft tag, with glasses of pink lemonade beside it"
   dm: true
+  securityDeposit: false

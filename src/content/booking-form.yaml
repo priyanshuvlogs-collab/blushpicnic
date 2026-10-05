@@ -126,7 +126,7 @@
       type: select
       source: areas
       required: true
-      help: "A travel fee is added by area and confirmed with your quote."
+      # (the help text is the travel note from settings.yaml)
     - id: location
       label: "Address, park name or area"
       type: text
@@ -433,7 +433,7 @@
 
 # ── Step 3: style & add-ons (everyone) ──────────────────────
 - id: style
-  title: "Style & add-ons"
+  title: "Style & details"
   step: 3
   appliesTo: ["*"]
   order: 3
@@ -446,7 +446,7 @@
       maxLength: 120
       onlyFor: ["other"]
       placeholder: "e.g. a graduation or a farewell"
-      help: "Tell us what you’re celebrating so we can style it and quote accurately."
+      help: "Tell us what you’re celebrating so we can plan it and quote accurately."
     - id: colours_vibe
       label: "Colours and vibe"
       type: text
@@ -477,7 +477,6 @@
       required: true
       maxLength: 1000
       placeholder: "Who it’s for, what should be in it, colours, a theme…"
-      help: "Prefer Instagram? DM us @blush.picnic instead and we’ll take it from there."
       showIf: { field: service, equals: "custom-hampers" }
     - id: card_message
       label: "Message for the card"
@@ -498,7 +497,7 @@
       placeholder: "e.g. nut allergy, vegetarian"
       showIf: { field: service, in: ["birthday-hampers", "custom-hampers"] }
     - id: photo_permission
-      label: "May we share photos of your setup on Instagram?"
+      label: "May we share photos of it on Instagram?"
       type: radio
       options: ["Yes, happy to", "Setup only — no faces", "Please don’t share"]
     - id: notes

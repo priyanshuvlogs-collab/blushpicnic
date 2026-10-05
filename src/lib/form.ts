@@ -66,7 +66,7 @@ export interface FormSchema {
   }[];
   addons: { id: string; name: string; price: number | null }[];
   /** What the business offers (services.yaml); the form's first question. */
-  services: { id: string; name: string; short: string; dm: boolean }[];
+  services: { id: string; name: string; short: string; dm: boolean; securityDeposit: boolean }[];
   /** Picnic styles (styles.yaml); price null = quoted. */
   styles: { id: string; name: string; price: number | null; included: boolean }[];
   /** Travel fee by area (settings.yaml); fee null = quoted by area. */
@@ -119,7 +119,7 @@ export async function buildFormSchema(): Promise<FormSchema> {
     { id: NOT_SURE_PACKAGE.id, name: NOT_SURE_PACKAGE.name, priceFrom: null, guestsIncluded: null, guestsMax: null, extraGuestPrice: null, durationHours: null },
   ];
   const adds = addons.map((a) => ({ id: a.id, name: a.data.name, price: a.data.price }));
-  const svcs = services.map((x) => ({ id: x.id, name: x.data.name, short: x.data.short, dm: x.data.dm }));
+  const svcs = services.map((x) => ({ id: x.id, name: x.data.name, short: x.data.short, dm: x.data.dm, securityDeposit: x.data.securityDeposit }));
   const stys = styles.map((x) => ({ id: x.id, name: x.data.name, price: x.data.price, included: x.data.included }));
   const travel = { note: s.travel.note, areas: s.travel.areas.map((a) => ({ name: a.name, fee: a.fee })) };
 
@@ -140,6 +140,8 @@ export async function buildFormSchema(): Promise<FormSchema> {
     intro: g.data.intro,
     fields: g.data.fields.map(({ source, options, ...f }) => ({
       ...f,
+      // the area question explains the travel fee with the owner's own sentence (settings.yaml)
+      help: f.help ?? (source === 'areas' ? s.travel.note : undefined),
       required: f.required ?? false,
       options: source ? sources[source] : options?.map((o) => ({ value: o, label: o })),
     })),
