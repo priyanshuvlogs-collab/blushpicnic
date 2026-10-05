@@ -10,7 +10,7 @@ metaDescription: "Plan a proposal picnic in Toronto or the GTA: Marry Me sign, r
 h1: "A proposal picnic, ready before you get there"
 lede: "You bring the ring. We build the moment around it — a styled picnic with a Marry Me sign, rose petals, candles and fresh flowers, waiting in the spot you choose."
 heroImage: "../../assets/photos/occasion-proposal.jpg"
-heroAlt: "Proposal picnic at sunset on a waterfront lawn, a tall arch of blush and white roses over a low table, candles in glass and a rose-petal path"
+heroAlt: "Will You Marry Me letter board with white roses, candles and a gold heart on a low picnic table by the lake, and a hand showing the ring"
 highlights:
   - title: "Kept secret, start to finish"
     text: "Tell us who knows, how your partner will arrive, and whether our team should stay hidden nearby or leave before you get there."

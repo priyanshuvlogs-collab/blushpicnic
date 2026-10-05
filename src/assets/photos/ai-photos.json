@@ -47,29 +47,11 @@
     "generated": "2026-10-04",
     "sha256": "e17c59ee8947e53d62ff673cec3a68003c749b7dc57ec727a1a05f7d6e26e806"
   },
-  "occasion-proposal.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A proposal picnic at sunset on a grassy waterfront park in Toronto: a tall arch of blush, white and dusty-rose roses, a rose-petal path leading to a low table for two, many pillar candles in glass lanterns, blush velvet cushions on a cream rug. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "65c86d07970b19d560cc6eba9e31bf21960b11907c07b47390f5383bf58f480d"
-  },
   "gallery-be-my-girlfriend-2.jpg": {
     "model": "grok-imagine-image",
     "prompt": "Close-up of a hand-tied bouquet of red and blush roses lying on cream linen beside chocolate-dipped strawberries and a small gift box with a satin bow. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
     "generated": "2026-10-04",
     "sha256": "59ad55d3e8eeb0a4d9146a5fd4c9b2ca70be8c5c43603f51f50271c623f33c54"
-  },
-  "gallery-proposal-1.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A proposal setup inside an elegant venue with tall arched windows: floor arrangements of white and blush roses, a cream rug, a low table for two and dozens of candles glowing warmly. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "b25617045d94b21c687ca410de20ef84d078a72156fe6980cd20eb74d0aab59f"
-  },
-  "gallery-proposal-2.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "Close-up of an open blush velvet ring box holding a diamond engagement ring, resting on cream linen among rose petals and flickering candles. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "dd65887b9431fa9ef2fc8fdbebefbbfa579b62048d868b1d7758c627eb829b2e"
   },
   "occasion-just-engaged.jpg": {
     "model": "grok-imagine-image",

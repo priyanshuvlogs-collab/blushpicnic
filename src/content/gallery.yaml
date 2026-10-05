@@ -23,14 +23,6 @@
   showOnHome: true
   placeholder: true
 
-- id: proposal-1
-  image: "../assets/photos/gallery-proposal-1.jpg"
-  alt: "Indoor proposal setup by tall arched windows, an oak table set for two, white and blush roses lining a cream rug and glowing pillar candles"
-  occasions: ["proposal"]
-  order: 5
-  showOnHome: true
-  placeholder: true
-
 - id: just-engaged-1
   image: "../assets/photos/gallery-just-engaged-1.jpg"
   alt: "Just-engaged garden picnic under a pink and white rose arch, low oak table set with gold goblets and cutlery, pampas grass and cream floor cushions"
@@ -132,14 +124,6 @@
   alt: "Be-my-girlfriend details, red and blush rose bouquet on cream linen beside chocolate-dipped strawberries and a gift box with a pink satin bow"
   occasions: ["be-my-girlfriend"]
   order: 20
-  showOnHome: false
-  placeholder: true
-
-- id: proposal-2
-  image: "../assets/photos/gallery-proposal-2.jpg"
-  alt: "Proposal detail of a diamond solitaire in an open blush velvet ring box on cream linen, with rose petals and candles in wooden holders"
-  occasions: ["proposal"]
-  order: 21
   showOnHome: false
   placeholder: true
 
@@ -261,4 +245,12 @@
   occasions: ["birthday"]
   order: 33
   showOnHome: false
+  placeholder: false
+
+- id: proposal-3
+  image: "../assets/photos/gallery-proposal-3.jpg"
+  alt: "Will You Marry Me letter board with white roses, candles and a gold heart on a low table by the lake, and a hand showing the ring"
+  occasions: ["proposal"]
+  order: 4
+  showOnHome: true
   placeholder: false

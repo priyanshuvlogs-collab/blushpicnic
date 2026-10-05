@@ -64,6 +64,11 @@ const settings = defineCollection({
       }),
       taxNote: z.string(),
       locationNote: z.string(),
+      // Travel fee by area, added to every quote. fee: null = quoted by area (not in the live estimate).
+      travel: z.object({
+        note: z.string(),
+        areas: z.array(z.object({ name: z.string(), fee: money.nullable() })).min(1),
+      }),
       analytics: z.object({
         ga4Id: z.string(),
         metaPixelId: z.string(),
@@ -115,6 +120,41 @@ const packages = defineCollection({
     }),
 });
 
+// Picnic styles (styles.yaml): how the picnic is set. included: true = comes with every package.
+const styles = defineCollection({
+  loader: file('src/content/styles.yaml'),
+  schema: ({ image }) =>
+    z.object({
+      name: z.string(),
+      order: z.number(),
+      description: z.string(),
+      included: z.boolean().default(false),
+      // null = quoted (not counted in the live estimate)
+      price: money.nullable(),
+      image: image(),
+      imageAlt: z.string().min(10),
+    }),
+});
+
+// What the business offers (services.yaml): picnics, proposals, room decor, hampers. The first
+// question of the booking form lists them; href is the page that explains each one.
+const services = defineCollection({
+  loader: file('src/content/services.yaml'),
+  schema: ({ image }) =>
+    z.object({
+      name: z.string(),
+      order: z.number(),
+      short: z.string(),
+      summary: z.string(),
+      href: z.string().regex(/^\/[a-z0-9\-\/#]*$/),
+      cta: z.string(),
+      image: image(),
+      imageAlt: z.string().min(10),
+      // true: the call to action is an Instagram DM (custom hampers), not the booking form
+      dm: z.boolean().default(false),
+    }),
+});
+
 const addons = defineCollection({
   loader: file('src/content/addons.yaml'),
   schema: z.object({
@@ -149,7 +189,7 @@ const occasions = defineCollection({
         'baby',
         'bridal',
       ]),
-      recommendedPackage: z.enum(['signature', 'proposal-romance', 'celebration']),
+      recommendedPackage: z.enum(['simple', 'signature', 'proposal-romance', 'celebration']),
       metaTitle: z.string().max(65),
       metaDescription: z.string().min(70).max(220), // ≤160 after {tokens} are filled (checked at build)
       h1: z.string(),
@@ -222,7 +262,8 @@ const field = z.object({
   placeholder: z.string().optional(),
   options: z.array(z.string()).optional(),
   // fill options from another collection instead of listing them here
-  source: z.enum(['occasions', 'packages', 'addons']).optional(),
+  // (areas = settings.yaml travel areas + "Somewhere else in the GTA" + "Not sure yet")
+  source: z.enum(['occasions', 'packages', 'addons', 'services', 'styles', 'areas']).optional(),
   // lay out two "half" fields side by side on wider screens
   half: z.boolean().optional(),
   min: z.number().optional(),
@@ -233,7 +274,14 @@ const field = z.object({
   // only show for these occasion ids (within a group); omitted = whole group
   onlyFor: z.array(z.string()).optional(),
   // only show when another field has a truthy / specific value, e.g. { field: "is_surprise", equals: "yes" }
-  showIf: z.object({ field: z.string(), equals: z.string().optional() }).optional(),
+  // or one of several values: { field: "service", in: ["picnics", "proposals"] }
+  showIf: z
+    .object({ field: z.string(), equals: z.string().optional(), in: z.array(z.string()).min(1).optional() })
+    .refine((c) => !(c.equals !== undefined && c.in !== undefined), { message: 'showIf: use either "equals" or "in", not both' })
+    .optional(),
+  // the answer follows another field's answer and the question is hidden (browser only; the server
+  // just validates the value): { field: "service", values: { proposals: "proposal" } }
+  lockBy: z.object({ field: z.string(), values: z.record(z.string(), z.string()) }).optional(),
   note: z.string().optional(),
 });
 
@@ -250,4 +298,4 @@ const formGroups = defineCollection({
   }),
 });
 
-export const collections = { settings, packages, addons, occasions, faqs, gallery, reviews, pages, formGroups };
+export const collections = { settings, packages, addons, styles, services, occasions, faqs, gallery, reviews, pages, formGroups };

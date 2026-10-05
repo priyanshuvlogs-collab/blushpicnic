@@ -6,6 +6,8 @@ import { getTokenMaps, fillDeep, fillText, literalPrices } from './tokens';
 export type Settings = CollectionEntry<'settings'>['data'];
 export type Package = CollectionEntry<'packages'>;
 export type Addon = CollectionEntry<'addons'>;
+export type Style = CollectionEntry<'styles'>;
+export type Service = CollectionEntry<'services'>;
 export type Occasion = CollectionEntry<'occasions'>;
 export type Faq = CollectionEntry<'faqs'>;
 export type GalleryItem = CollectionEntry<'gallery'>;
@@ -25,6 +27,7 @@ export async function getSettings(): Promise<Settings> {
     tagline: smartQuotes(d.tagline),
     heroAlt: smartQuotes(d.heroAlt),
     locationNote: smartQuotes(d.locationNote),
+    travel: { ...d.travel, note: smartQuotes(d.travel.note) },
     deposit: { ...d.deposit, summary: smartQuotes(d.deposit.summary) },
     securityDeposit: { ...d.securityDeposit, summary: smartQuotes(d.securityDeposit.summary) },
   };
@@ -43,6 +46,8 @@ function smartDeep<T extends { data: object }>(entry: T): T {
 
 export const getPackages = async () => (await getCollection('packages')).sort(byOrder).map(smartDeep);
 export const getAddons = async () => (await getCollection('addons')).sort(byOrder).map(smartDeep);
+export const getStyles = async () => (await getCollection('styles')).sort(byOrder).map(smartDeep);
+export const getServices = async () => (await getCollection('services')).sort(byOrder).map(smartDeep);
 
 // Occasion frontmatter and FAQ answers may contain {tokens} (see src/lib/tokens.ts); they are
 // filled here so every page gets real values. The occasion body is filled where it's rendered.
@@ -105,9 +110,10 @@ export function hours(h: number): string {
   return `${h} ${h === 1 ? 'hour' : 'hours'}`;
 }
 
-/** Booking deep link, e.g. /book?occasion=proposal&package=proposal-romance */
-export function bookUrl(opts: { occasion?: string; package?: string } = {}): string {
+/** Booking deep link, e.g. /book?occasion=proposal&package=proposal-romance or /book?service=room-decor */
+export function bookUrl(opts: { service?: string; occasion?: string; package?: string } = {}): string {
   const params = new URLSearchParams();
+  if (opts.service) params.set('service', opts.service);
   if (opts.occasion) params.set('occasion', opts.occasion);
   if (opts.package) params.set('package', opts.package);
   const qs = params.toString();

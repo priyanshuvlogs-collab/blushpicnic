@@ -1,0 +1,60 @@
+# ─────────────────────────────────────────────────────────────
+#  What Blush Picnic offers. Shown on the home page and /services, and as the first question
+#  of the booking form ("What can we set up for you?"). Keep the id lines as they are —
+#  booking links use them (/book?service=room-decor).
+#  href: the page that explains the service. dm: true adds an Instagram DM button.
+# ─────────────────────────────────────────────────────────────
+- id: picnics
+  name: "Picnics"
+  order: 1
+  short: "Styled picnic setups"
+  summary: "Luxury picnic setups in parks, on beaches, in backyards and indoors across Toronto and the GTA — delivered, set up, styled and cleared away by us."
+  href: "/packages"
+  cta: "See picnic packages"
+  image: "../assets/photos/hero.jpg"
+  imageAlt: "Picnic on Toronto Island facing the CN Tower and city skyline: a low table with white roses and pink peonies, a white teepee, cream fringed parasol and pink cushions"
+  dm: false
+
+- id: proposals
+  name: "Proposals"
+  order: 2
+  short: "The question, set up and waiting"
+  summary: "A proposal picnic ready before you get there: a Marry Me or custom sign, rose petals, candles and fresh flowers in the spot you choose."
+  href: "/proposal-picnic-toronto"
+  cta: "Plan your proposal"
+  image: "../assets/photos/occasion-proposal.jpg"
+  imageAlt: "Will You Marry Me letter board with white roses, candles and a gold heart on a low table by the lake, and a hand showing the ring"
+  dm: false
+
+- id: room-decor
+  name: "Room decor"
+  order: 3
+  short: "Your moment, styled indoors"
+  summary: "Birthdays, anniversaries and proposals styled in a room — at home, in a hotel or in a rental — in your colours, with your words."
+  href: "/room-decor"
+  cta: "Plan room decor"
+  image: "../assets/photos/service-room-decor.jpg"
+  imageAlt: "Placeholder — a photo of a room decor setup is coming soon"
+  dm: false
+
+- id: birthday-hampers
+  name: "Birthday hamper delivery"
+  order: 4
+  short: "Delivered at midnight or during the day"
+  summary: "A birthday hamper put together for them and delivered at midnight or during the day, anywhere in Toronto and the GTA."
+  href: "/hampers"
+  cta: "Send a birthday hamper"
+  image: "../assets/photos/service-birthday-hamper.jpg"
+  imageAlt: "Placeholder — a photo of a birthday hamper is coming soon"
+  dm: false
+
+- id: custom-hampers
+  name: "Custom hamper"
+  order: 5
+  short: "DM us with your vision"
+  summary: "Something specific in mind? Send us your vision on Instagram and we'll put the hamper together."
+  href: "/hampers#custom"
+  cta: "DM us your vision"
+  image: "../assets/photos/service-custom-hamper.jpg"
+  imageAlt: "Placeholder — a photo of a custom hamper is coming soon"
+  dm: true

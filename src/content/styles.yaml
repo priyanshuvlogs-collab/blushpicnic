@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────
+#  Picnic styles: how the picnic is set. "Classic low table" comes with every package;
+#  the others are chosen in the booking form and added to the quote.
+#  Set price to a number once you know it (the site adds "Starting at" and "before HST");
+#  price: null shows "quoted" and is left out of the live estimate.
+#  PLACEHOLDER — the table & chair and dome prices are waiting for the owner.
+#  image: a photo of that style (src/assets/photos/style-<id>.jpg; the classic one is the home photo).
+# ─────────────────────────────────────────────────────────────
+- id: classic
+  name: "Classic low table"
+  order: 1
+  description: "A low table with rugs and cushions all around — the picnic every package is built on."
+  included: true
+  price: null
+  image: "../assets/photos/hero.jpg"
+  imageAlt: "Picnic on Toronto Island facing the CN Tower: a low table with white roses and pink peonies, a white teepee, cream fringed parasol and pink cushions"
+
+- id: table-chairs
+  name: "Table & chair setup"
+  order: 2
+  description: "A table and chairs instead of the low table and cushions, for guests who'd rather sit up."
+  included: false
+  price: null
+  image: "../assets/photos/style-table-chairs.jpg"
+  imageAlt: "Placeholder — a photo of the table & chair setup is coming soon"
+
+- id: dome
+  name: "Dome picnic"
+  order: 3
+  description: "Your picnic set inside a clear dome."
+  included: false
+  price: null
+  image: "../assets/photos/style-dome.jpg"
+  imageAlt: "Placeholder — a photo of a dome picnic is coming soon"
