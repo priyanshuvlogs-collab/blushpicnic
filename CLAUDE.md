@@ -25,7 +25,7 @@ Ids: services `picnics`, `proposals`, `room-decor`, `birthday-hampers`, `custom-
 - Accessibility: WCAG 2.2 AA, tap targets ≥ 44px (`min-h-11`/`min-h-12`), visible focus, one `h1` per page, logical heading order, labelled controls, keyboard support for every interaction.
 
 ## Analytics
-Call `window.bpTrack(event, params)` or add `data-track="<event>"` (+ `data-track-*` params) to links. Events: `booking_start`, `booking_step` {step}, `booking_submit`, `click_call`, `click_text`, `click_instagram`, `click_tiktok`, `package_select` {package}, `booking_cta` {location}, `link_click` {link} (/links page). GA4 / Meta Pixel load only after consent.
+Call `window.bpTrack(event, params)` or add `data-track="<event>"` (+ `data-track-*` params) to links. Events: `booking_start`, `booking_step` {step}, `service_select` {service}, `booking_submit` {service, occasion, package}, `click_call`, `click_text`, `click_instagram`, `click_tiktok`, `package_select` {package}, `booking_cta` {location}, `link_click` {link} (/links page). GA4 / Meta Pixel load only after consent.
 
 ## Copy tokens
 Never type prices, deposits or the phone number into copy. In occasion Markdown/frontmatter, `faqs.yaml` and `src/content/pages/*.md` use tokens from `src/lib/tokens.ts`: `{price:simple}`, `{price:signature}`, `{guests:celebration}`, `{hours:proposal-romance}`, `{extraGuest:signature}`, `{deposit}`, `{depositPercent}`, `{securityDeposit}`, `{replyTime}`, `{travelNote}`, `{locationNote}`, `{phone}`, `{text}`, `{email}`, `{instagram}`, `{tiktok}`… `getOccasions()`/`getFaqs()` return filled data; occasion bodies are filled in `[occasion].astro`. The build warns about typed `$` amounts.

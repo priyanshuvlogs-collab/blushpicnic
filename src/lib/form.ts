@@ -15,15 +15,9 @@ export interface Option {
   label: string;
 }
 
-export interface ShowIfCondition {
-  field: string;
-  equals?: string;
-  in?: string[];
-}
-
-/** A field's showIf as a list of conditions (one or several; all must hold). */
-export const showIfConditions = (showIf: ResolvedField['showIf']): ShowIfCondition[] =>
-  showIf === undefined ? [] : Array.isArray(showIf) ? showIf : [showIf];
+// One copy of the showIf rule for the server-side resolver, the browser and the tests.
+export { showIfConditions, showIfMatches, type ShowIfCondition } from '../scripts/booking/conditions';
+import type { ShowIfCondition } from '../scripts/booking/conditions';
 
 export interface ResolvedField {
   id: string;
@@ -194,14 +188,3 @@ export function groupApplies(g: Pick<ResolvedGroup, 'appliesTo'>, formGroup: str
   return g.appliesTo.includes('*') || g.appliesTo.includes(formGroup);
 }
 
-/**
- * Does a showIf condition hold for the dependency's answer(s)? Same rule in the browser
- * (booking.ts), the server (Validator.php) and the tests: equals → that value is among the
- * answers; in → any of those values is; neither → there is a non-empty answer.
- */
-export function showIfMatches(c: ShowIfCondition, answers: string[]): boolean {
-  const vals = answers.filter(Boolean);
-  if (c.equals !== undefined) return vals.includes(c.equals);
-  if (c.in !== undefined) return vals.some((v) => c.in!.includes(v));
-  return vals.length > 0;
-}

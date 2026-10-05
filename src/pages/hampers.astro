@@ -54,7 +54,7 @@ const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
         </div>
         <p class="mt-6 flex max-w-[38rem] items-start gap-2.5 text-plum-soft">
           <Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />
-          <span>Tell us who it's for and what they love. We reply {s.replyTime} with your quote.</span>
+          <span>Tell us who it’s for and what they love. We reply {s.replyTime} with your quote.</span>
         </p>
         <p class="mt-2 flex flex-wrap items-center gap-x-1.5 text-[0.95rem] text-plum-soft">
           <span>Questions first?</span>
@@ -91,7 +91,7 @@ const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
         <ul class="mt-6 grid gap-2.5 text-plum-soft">
           <li class="flex gap-2.5"><Icon name="clock" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Delivered at midnight or during the day — tell us which in your request.</li>
           <li class="flex gap-2.5"><Icon name="map-pin" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Anywhere in {s.serviceArea}. {s.travel.note}</li>
-          <li class="flex gap-2.5"><Icon name="heart" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Tell us who it's for and what they love, and we put the hamper together around them.</li>
+          <li class="flex gap-2.5"><Icon name="heart" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Tell us who it’s for and what they love, and we put the hamper together around them.</li>
         </ul>
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
           <a href={birthdayHref} class="btn btn-primary btn-lg" data-track="booking_cta" data-track-location="hampers_birthday">{b.cta}</a>
@@ -107,7 +107,7 @@ const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
         <h2 id="custom-title">{c.name}</h2>
         <p class="mt-3 text-lg text-plum-soft md:text-xl">{c.short}</p>
         <p class="measure mt-6 text-lg">{c.summary}</p>
-        <p class="measure mt-4 text-plum-soft">Send us the idea on Instagram — a photo you've saved, a colour, a theme, the person it's for — and we reply with your quote.</p>
+        <p class="measure mt-4 text-plum-soft">Send us the idea on Instagram — a photo you’ve saved, a colour, a theme, the person it’s for — and we reply with your quote.</p>
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
           <a href={igDmUrl(s)} rel="noopener" class="btn btn-primary btn-lg" data-track="click_instagram" data-track-location="hampers_custom">
             <Icon name="instagram" size={18} />{c.cta}
@@ -133,9 +133,9 @@ const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
 
   <section id="pricing" aria-labelledby="pricing-title" class="section-y scroll-mt-20 border-t border-line bg-cream">
     <div class="container-x grid gap-x-14 gap-y-6 lg:grid-cols-12">
-      <h2 id="pricing-title" class="lg:col-span-5">How it's priced</h2>
+      <h2 id="pricing-title" class="lg:col-span-5">How it’s priced</h2>
       <div class="lg:col-span-7">
-        <p class="measure text-lg md:text-xl">Every hamper is quoted: tell us who it's for and what they love, and we quote it.</p>
+        <p class="measure text-lg md:text-xl">Every hamper is quoted: tell us who it’s for and what they love, and we quote it.</p>
         <ul class="mt-6 grid gap-2.5 text-plum-soft">
           <li class="flex gap-2.5"><Icon name="map-pin" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />{s.travel.note}</li>
           <li class="flex gap-2.5"><Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Quotes are {s.taxNote}. {s.locationNote}</li>

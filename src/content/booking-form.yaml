@@ -22,7 +22,7 @@
 
 # ── Step 1 ───────────────────────────────────────────────────
 - id: core-what
-  title: "What you'd like"
+  title: "What you’d like"
   step: 1
   appliesTo: ["*"]
   order: 1

@@ -12,6 +12,7 @@ const styles = await getStyles();
 const priceText = (x: Style) =>
   x.data.included ? 'Included with every package' : x.data.price !== null ? `Starting at ${money(x.data.price)}, ${s.taxNote}` : 'Quoted — choose it in the booking form';
 const widths = (x: Style) => [400, 560, 720, 960, 1200].filter((w) => w <= x.data.image.width);
+const anyPriced = styles.some((x) => !x.data.included && x.data.price !== null);
 ---
 {styles.length > 0 && (
   <section id="styles" aria-labelledby="styles-title" class="section-y scroll-mt-20">
@@ -19,7 +20,7 @@ const widths = (x: Style) => [400, 560, 720, 960, 1200].filter((w) => w <= x.dat
       <div class="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
         <h2 id="styles-title" class="lg:col-span-6">Picnic styles</h2>
         <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
-          How the picnic is set. Every package comes with the classic low table; choose another setup in the booking form and we'll include it in your quote.
+          How the picnic is set. Every package comes with the classic low table; choose another setup in the booking form and we’ll include it in your quote.
         </p>
       </div>
 
@@ -51,7 +52,7 @@ const widths = (x: Style) => [400, 560, 720, 960, 1200].filter((w) => w <= x.dat
       </ul>
 
       <p class="mt-8 max-w-[52rem] border-t border-line pt-6 text-[0.95rem] text-plum-soft">
-        Styles with a price are starting prices, {s.taxNote}. {s.locationNote}
+        {anyPriced ? `Style prices are starting prices, ${s.taxNote}.` : `A chosen setup is priced in your quote, ${s.taxNote}.`} {s.locationNote}
       </p>
     </div>
   </section>
