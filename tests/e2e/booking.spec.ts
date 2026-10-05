@@ -476,6 +476,8 @@ test('live estimate adds extra guests, travel, style and add-ons, and never pric
   expect(style.included).toBe(false);
 
   await openBooking(page);
+  await expect(visibleEstimateTotal(page)).toContainText(/Choose a service/);
+  await page.locator('input[name="service"][value="picnics"]').check();
   await expect(visibleEstimateTotal(page)).toContainText(/Choose a package/);
   await choose(page, 'birthday', 'signature');
   await next(page);
