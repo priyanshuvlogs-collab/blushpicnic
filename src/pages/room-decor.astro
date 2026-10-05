@@ -1,0 +1,193 @@
+---
+// /room-decor — the service explained (services.yaml "room-decor"): what we can style (the add-ons
+// in addons.yaml that suit a room), the occasions it suits (occasion pages), how it works and how
+// it’s priced (quoted: there is no room decor price in the data, so none is shown).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import ArchImage from '../components/ArchImage.astro';
+import CtaBand from '../components/CtaBand.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Icon from '../components/Icon.astro';
+import PhotoNote from '../components/PhotoNote.astro';
+import { isStandIn } from '../components/photoNote';
+import { getSettings, getServices, getAddons, getOccasions, money, bookUrl, occasionUrl, smsUrl, telUrl, type Occasion } from '../lib/site';
+import { breadcrumbs, genericService } from '../lib/schema';
+
+const s = await getSettings();
+const svc = (await getServices()).find((x) => x.id === 'room-decor');
+if (!svc) throw new Error('src/content/services.yaml needs a "room-decor" entry');
+const d = svc.data;
+
+// The add-ons that suit a room, in addons.yaml order. Prices come from the data (null = on request).
+const ROOM_ADDONS = ['balloon-garland', 'fresh-flowers', 'helium-balloons', 'candle-walkway', 'red-carpet', 'cake', 'charcuterie', 'beverages'];
+const addons = (await getAddons()).filter((a) => ROOM_ADDONS.includes(a.id));
+const priceText = (price: number | null, suffix: string) =>
+  price === null ? 'Price on request' : `Starting at ${money(price)}${suffix ? ` ${suffix}` : ''}, ${s.taxNote}`;
+
+// Occasions it suits: their picnic pages show the styling of each one.
+const SUITS = ['birthday', 'anniversary', 'proposal', 'be-my-girlfriend'];
+const byId = new Map((await getOccasions()).map((o) => [o.id, o]));
+const suits = SUITS.map((id) => byId.get(id)).filter((o): o is Occasion => Boolean(o));
+
+const bookHref = bookUrl({ service: svc.id });
+const steps = [
+  {
+    title: 'Send a request',
+    text: 'Tell us the occasion, the date, the room and the colours and words you have in mind — it takes about three minutes.',
+  },
+  {
+    title: `We reply ${s.replyTime} with your quote`,
+    text: `A ${money(s.deposit.standard)} booking deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date, plus a ${money(s.securityDeposit.amount)} refundable security deposit.`,
+  },
+  {
+    title: 'We set up in the room',
+    text: 'We bring everything, set it up and style the room before your moment — in your colours, with your words on the sign.',
+  },
+];
+
+const crumbs = [
+  { name: 'Services', path: '/services' },
+  { name: 'Room decor', path: '/room-decor' },
+];
+const title = 'Room Decor in Toronto & the GTA | Blush Picnic';
+const description = `Birthday, anniversary and proposal room decor at home, in a hotel or a rental in ${s.serviceArea}: balloon garlands, flowers and candles, set up by us.`;
+const standIn = isStandIn(d.image, d.imageAlt);
+const jsonLd = [
+  breadcrumbs(s, crumbs),
+  genericService(s, { name: `${d.name} in Toronto`, description: d.summary, url: `${s.url}/room-decor` }),
+];
+---
+<BaseLayout {title} {description} {jsonLd} image={standIn ? undefined : d.image} imageAlt={standIn ? undefined : d.imageAlt} book={{ service: svc.id, label: 'Plan your room decor' }}>
+  <section aria-labelledby="page-title">
+    <div class="container-x pt-3 md:pt-5">
+      <Breadcrumbs crumbs={crumbs} />
+    </div>
+    <div class="container-x grid items-center gap-x-14 gap-y-12 pb-16 pt-4 md:pb-20 md:pt-6 lg:grid-cols-12 lg:pb-24">
+      <div class="hero-enter lg:col-span-7">
+        <h1 id="page-title" class="max-w-[14ch]">Room decor in Toronto, styled for your moment</h1>
+        <p class="mt-5 max-w-[38rem] text-lg text-plum-soft md:mt-7 md:text-[1.25rem] md:leading-relaxed">{d.summary}</p>
+        <div class="mt-7 flex flex-col gap-3 sm:flex-row md:mt-9">
+          <a href={bookHref} class="btn btn-primary btn-lg" data-track="booking_cta" data-track-location="room_decor_hero">Plan your room decor</a>
+          <a href="#style" class="btn btn-secondary btn-lg">What we can style</a>
+        </div>
+        <p class="mt-6 flex max-w-[38rem] items-start gap-2.5 text-plum-soft">
+          <Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />
+          <span>We bring everything, set it up and style the room before your moment, anywhere in {s.serviceArea}. We reply {s.replyTime}.</span>
+        </p>
+        <p class="mt-2 flex flex-wrap items-center gap-x-1.5 text-[0.95rem] text-plum-soft">
+          <span>Questions first?</span>
+          <span class="inline-flex items-center gap-x-1.5 whitespace-nowrap">
+            <a href={smsUrl(s)} class="hero-contact" data-track="click_text"><Icon name="message" size={18} />Text</a>
+            <span>or</span>
+            <a href={telUrl(s)} class="hero-contact" data-track="click_call"><Icon name="phone" size={18} />call {s.phoneDisplay}</a>
+          </span>
+        </p>
+      </div>
+      <div class="hero-enter-delay lg:col-span-5">
+        <ArchImage
+          src={d.image}
+          alt={d.imageAlt}
+          sizes="(min-width: 1280px) 440px, (min-width: 1024px) 36vw, (min-width: 640px) 26rem, 82vw"
+          priority
+          fetchpriority="auto"
+          outline
+          class="mx-auto w-[82%] max-w-[26rem] sm:w-full lg:ml-auto lg:mr-3 lg:max-w-[28rem]"
+        />
+        <PhotoNote src={d.image} alt={d.imageAlt} subject="a room decor setup" class="mx-auto mt-6 max-w-[26rem] lg:ml-auto lg:mr-3 lg:max-w-[28rem]" />
+      </div>
+    </div>
+  </section>
+
+  <section id="style" aria-labelledby="style-title" class="section-y scroll-mt-20 bg-cream">
+    <div class="container-x grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
+        <h2 id="style-title">What we can style</h2>
+        <p class="mt-4 max-w-md text-plum-soft">
+          Choose what you’d like in the booking form and we’ll include it in your quote. Your colours, your words on the sign — tell us the feeling you’re after and we style the room around it.
+        </p>
+        <a href={bookHref} class="btn btn-secondary mt-7" data-track="booking_cta" data-track-location="room_decor_style">Start your request</a>
+      </div>
+      <ul class="lg:col-span-7">
+        {addons.map((a) => (
+          <li class="border-b border-line py-5 first:pt-0 md:py-6">
+            <div class="flex flex-wrap items-end gap-x-3 gap-y-1">
+              <h3 class="text-[1.35rem] md:text-[1.55rem]">{a.data.name}</h3>
+              <span aria-hidden="true" class="mb-[0.5rem] hidden h-0 min-w-6 flex-1 border-b border-dotted border-cocoa/35 sm:block"></span>
+              <p class="w-full text-[0.95rem] font-semibold text-sage-ink sm:w-auto sm:pb-0.5">{priceText(a.data.price, a.data.priceSuffix)}</p>
+            </div>
+            <p class="mt-1.5 text-plum-soft">{a.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {suits.length > 0 && (
+    <section aria-labelledby="suits-title" class="section-y">
+      <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
+        <div class="lg:col-span-5">
+          <h2 id="suits-title">Occasions it suits</h2>
+          <p class="mt-4 max-w-md text-plum-soft">
+            See how we style each one as a picnic, then tell us in the booking form that you’d like it in a room instead.
+          </p>
+        </div>
+        <ul class="divide-y divide-line border-y border-line lg:col-span-7" role="list">
+          {suits.map((o) => (
+            <li class="suit group relative">
+              <a href={occasionUrl(o)} class="flex min-h-14 items-center justify-between gap-4 py-3 no-underline">
+                <span class="suit-name font-display text-[1.45rem] font-semibold leading-tight md:text-[1.6rem]">{o.data.chip}</span>
+                <Icon name="arrow-right" size={20} class="shrink-0 text-plum-soft motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <div class="bg-cream">
+    <HowItWorks title="How room decor works" {steps} />
+  </div>
+
+  <section id="pricing" aria-labelledby="pricing-title" class="section-y scroll-mt-20">
+    <div class="container-x grid gap-x-14 gap-y-6 lg:grid-cols-12">
+      <h2 id="pricing-title" class="lg:col-span-5">How it’s priced</h2>
+      <div class="lg:col-span-7">
+        <p class="measure text-lg md:text-xl">Priced to your room and what you choose — we confirm your quote by message.</p>
+        <ul class="mt-6 grid gap-2.5 text-plum-soft">
+          <li class="flex gap-2.5"><Icon name="map-pin" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />{s.travel.note}</li>
+          <li class="flex gap-2.5"><Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Any add-on price above is a starting price, {s.taxNote}. {s.locationNote}</li>
+          <li class="flex gap-2.5"><Icon name="calendar" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />{s.deposit.summary} {s.securityDeposit.summary}</li>
+        </ul>
+        <a href="/policies" class="link-arrow mt-4">Read the booking policies<Icon name="arrow-right" size={18} /></a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand
+    title="Your room, styled and waiting"
+    text={`Tell us the occasion, the date and the room. We reply ${s.replyTime} with ideas and your quote.`}
+    service={svc.id}
+    buttonLabel="Plan your room decor"
+  />
+</BaseLayout>
+
+<style>
+  .hero-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    font-weight: 600;
+    color: var(--color-cocoa);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+  }
+  .hero-contact:hover { text-decoration-color: var(--color-cocoa); }
+
+  .suit-name { text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  @media (prefers-reduced-motion: no-preference) { .suit-name { transition: text-decoration-color 0.2s; } }
+  .suit:hover .suit-name { text-decoration-color: var(--color-gold); }
+</style>

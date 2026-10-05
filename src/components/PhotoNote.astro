@@ -1,0 +1,25 @@
+---
+// The note under a stand-in or AI picture, worded like the gallery's and the occasion pages' notes.
+// Renders nothing for a real photo. `subject`: what the picture shows ("a room decor setup").
+import type { ImageMetadata } from 'astro';
+import { photoKind } from './photoNote';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  subject: string;
+  class?: string;
+}
+const { src, alt, subject, class: className = '' } = Astro.props;
+const kind = photoKind(src, alt);
+---
+{kind === 'ai' && (
+  <p class:list={['placeholder-note', className]}>
+    <strong>AI illustration —</strong> this image was created with AI to show the style of {subject}. Photos from real Blush Picnic setups are coming soon.
+  </p>
+)}
+{kind === 'placeholder' && (
+  <p class:list={['placeholder-note', className]}>
+    <strong>Placeholder —</strong> a stand-in until a photo of {subject} is added.
+  </p>
+)}

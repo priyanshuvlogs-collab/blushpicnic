@@ -1,0 +1,170 @@
+---
+// /hampers — birthday hamper delivery (services.yaml "birthday-hampers") and custom hampers
+// ("custom-hampers", booked by Instagram DM). What goes in a hamper and what it costs aren't in the
+// data yet, so both are "quoted": the page asks for the person and the vision, not a budget.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import ArchImage from '../components/ArchImage.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import PhotoNote from '../components/PhotoNote.astro';
+import { Picture } from 'astro:assets';
+import { isStandIn } from '../components/photoNote';
+import { getSettings, getServices, bookUrl, igDmUrl, smsUrl, telUrl } from '../lib/site';
+import { breadcrumbs, genericService } from '../lib/schema';
+
+const s = await getSettings();
+const services = await getServices();
+const birthday = services.find((x) => x.id === 'birthday-hampers');
+const custom = services.find((x) => x.id === 'custom-hampers');
+if (!birthday || !custom) throw new Error('src/content/services.yaml needs "birthday-hampers" and "custom-hampers" entries');
+const b = birthday.data;
+const c = custom.data;
+const birthdayHref = bookUrl({ service: birthday.id });
+const customHref = bookUrl({ service: custom.id });
+
+const crumbs = [
+  { name: 'Services', path: '/services' },
+  { name: 'Hampers', path: '/hampers' },
+];
+const title = 'Birthday & Custom Hampers Delivered in Toronto | Blush Picnic';
+const description = `Birthday hampers delivered at midnight or in the day, and custom hampers built from your vision, across ${s.serviceArea}. Tell us who it’s for; we quote it.`;
+const heroStandIn = isStandIn(b.image, b.imageAlt);
+const jsonLd = [
+  breadcrumbs(s, crumbs),
+  genericService(s, { name: `${b.name} in Toronto`, description: b.summary, url: `${s.url}/hampers#birthday` }),
+  genericService(s, { name: `${c.name} in Toronto`, description: c.summary, url: `${s.url}/hampers#custom` }),
+];
+const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
+---
+<BaseLayout {title} {description} {jsonLd} image={heroStandIn ? undefined : b.image} imageAlt={heroStandIn ? undefined : b.imageAlt} book={{ service: birthday.id, label: 'Send a hamper' }}>
+  <section aria-labelledby="page-title">
+    <div class="container-x pt-3 md:pt-5">
+      <Breadcrumbs crumbs={crumbs} />
+    </div>
+    <div class="container-x grid items-center gap-x-14 gap-y-12 pb-16 pt-4 md:pb-20 md:pt-6 lg:grid-cols-12 lg:pb-24">
+      <div class="hero-enter lg:col-span-7">
+        <h1 id="page-title" class="max-w-[14ch]">Hampers delivered in Toronto &amp; the GTA</h1>
+        <p class="mt-5 max-w-[38rem] text-lg text-plum-soft md:mt-7 md:text-[1.25rem] md:leading-relaxed">
+          A birthday hamper delivered at midnight or during the day, or a custom hamper put together from your vision — anywhere in {s.serviceArea}.
+        </p>
+        <div class="mt-7 flex flex-col gap-3 sm:flex-row md:mt-9">
+          <a href={birthdayHref} class="btn btn-primary btn-lg" data-track="booking_cta" data-track-location="hampers_hero">{b.cta}</a>
+          <a href="#custom" class="btn btn-secondary btn-lg">Custom hampers</a>
+        </div>
+        <p class="mt-6 flex max-w-[38rem] items-start gap-2.5 text-plum-soft">
+          <Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />
+          <span>Tell us who it’s for and what they love. We reply {s.replyTime} with your quote.</span>
+        </p>
+        <p class="mt-2 flex flex-wrap items-center gap-x-1.5 text-[0.95rem] text-plum-soft">
+          <span>Questions first?</span>
+          <span class="inline-flex items-center gap-x-1.5 whitespace-nowrap">
+            <a href={smsUrl(s)} class="hero-contact" data-track="click_text"><Icon name="message" size={18} />Text</a>
+            <span>or</span>
+            <a href={telUrl(s)} class="hero-contact" data-track="click_call"><Icon name="phone" size={18} />call {s.phoneDisplay}</a>
+          </span>
+        </p>
+      </div>
+      <div class="hero-enter-delay lg:col-span-5">
+        <ArchImage
+          src={b.image}
+          alt={b.imageAlt}
+          sizes="(min-width: 1280px) 440px, (min-width: 1024px) 36vw, (min-width: 640px) 26rem, 82vw"
+          priority
+          fetchpriority="auto"
+          outline
+          class="mx-auto w-[82%] max-w-[26rem] sm:w-full lg:ml-auto lg:mr-3 lg:max-w-[28rem]"
+        />
+        <PhotoNote src={b.image} alt={b.imageAlt} subject="a birthday hamper" class="mx-auto mt-6 max-w-[26rem] lg:ml-auto lg:mr-3 lg:max-w-[28rem]" />
+      </div>
+    </div>
+  </section>
+
+  <section id="birthday" aria-labelledby="birthday-title" class="section-y scroll-mt-20 bg-cream">
+    <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <h2 id="birthday-title">{b.name}</h2>
+        <p class="mt-3 text-lg text-plum-soft md:text-xl">{b.short}</p>
+      </div>
+      <div class="lg:col-span-7">
+        <p class="measure text-lg">{b.summary}</p>
+        <ul class="mt-6 grid gap-2.5 text-plum-soft">
+          <li class="flex gap-2.5"><Icon name="clock" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Delivered at midnight or during the day — tell us which in your request.</li>
+          <li class="flex gap-2.5"><Icon name="map-pin" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Anywhere in {s.serviceArea}. {s.travel.note}</li>
+          <li class="flex gap-2.5"><Icon name="heart" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Tell us who it’s for and what they love, and we put the hamper together around them.</li>
+        </ul>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+          <a href={birthdayHref} class="btn btn-primary btn-lg" data-track="booking_cta" data-track-location="hampers_birthday">{b.cta}</a>
+          <a href={smsUrl(s)} class="link-arrow" data-track="click_text"><Icon name="message" size={18} />Text us a question</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="custom" aria-labelledby="custom-title" class="section-y scroll-mt-20">
+    <div class="container-x grid items-center gap-x-14 gap-y-10 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <h2 id="custom-title">{c.name}</h2>
+        <p class="mt-3 text-lg text-plum-soft md:text-xl">{c.short}</p>
+        <p class="measure mt-6 text-lg">{c.summary}</p>
+        <p class="measure mt-4 text-plum-soft">Send us the idea on Instagram — a photo you’ve saved, a colour, a theme, the person it’s for — and we reply with your quote.</p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
+          <a href={igDmUrl(s)} rel="noopener" class="btn btn-primary btn-lg" data-track="click_instagram" data-track-location="hampers_custom">
+            <Icon name="instagram" size={18} />{c.cta}
+          </a>
+          <a href={customHref} class="link-arrow" data-track="booking_cta" data-track-location="hampers_custom">or send a request<Icon name="arrow-right" size={18} /></a>
+        </div>
+      </div>
+      <div class="lg:col-span-5">
+        <Picture
+          src={c.image}
+          alt={c.imageAlt}
+          widths={widths}
+          sizes="(min-width: 1280px) 420px, (min-width: 1024px) 34vw, (min-width: 640px) 24rem, 70vw"
+          formats={['avif', 'webp']}
+          fallbackFormat="jpg"
+          loading="lazy"
+          class="mx-auto aspect-[4/5] w-[70%] max-w-[24rem] rounded-[var(--radius-card)] bg-petal-deep object-cover sm:w-full lg:ml-auto lg:mr-0 lg:max-w-[26rem]"
+        />
+        <PhotoNote src={c.image} alt={c.imageAlt} subject="a custom hamper" class="mx-auto mt-6 max-w-[24rem] lg:ml-auto lg:mr-0 lg:max-w-[26rem]" />
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" aria-labelledby="pricing-title" class="section-y scroll-mt-20 border-t border-line bg-cream">
+    <div class="container-x grid gap-x-14 gap-y-6 lg:grid-cols-12">
+      <h2 id="pricing-title" class="lg:col-span-5">How it’s priced</h2>
+      <div class="lg:col-span-7">
+        <p class="measure text-lg md:text-xl">Every hamper is quoted: tell us who it’s for and what they love, and we quote it.</p>
+        <ul class="mt-6 grid gap-2.5 text-plum-soft">
+          <li class="flex gap-2.5"><Icon name="map-pin" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />{s.travel.note}</li>
+          <li class="flex gap-2.5"><Icon name="sparkle" size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />Quotes are {s.taxNote}. {s.locationNote}</li>
+        </ul>
+        <a href="/policies" class="link-arrow mt-4">Read the booking policies<Icon name="arrow-right" size={18} /></a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand
+    title="Sending a hamper?"
+    text={`Tell us who it’s for, the date and the area. We reply ${s.replyTime} with your quote.`}
+    service={birthday.id}
+    buttonLabel="Send a birthday hamper"
+  />
+</BaseLayout>
+
+<style>
+  .hero-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    font-weight: 600;
+    color: var(--color-cocoa);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+  }
+  .hero-contact:hover { text-decoration-color: var(--color-cocoa); }
+</style>

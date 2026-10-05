@@ -110,7 +110,7 @@ final class Handler
         $received = new \DateTimeImmutable('now', new \DateTimeZone(Booking::TZ));
         $booking = new Booking(Booking::newRef($received), $received, $schema, $result);
         $mailer = new Mailer($config, $this->apiDir . '/lib');
-        $logCtx = ['ref' => $booking->ref, 'occasion' => $result->get('occasion'), 'package' => $result->get('package'), 'ip' => substr($ipKey, 0, 12)];
+        $logCtx = ['ref' => $booking->ref, 'service' => $result->get('service'), 'occasion' => $result->get('occasion'), 'package' => $result->get('package'), 'ip' => substr($ipKey, 0, 12)];
         $spamNote = self::SPAM_NOTES[$suspect] ?? '';
         if ($suspect !== '') {
             $logCtx['flag'] = $suspect;
@@ -282,7 +282,8 @@ final class Handler
     {
         $this->corsHeaders();
         if (!$json && $status !== 405) {
-            Response::redirect('/book?error=1#booking-error', $headers);
+            // A plain form post: unanswered or invalid questions (422) are not a sending failure.
+            Response::redirect($status === 422 ? '/book?error=invalid#booking-error' : '/book?error=1#booking-error', $headers);
             return;
         }
         $body = ['ok' => false, 'message' => $message];

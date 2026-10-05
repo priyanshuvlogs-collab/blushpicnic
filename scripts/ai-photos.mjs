@@ -43,9 +43,21 @@ const HERO = [
 ];
 
 const PACKAGES = [
+  ['pkg-simple.jpg', 'A simple, pretty picnic for two on green grass in a Toronto park in soft afternoon light. A small low light-oak table with a cream linen runner, a posy of blush roses in a bud vase, two ceramic plates with linen napkins, a glass jug of cloudy pink lemonade and two short tumblers, a blank small letter board. Two cream and blush floor cushions on a neutral woven rug. Minimal and uncluttered.'],
   ['pkg-signature.jpg', 'An elegant picnic for two on green grass in a leafy Toronto park in late afternoon light. A low light-oak table with a cream linen runner, a low arrangement of blush and cream roses, two ceramic place settings, a glass carafe of sparkling lemonade, a small charcuterie board, taper candles. Two blush and cream velvet floor cushions on a jute rug, a rattan basket and a cream parasol.'],
   ['pkg-proposal-romance.jpg', 'A romantic proposal picnic at sunset on a grassy waterfront park by Lake Ontario, Toronto skyline far in the background. A tall arch covered in blush, white and dusty-rose roses, a low table for two with a cream cloth, gold-rimmed glassware, many pillar candles in glass lanterns, a path of rose petals leading to blush velvet cushions on a cream rug.'],
   ['pkg-celebration.jpg', 'A luxury group picnic for eight in a sunny Toronto park. A long low light-oak table with a cream linen runner, blush and cream florals, gold cutlery, ceramic plates, a small two-tier cake with fresh flowers, pastries and fruit platters. Blush, cream and sage velvet floor cushions along both sides on large rugs, an organic balloon garland in blush, cream, sage and gold behind the table, pampas grass.'],
+];
+
+// The other services (services.yaml) and the picnic styles (styles.yaml); portrait for the arch frames.
+const SERVICES = [
+  ['service-room-decor.jpg', 'A bedroom styled for a birthday surprise, seen from the doorway in soft daylight. An organic balloon garland in blush, cream and gold above a neatly made bed with a cream duvet, rose petals scattered on the bed, pillar candles in glass on a side table, a vase of blush roses, a small styled tray with a cake on a stand. Calm, luxurious and tidy.'],
+  ['service-birthday-hamper.jpg', 'A luxury birthday gift hamper in a woven willow basket on a cream linen tablecloth in soft window light. Inside: a small cake in a clear box, chocolates wrapped in blush paper, a bunch of blush and cream roses, a satin ribbon bow, a blank cream card. Blush tissue paper, a few cream balloons softly out of focus behind.'],
+  ['service-custom-hamper.jpg', 'A bespoke gift hamper being styled on a light-oak table: an open woven basket lined with cream tissue paper, assorted gifts wrapped in blush and gold paper, dried florals, a candle in a glass jar, a jar of honey, a blank kraft tag on a ribbon. Soft daylight, minimal and elegant.'],
+];
+const STYLES = [
+  ['style-table-chairs.jpg', 'An elegant outdoor dinner for two in a leafy Toronto park at golden hour: a round dining table with a cream linen cloth and two cross-back wooden chairs, blush roses in a low vase, taper candles, ceramic plates and linen napkins, a glass jug of cloudy pink lemonade and two short tumblers, a cream rug underneath.'],
+  ['style-dome.jpg', 'A clear transparent dome tent on green grass in a Toronto park at dusk, warm fairy lights glowing inside. Inside the dome a low light-oak table with blush and cream florals, candles in glass and blush velvet cushions on a cream rug. The Toronto skyline softly out of focus in the distance.'],
 ];
 
 // occasion id → [occasion hero, gallery 1 (another setting), gallery 2 (close-up detail)]
@@ -135,6 +147,8 @@ const OCCASIONS = {
 const JOBS = [
   ...HERO,
   ...PACKAGES,
+  ...SERVICES,
+  ...STYLES,
   ...Object.entries(OCCASIONS).flatMap(([id, [hero, g1, g2]]) => [
     [`occasion-${id}.jpg`, hero],
     [`gallery-${id}-1.jpg`, g1],

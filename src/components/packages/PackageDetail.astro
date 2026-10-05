@@ -4,6 +4,7 @@
 import Icon from '../Icon.astro';
 import PriceTag from '../PriceTag.astro';
 import PackagePhoto from './PackagePhoto.astro';
+import PhotoNote from '../PhotoNote.astro';
 import { getOccasions, occasionUrl, bookUrl, money, hours, smsUrl, getSettings, type Package, type Occasion } from '../../lib/site';
 
 interface Props {
@@ -37,6 +38,7 @@ const headingId = `pkg-${pkg.id}-title`;
         desktopSizes="(min-width: 1280px) 540px, 45vw"
         class="aspect-[4/3] w-full rounded-[var(--radius-card)] bg-petal-deep object-cover lg:aspect-[4/5]"
       />
+      <PhotoNote src={d.image} alt={d.imageAlt} subject={`the ${d.name}`} class="mt-4" />
     </div>
 
     <div class:list={['lg:col-span-6', reverse ? 'lg:order-1 lg:pr-4' : 'lg:pl-4']}>

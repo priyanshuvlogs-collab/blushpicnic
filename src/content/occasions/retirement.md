@@ -29,8 +29,8 @@ faqs:
     a: "Yes. Add the company name in the booking form and tell us if you need an invoice; we'll confirm the details with your quote. For larger events the booking deposit is {depositPercent} rather than {deposit}, with the balance due before the picnic. The booking deposit is non-refundable. A {securityDeposit} refundable security deposit is also required, returned within {securityReturned} after your picnic once everything is collected and checked."
   - q: "How do we keep it from the retiree?"
     a: "Turn on the surprise section of the booking form. Tell us who else knows and how they'll arrive (a made-up “last meeting” in their calendar, perhaps), then choose whether our team stays out of sight nearby or leaves before they get there."
-  - q: "Can we add a cake or a photographer?"
-    a: "Yes. A custom cake, a grazing board, a neon sign and a photographer are all optional. Tick the ones you'd like in the booking form and we'll include them in your quote."
+  - q: "Can we add a cake or a charcuterie board?"
+    a: "Yes. A cake, a charcuterie board, beverages and helium balloons are all optional. Tick the ones you'd like in the booking form and we'll include them in your quote."
 related: ["appreciation", "corporate", "family"]
 ---
 
@@ -48,10 +48,10 @@ A retirement picnic in Toronto gives the day a setting of its own. Pick a park n
 
 Our Celebration package gives the send-off a proper stage: a themed backdrop for the farewell photo, a balloon garland or flower arch, custom signage for their years of service, and games for the afternoon. It starts at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST. Larger groups get their own quote, and prices vary by location across the GTA.
 
-To round it off, add a custom cake, a grazing board to share, a neon sign, or a photographer to catch the speeches and the hugs. Tick them in the form and we'll price them into your quote.
+To round it off, add a cake, a charcuterie board to share, beverages for the toasts, or helium balloons in the company colours. Tick them in the form and we'll price them into your quote.
 
 ## Planning the send-off
 
 1. **Start with the guest of honour.** Their name, the message you'd like to mark, a date and a backup date.
-2. **We come back with a quote.** Within 24 hours you'll have availability and pricing. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
+2. **We come back with a quote.** You'll have availability and pricing {replyTime}. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
 3. **Make the speech.** Everything is in place when they arrive, and the clean-up is ours.

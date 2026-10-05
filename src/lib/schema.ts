@@ -98,6 +98,24 @@ export function service(s: Settings, p: Package, opts: { image?: string } = {}):
   };
 }
 
+/**
+ * A service without a price (room decor, hampers, the /services hub): name, description and the
+ * page that explains it. No offers node — a quoted service has no starting price to publish.
+ * Packages keep using service(), which carries the starting price.
+ */
+export function genericService(s: Settings, opts: { name: string; description: string; url: string; image?: string }): Thing {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: opts.name,
+    description: opts.description,
+    url: opts.url,
+    image: opts.image,
+    provider: businessRef(s),
+    areaServed: { '@type': 'AdministrativeArea', name: 'Greater Toronto Area' },
+  };
+}
+
 export function faqPage(items: { q: string; a: string }[]): Thing {
   return {
     '@context': 'https://schema.org',

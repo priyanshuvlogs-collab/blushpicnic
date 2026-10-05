@@ -34,8 +34,19 @@ What it covers:
   required answers and once with every question that applies. Each run must return 200 and write
   both emails, with the right To, Reply-To, From and Subject, and with every answered question
   shown using the form's labels and option labels.
-- **Required questions:** every required question that applies, for every occasion, returns 422
-  with `errors[field]` when it's missing.
+- **Every service** (`picnics`, `proposals`, `room-decor`, `birthday-hampers`, `custom-hampers`) is
+  accepted with its own required answers and emailed with the right summary rows: a `Service` row
+  first; `Package`, `Guests` and `Start time` only for picnics and proposals; `When it arrives` for a
+  hamper; `Location` = location type · spot (picnics), room type · address (room decor) or the
+  delivery address (hampers); an `Area` row. The client's copy shows the room type but never the
+  room or delivery address. A hamper request that sends a `package`, picnic spot, guests, style or
+  time anyway has them ignored (they don't apply, so they are neither validated nor emailed).
+  Subjects: `New booking: <Occasion> · <date> · <name>` for a picnic, `New booking: <Service> ·
+  <Occasion> · …` for everything else; the client's "We’ve received your picnic request" only for
+  picnics and proposals ("…your request" otherwise).
+- **Required questions:** every required question that applies, for every occasion and every
+  service, returns 422 with `errors[field]` when it's missing. `showIf` with `in: [...]` follows the
+  same rule as the browser (`Validator::showIfMatches`).
 - **Rejected answers:** a bad email, a bad phone number, a past date, an impossible date or a date
   years away; a bad time; an invalid option, package, occasion or add-on; adults set to 0, 301, a
   word or a fraction; a letter board over 7 words; an answer over its maxLength; two answers for a
@@ -44,6 +55,12 @@ What it covers:
   and unknown fields are never validated and never emailed.
 - **Safety:** HTML in answers is escaped; a CR/LF header-injection attempt has no effect.
 - **Estimate:** extra guests and add-ons are priced as on the site; "Help me choose" shows "To be quoted".
+  A picnic style adds a line when its price is set, otherwise "`<style>`: quoted" (the classic low
+  table adds nothing). Travel: a line "Travel to `<area>`" when the area's fee is set, otherwise
+  "Travel to `<area>`: quoted by area"; "Not sure yet" → "Travel: quoted once you choose an area";
+  "Somewhere else in the GTA" → "Travel: quoted by area". Room decor and hampers are always "To be
+  quoted" but still list their priced add-ons and the travel line. The tests read prices and fees
+  from `form-schema.json`, so they stay green when the owner fills in numbers. The Simple Picnic prices $250.
 - **Checkboxes:** lists survive repeated keys, `key[]`, multipart and JSON.
 - **Spam:** a filled honeypot, a too-fast `_ts`, a fetch() post without `_ts` and a `_ts` far in the
   future all get the same reply as a real send; the request still reaches the business with
@@ -81,6 +98,12 @@ Not covered locally: TLS to smtp.hostinger.com and the `.htaccess` rules, becaus
 - Field names are the field ids from `booking-form.yaml`. **Name checkbox inputs `addons[]` /
   `romance_extras[]`, or post urlencoded.** In a multipart body, PHP keeps only the last of
   several same-named keys without `[]`. Toggles send `yes` (also accepted: `on`, `true`, `1`).
+- `service` (picnics, proposals, room-decor, birthday-hampers, custom-hampers) decides which
+  questions apply, exactly as the form's `showIf` rules say: a `package`, guests, `location_type`
+  and `location` are only read for picnics and proposals, `room_type` and `room_address` for room
+  decor, `delivery_slot` and `delivery_address` for hampers. Anything else sent is ignored, never
+  rejected. `lockBy` (the occasion a service forces) is browser-only; the server just checks the
+  occasion is one of the listed ones.
 - Spam fields:
   - `company_website`: a honeypot. Keep it empty, visually hidden, with `tabindex="-1"` and `autocomplete="off"`.
   - `_ts`: `Date.now()` from when the form was shown. Always send it with fetch(). A request sent

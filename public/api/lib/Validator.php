@@ -70,6 +70,14 @@ final class Validator
         $values = [];
         $errors = [];
 
+        // The occasion follows the service where the form locks it (proposals → proposal, hampers → birthday /
+        // other), so a hand-made post can't pair a hamper with, say, a corporate occasion.
+        $lock = $this->schema->field('occasion')['lockBy'] ?? null;
+        $service = $this->firstScalar($input['service'] ?? '');
+        if (is_array($lock) && ($lock['field'] ?? '') === 'service' && is_string($lock['values'][$service] ?? null)) {
+            $input['occasion'] = $lock['values'][$service];
+            $this->input = $input;
+        }
         $occasionId = $this->firstScalar($input['occasion'] ?? '');
         $occasion = $occasionId !== '' ? $this->schema->occasion($occasionId) : null;
         $this->occasionId = $occasion ? (string) $occasion['id'] : null;
@@ -106,22 +114,58 @@ final class Validator
         if ($ok && !empty($field['onlyFor'])) {
             $ok = $this->occasionId !== null && in_array($this->occasionId, array_map('strval', (array) $field['onlyFor']), true);
         }
-        if ($ok && is_array($field['showIf'] ?? null)) {
-            $dep = (string) ($field['showIf']['field'] ?? '');
-            $equals = $field['showIf']['equals'] ?? null;
+        // showIf: one condition, or a list of conditions that must all hold.
+        foreach (self::showIfConditions($field['showIf'] ?? null) as $cond) {
+            if (!$ok) {
+                break;
+            }
+            $dep = (string) ($cond['field'] ?? '');
             $depField = $this->schema->field($dep);
             if ($depField === null || !$this->isApplicable($dep, $depth + 1)) {
                 $ok = false;
             } else {
-                $depValue = $this->normalise($depField, $this->input[$dep] ?? null);
-                if ($equals === null) {
-                    $ok = $depValue !== '' && $depValue !== [];
-                } else {
-                    $ok = is_array($depValue) ? in_array((string) $equals, $depValue, true) : $depValue === (string) $equals;
-                }
+                $ok = self::showIfMatches($cond, $this->normalise($depField, $this->input[$dep] ?? null));
             }
         }
         return $this->applicable[$id] = $ok;
+    }
+
+    /**
+     * A field's showIf as a list of conditions: {field…} → [{field…}]; [{…}, {…}] as is; none → [].
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function showIfConditions(mixed $showIf): array
+    {
+        if (!is_array($showIf)) {
+            return [];
+        }
+        return array_is_list($showIf) ? array_values(array_filter($showIf, 'is_array')) : [$showIf];
+    }
+
+    /**
+     * Same rule as showIfMatches() in src/lib/form.ts (the browser) and applicable() in tests/api-test.mjs:
+     * equals → that value is among the answers; in → any of those values is; neither → a non-empty answer.
+     *
+     * @param array<string,mixed> $showIf  {field, equals} | {field, in: [...]} | {field}
+     * @param string|list<string> $answer  the dependency's answer(s)
+     */
+    public static function showIfMatches(array $showIf, string|array $answer): bool
+    {
+        $values = array_values(array_filter(array_map('strval', (array) $answer), 'strlen'));
+        if (array_key_exists('equals', $showIf) && $showIf['equals'] !== null) {
+            return in_array((string) $showIf['equals'], $values, true);
+        }
+        if (is_array($showIf['in'] ?? null)) {
+            $wanted = array_map('strval', $showIf['in']);
+            foreach ($values as $v) {
+                if (in_array($v, $wanted, true)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return $values !== [];
     }
 
     /**
@@ -135,6 +179,10 @@ final class Validator
         $type = (string) ($field['type'] ?? 'text');
         if ($type === 'checkboxes') {
             return array_values(array_filter(array_map(fn ($v) => $this->clean((string) $v, false), (array) ($raw ?? [])), 'strlen'));
+        }
+        // Two answers to a single-answer question are rejected by check(); for showIf they count as none.
+        if (is_array($raw) && count(array_filter($raw, static fn ($x) => trim((string) $x) !== '')) > 1) {
+            return '';
         }
         $v = $this->clean($this->firstScalar($raw ?? ''), false);
         if ($type === 'toggle') {

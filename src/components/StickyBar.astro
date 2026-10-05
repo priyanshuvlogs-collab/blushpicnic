@@ -4,7 +4,7 @@
 import Icon from './Icon.astro';
 import { getSettings, smsUrl, bookUrl } from '../lib/site';
 interface Props {
-  book?: { occasion?: string; package?: string };
+  book?: { service?: string; occasion?: string; package?: string };
 }
 const s = await getSettings();
 const bookHref = bookUrl(Astro.props.book);

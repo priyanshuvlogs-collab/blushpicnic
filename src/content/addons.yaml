@@ -1,53 +1,90 @@
 # ─────────────────────────────────────────────────────────────
-#  Add-ons. Set price to a number (e.g. 85) once you know it.
+#  Add-ons, for picnics and room decor. Set price to a number (e.g. 85) once you know it.
 #  price: null shows "Price on request" and is left out of the live estimate.
-#  PLACEHOLDER — all add-on prices are waiting for the owner.
+#  The site adds "Starting at" and "before HST" by itself, so a price is always a starting price
+#  (helium balloons: "Starting at $20" covers "$20 and up").
+#  PLACEHOLDER — the add-ons without a price are waiting for the owner.
 # ─────────────────────────────────────────────────────────────
-- id: rose-bouquet
-  name: "Rose bouquet"
-  order: 1
-  description: "A bouquet of roses to give on the day."
-  price: null
-  priceSuffix: ""
-
-- id: neon-sign
-  name: "Neon sign"
-  order: 2
-  description: "A glowing neon sign — perfect for evening setups and photos."
-  price: null
-  priceSuffix: ""
-
 - id: balloon-garland
   name: "Balloon garland"
-  order: 3
+  order: 1
   description: "An organic balloon garland in your colours."
   price: null
   priceSuffix: ""
 
-- id: flower-arch
-  name: "Flower arch"
+- id: fresh-flowers
+  name: "Fresh flowers"
+  order: 2
+  description: "Fresh flowers or a flower arrangement for the table."
+  price: null
+  priceSuffix: ""
+
+- id: canopy-teepee
+  name: "Canopy or teepee"
+  order: 3
+  description: "A canopy or teepee over your setup."
+  price: null
+  priceSuffix: ""
+
+- id: music-system
+  name: "Music system"
   order: 4
-  description: "A floral arch to frame the moment."
+  description: "A music system for your playlist."
   price: null
   priceSuffix: ""
 
-- id: custom-cake
-  name: "Custom cake"
+- id: umbrella
+  name: "Umbrella"
   order: 5
-  description: "A custom cake to match your theme and message."
-  price: null
+  description: "An umbrella for shade."
+  price: 30
   priceSuffix: ""
 
-- id: grazing-board
-  name: "Grazing board"
+- id: helium-balloons
+  name: "Helium balloons"
   order: 6
-  description: "A styled grazing board to share."
+  description: "Helium balloons in your colours."
+  price: 20
+  priceSuffix: ""
+
+- id: charcuterie
+  name: "Charcuterie board"
+  order: 7
+  description: "A charcuterie board to share."
   price: null
   priceSuffix: ""
 
-- id: photographer
-  name: "Photographer"
-  order: 7
-  description: "A photographer to capture the moment, so you can stay in it."
+- id: cake
+  name: "Cake"
+  order: 8
+  description: "A cake to match your theme and message."
+  price: null
+  priceSuffix: ""
+
+- id: beverages
+  name: "Beverages"
+  order: 9
+  description: "Drinks for the table — tell us what you'd like."
+  price: null
+  priceSuffix: ""
+
+- id: red-carpet
+  name: "Red carpet walk"
+  order: 10
+  description: "A red carpet leading up to your setup."
+  price: null
+  priceSuffix: ""
+
+- id: candle-walkway
+  name: "Candle walkway"
+  order: 11
+  description: "A candle-lit walkway leading to your setup."
+  price: null
+  priceSuffix: ""
+
+- id: glassware
+  name: "Glassware"
+  order: 12
+  description: "Glasses to drink from. The tableware in our setups is styled for the look; disposable cutlery is available on request."
   price: null
   priceSuffix: ""

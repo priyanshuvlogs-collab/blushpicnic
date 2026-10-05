@@ -1,11 +1,18 @@
 # ─────────────────────────────────────────────────────────────
 #  Booking form questions.
-#  The form has 4 steps: 1 Occasion & package · 2 When & where ·
-#  3 Details & style · 4 Your details (then Review & send).
+#  The form has 4 steps: 1 What you'd like (service, occasion, package) ·
+#  2 When & where · 3 Details & style · 4 Your details (then Review & send).
 #
 #  Each block below appears for the occasion groups in "appliesTo"
 #  ("*" = everyone). Occasion groups are set per occasion in
 #  src/content/occasions/<occasion>.md  →  formGroup.
+#
+#  A question can also depend on another answer:
+#    showIf: { field: service, in: ["picnics", "proposals"] }   (one of several answers)
+#    showIf: { field: is_surprise, equals: "yes" }               (one answer)
+#    showIf: [ {…}, {…} ]                                        (a list: all must hold)
+#  Service ids come from src/content/services.yaml: picnics, proposals, room-decor,
+#  birthday-hampers, custom-hampers.
 #
 #  Safe edits: labels, help text, placeholders, options, required.
 #  Changing an "id" renames the answer in emails — avoid it.
@@ -14,23 +21,37 @@
 # ─────────────────────────────────────────────────────────────
 
 # ── Step 1 ───────────────────────────────────────────────────
-- id: core-occasion
-  title: "Occasion & package"
+- id: core-what
+  title: "What you’d like"
   step: 1
   appliesTo: ["*"]
   order: 1
   fields:
+    - id: service
+      label: "What can we set up for you?"
+      type: radio
+      source: services
+      required: true
     - id: occasion
       label: "What are we celebrating?"
       type: select
       source: occasions
       required: true
+      # A proposal is its own occasion, and hampers are for birthdays (or "Something else" for a
+      # custom one): the answer follows the service and the question is hidden.
+      lockBy:
+        field: service
+        values:
+          proposals: "proposal"
+          birthday-hampers: "birthday"
+          custom-hampers: "other"
     - id: package
       label: "Which package feels right?"
       type: radio
       source: packages
       required: true
       help: "Not sure? Pick “Help me choose” and we’ll recommend one."
+      showIf: { field: service, in: ["picnics", "proposals"] }
 
 # ── Step 2 ───────────────────────────────────────────────────
 - id: core-when-where
@@ -54,6 +75,15 @@
       label: "Preferred start time"
       type: time
       required: true
+      showIf: { field: service, in: ["picnics", "proposals", "room-decor"] }
+    - id: delivery_slot
+      label: "When should it arrive?"
+      type: radio
+      required: true
+      options:
+        - "At midnight"
+        - "During the day"
+      showIf: { field: service, in: ["birthday-hampers", "custom-hampers"] }
     - id: guests_adults
       label: "Adults"
       type: number
@@ -61,12 +91,14 @@
       min: 1
       max: 300
       half: true
+      showIf: { field: service, in: ["picnics", "proposals"] }
     - id: guests_kids
       label: "Kids"
       type: number
       min: 0
       max: 300
       half: true
+      showIf: { field: service, in: ["picnics", "proposals"] }
     - id: location_type
       label: "Where would you like your picnic?"
       type: radio
@@ -78,6 +110,23 @@
         - "At home (indoors)"
         - "Indoor venue"
         - "Not sure yet — suggest a spot"
+      showIf: { field: service, in: ["picnics", "proposals"] }
+    - id: room_type
+      label: "What kind of room?"
+      type: radio
+      required: true
+      options:
+        - "At home"
+        - "Hotel room"
+        - "Airbnb or rental"
+        - "Somewhere else"
+      showIf: { field: service, equals: "room-decor" }
+    - id: area
+      label: "Which area?"
+      type: select
+      source: areas
+      required: true
+      # (the help text is the travel note from settings.yaml)
     - id: location
       label: "Address, park name or area"
       type: text
@@ -87,6 +136,24 @@
       autocomplete: "off"
       placeholder: "e.g. High Park, or Mississauga"
       help: "Prices vary by location across the GTA, so this helps us quote accurately."
+      showIf: { field: service, in: ["picnics", "proposals"] }
+    - id: room_address
+      label: "Address of the room"
+      type: text
+      required: true
+      maxLength: 200
+      autocomplete: "off"
+      placeholder: "Street address, or the hotel name"
+      help: "Only used to plan the setup."
+      showIf: { field: service, equals: "room-decor" }
+    - id: delivery_address
+      label: "Delivery address"
+      type: text
+      required: true
+      maxLength: 200
+      autocomplete: "off"
+      placeholder: "Where the hamper should arrive"
+      showIf: { field: service, in: ["birthday-hampers", "custom-hampers"] }
     - id: budget
       label: "Budget range"
       type: select
@@ -174,7 +241,7 @@
     - id: romance_extras
       label: "Extras you’re considering"
       type: checkboxes
-      # Flower arch, neon sign, photographer etc. are in "Add-ons" (style section) — don't repeat them here.
+      # Balloon garlands, candle walkways etc. are in "Add-ons" (style section) — don't repeat them here.
       options:
         - "Rose petals and candles"
         - "Family or friends join after"
@@ -347,21 +414,26 @@
       half: true
       placeholder: "e.g. their sister, my best friend"
       showIf: { field: "is_surprise", equals: "yes" }
+    # Not for a hamper delivery: nobody "arrives" and there is no team on site.
     - id: arrival_plan
       label: "How will they arrive?"
       type: textarea
       maxLength: 500
       placeholder: "e.g. I’ll suggest a walk and we’ll arrive at 5:30"
-      showIf: { field: "is_surprise", equals: "yes" }
+      showIf:
+        - { field: "is_surprise", equals: "yes" }
+        - { field: service, in: ["picnics", "proposals", "room-decor"] }
     - id: team_presence
       label: "Once it’s set up, should our team…"
       type: radio
       options: ["Stay hidden nearby", "Leave before you arrive", "Not sure — advise me"]
-      showIf: { field: "is_surprise", equals: "yes" }
+      showIf:
+        - { field: "is_surprise", equals: "yes" }
+        - { field: service, in: ["picnics", "proposals", "room-decor"] }
 
 # ── Step 3: style & add-ons (everyone) ──────────────────────
 - id: style
-  title: "Style & add-ons"
+  title: "Style & details"
   step: 3
   appliesTo: ["*"]
   order: 3
@@ -374,30 +446,58 @@
       maxLength: 120
       onlyFor: ["other"]
       placeholder: "e.g. a graduation or a farewell"
-      help: "Tell us what you’re celebrating so we can style it and quote accurately."
+      help: "Tell us what you’re celebrating so we can plan it and quote accurately."
     - id: colours_vibe
       label: "Colours and vibe"
       type: text
       maxLength: 200
       placeholder: "e.g. blush and ivory, romantic"
+    - id: picnic_style
+      label: "How should we set your picnic?"
+      type: radio
+      source: styles
+      help: "The classic low table comes with every package. A table & chair setup or a dome is added to your quote."
+      showIf: { field: service, in: ["picnics", "proposals"] }
     - id: letter_board
-      label: "Letter board message"
+      label: "Letter board or sign message"
       type: text
       maxLength: 60
       maxWords: 7
       placeholder: "e.g. Happy 30th Maya"
       help: "Up to 7 words."
+      showIf: { field: service, in: ["picnics", "proposals", "room-decor"] }
     - id: addons
       label: "Add-ons you’d like a price for"
       type: checkboxes
       source: addons
+      showIf: { field: service, in: ["picnics", "proposals", "room-decor"] }
+    - id: hamper_vision
+      label: "Describe your vision"
+      type: textarea
+      required: true
+      maxLength: 1000
+      placeholder: "Who it’s for, what should be in it, colours, a theme…"
+      showIf: { field: service, equals: "custom-hampers" }
+    - id: card_message
+      label: "Message for the card"
+      type: text
+      maxLength: 200
+      placeholder: "e.g. Happy birthday, Sam — love from all of us"
+      showIf: { field: service, in: ["birthday-hampers", "custom-hampers"] }
     - id: food_allergies
       label: "Food plans and allergies"
       type: textarea
       maxLength: 500
-      placeholder: "Bringing your own food? Adding a grazing board or cake? Any allergies?"
+      placeholder: "Bringing your own food? Adding a charcuterie board or cake? Any allergies?"
+      showIf: { field: service, in: ["picnics", "proposals", "room-decor"] }
+    - id: dietary
+      label: "Allergies or dietary needs"
+      type: text
+      maxLength: 300
+      placeholder: "e.g. nut allergy, vegetarian"
+      showIf: { field: service, in: ["birthday-hampers", "custom-hampers"] }
     - id: photo_permission
-      label: "May we share photos of your setup on Instagram?"
+      label: "May we share photos of it on Instagram?"
       type: radio
       options: ["Yes, happy to", "Setup only — no faces", "Please don’t share"]
     - id: notes

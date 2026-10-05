@@ -5,10 +5,11 @@
 //     validation, live estimate, saved progress, deep links and a fetch() submit with a text-us fallback.
 import Icon from '../Icon.astro';
 import BookField from './BookField.astro';
+import ServiceChoice from './ServiceChoice.astro';
 import OccasionChoice from './OccasionChoice.astro';
 import PackageChoice from './PackageChoice.astro';
 import Reassurance from './Reassurance.astro';
-import { buildFormSchema, type ResolvedField, type ResolvedGroup } from '../../lib/form';
+import { buildFormSchema, showIfConditions, type ResolvedField, type ResolvedGroup } from '../../lib/form';
 import { getSettings, getPackages, money } from '../../lib/site';
 import type { BookingConfig } from '../../scripts/booking/config';
 
@@ -18,7 +19,9 @@ const pkgs = await getPackages();
 
 const minPrice = Math.min(...pkgs.map((p) => p.data.priceFrom));
 const estimateNote = `Estimate only — starting price ${s.taxNote}. ${s.locationNote}`;
-const depositLine = `${money(s.deposit.standard)} booking deposit holds your date (${s.deposit.largeEventPercent}% for larger events), plus a ${money(s.securityDeposit.amount)} refundable security deposit`;
+const depositLineBooking = `${money(s.deposit.standard)} booking deposit holds your date (${s.deposit.largeEventPercent}% for larger events)`;
+// The refundable security deposit is for rented decor and equipment: services.yaml says which services carry it.
+const depositLine = `${depositLineBooking}, plus a ${money(s.securityDeposit.amount)} refundable security deposit`;
 
 const config: BookingConfig = {
   schema,
@@ -32,6 +35,7 @@ const config: BookingConfig = {
   email: s.email,
   estimateNote,
   depositLine,
+  depositLineBooking,
   taxNote: s.taxNote,
   guestsLabels: Object.fromEntries(pkgs.map((p) => [p.id, p.data.guestsLabel])),
   thankYouUrl: '/thank-you',
@@ -43,8 +47,28 @@ const stepCount = schema.steps.length;
 const groupsFor = (step: number) => schema.groups.filter((g) => g.step === step);
 const conditional = (g: ResolvedGroup, f: ResolvedField) => !g.appliesTo.includes('*') || !!f.onlyFor || !!f.showIf;
 const onlyForNames = (g: ResolvedGroup) => schema.occasions.filter((o) => g.appliesTo.includes(o.formGroup)).map((o) => o.name);
+const fieldsById = new Map(schema.groups.flatMap((g) => g.fields.map((f) => [f.id, f] as const)));
+const list = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}` : (xs[0] ?? ''));
+/**
+ * No-JS note for a question that depends on other answers: "Only for Picnics or Proposals.",
+ * "Only if “Yes, this is a surprise” is on, and for Picnics, Proposals or Room decor."
+ */
+const onlyIf = (f: ResolvedField): string | undefined => {
+  const clauses = showIfConditions(f.showIf).flatMap((c) => {
+    const dep = fieldsById.get(c.field);
+    if (!dep) return [];
+    const label = (v: string) => dep.options?.find((o) => o.value === v)?.label ?? v;
+    if (c.in) return [`for ${list(c.in.map(label))}`];
+    if (c.equals !== undefined) return [dep.type === 'toggle' ? `if “${dep.label}” is on` : `for ${label(c.equals)}`];
+    return [`if you answered “${dep.label}”`];
+  });
+  return clauses.length ? `Only ${clauses.join(', and ')}.` : undefined;
+};
 const wordLimit = (f: ResolvedField) => (f.maxWords ? (f.id === 'letter_board' ? schema.letterBoardMaxWords : f.maxWords) : undefined);
 const progressItems = [...schema.steps, 'Review'];
+// A group named like its step ("What you'd like" typed with a straight apostrophe in the YAML, curly in
+// STEP_TITLES) gets no heading of its own.
+const sameTitle = (a: string, b: string) => a.replace(/'/g, '’').trim() === b.replace(/'/g, '’').trim();
 ---
 <div class="bk" data-booking>
   <script type="application/json" data-booking-config set:html={configJson} />
@@ -91,19 +115,21 @@ const progressItems = [...schema.steps, 'Review'];
 
               {groupsFor(step).map((g) => (
                 <div class="bk-group" data-group={g.id}>
-                  {g.title !== title && <h3 class="bk-group-title">{g.title}</h3>}
+                  {!sameTitle(g.title, title) && <h3 class="bk-group-title">{g.title}</h3>}
                   {!g.appliesTo.includes('*') && (
                     <p class="bk-only-for nojs-only">Only if you’re booking for: {onlyForNames(g).join(', ')}.</p>
                   )}
                   {g.intro && <p class="bk-group-intro">{g.intro}</p>}
                   <div class="bk-fields">
                     {g.fields.map((f) =>
-                      f.id === 'occasion' ? (
+                      f.id === 'service' ? (
+                        <ServiceChoice field={f} services={schema.services} />
+                      ) : f.id === 'occasion' ? (
                         <OccasionChoice field={f} />
                       ) : f.id === 'package' ? (
-                        <PackageChoice field={f} />
+                        <PackageChoice field={f} onlyIf={onlyIf(f)} />
                       ) : (
-                        <BookField field={f} conditional={conditional(g, f)} maxWords={wordLimit(f)} />
+                        <BookField field={f} conditional={conditional(g, f)} maxWords={wordLimit(f)} onlyIf={onlyIf(f)} />
                       ),
                     )}
                   </div>
@@ -128,8 +154,9 @@ const progressItems = [...schema.steps, 'Review'];
               <p><strong>This is a request, not a payment.</strong> We reply {s.replyTime} with availability and your quote.</p>
               <p>
                 Once you’re happy, a {money(s.deposit.standard)} booking deposit (or {s.deposit.largeEventPercent}% for larger events) holds your
-                date&nbsp;— it’s non-refundable. There’s also a {money(s.securityDeposit.amount)} refundable security deposit, returned within
-                {s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.
+                date&nbsp;— it’s non-refundable.{' '}
+                <span data-security-deposit>There’s also a {money(s.securityDeposit.amount)} refundable security deposit, returned within
+                {s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.</span>{' '}
                 <a href="/policies" class="bk-link">Read our booking policies</a>
               </p>
             </div>
@@ -387,7 +414,7 @@ const progressItems = [...schema.steps, 'Review'];
   /* Occasion chips */
   .bk-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
   .bk-chip { position: relative; display: inline-flex; }
-  .bk-chip-input, .bk-pkg-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+  .bk-chip-input, .bk-pkg-input, .bk-svc-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
   .bk-chip-face {
     display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.875rem; padding: 0.5rem 1.05rem;
     border: 1px solid var(--bk-border); border-radius: 999px; background: var(--color-cream);
@@ -446,6 +473,32 @@ const progressItems = [...schema.steps, 'Review'];
   }
   .bk-pkg-compare { margin-top: 0.35rem; font-size: 0.95rem; }
   .bk-pkg-compare a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+
+  /* Service cards (step 1's first question): name + one line, one column on phones, two from 640px */
+  .bk-svcs { display: grid; gap: 0.75rem; margin-top: 1rem; }
+  .bk-svc { position: relative; display: block; }
+  .bk-svc-face {
+    display: flex; align-items: center; gap: 0.9rem; min-height: 3.5rem; padding: 0.95rem 1.1rem;
+    border: 1.5px solid var(--bk-border-soft); border-radius: 16px; background: var(--color-cream);
+    transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+  }
+  .bk-svc-dot { align-self: center; margin-top: 0; }
+  .bk-svc-body { min-width: 0; }
+  .bk-svc-name { display: block; font-family: var(--font-display); font-size: 1.4rem; font-weight: 600; line-height: 1.15; }
+  .bk-svc-short { display: block; margin-top: 0.15rem; font-size: 0.95rem; line-height: 1.4; color: var(--color-plum-soft); }
+  .bk-svc-input:hover + .bk-svc-face { border-color: var(--bk-border); }
+  .bk-svc-input:checked + .bk-svc-face { border-color: var(--bk-accent); background: var(--bk-selected); box-shadow: inset 0 0 0 1px var(--bk-accent); }
+  .bk-svc-input:checked + .bk-svc-face .bk-svc-dot { border-color: var(--bk-accent); }
+  .bk-svc-input:checked + .bk-svc-face .bk-svc-dot::before { transform: scale(1); }
+  .bk-svc-input:focus-visible + .bk-svc-face { outline: 3px solid var(--color-plum); outline-offset: 2px; }
+  .bk-field.has-error .bk-svc-face { border-color: color-mix(in srgb, var(--color-error) 55%, var(--color-cream)); }
+  @media (min-width: 640px) {
+    .bk-svcs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bk-svc:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  .bk-svc-dm { margin-top: 0.85rem; font-size: 0.95rem; line-height: 1.5; color: var(--color-plum-soft); }
+  .bk-svc-dm a { display: inline-block; padding-block: 0.7rem; margin-block: -0.7rem; } /* 44px tap target without a taller line */
+  .bp-js .bk-svc-dm:not(.is-shown) { display: none; }
 
   /* Switch */
   .bk-switch { display: inline-flex; align-items: center; gap: 0.9rem; min-height: 3rem; cursor: pointer; font-weight: 600; }
@@ -610,7 +663,7 @@ const progressItems = [...schema.steps, 'Review'];
     .bk-check::before { background: HighlightText; }
     .bk-switch input { border: 1px solid CanvasText; }
     .bk-switch input::before { background: CanvasText; }
-    .bk-chip-input:checked + .bk-chip-face, .bk-pkg-input:checked + .bk-pkg-face { border-width: 3px; }
+    .bk-chip-input:checked + .bk-chip-face, .bk-pkg-input:checked + .bk-pkg-face, .bk-svc-input:checked + .bk-svc-face { border-width: 3px; }
     /* Progress: phone segments and desktop connectors are drawn with backgrounds, which this mode drops. */
     .bk-progress button::before, .bk-progress li + li::after { forced-color-adjust: none; background: Canvas; }
     .bk-progress button::before { border: 1px solid CanvasText; }

@@ -29,7 +29,7 @@ const curly = (t: string) => t.replace(/(\w)'(\w)/g, '$1’$2');
         <p>{curly(s.deposit.summary)}</p>
       </div>
     </li>
-    <li>
+    <li data-security-deposit>
       <Icon name="sparkle" size={20} class="bk-reassure-icon" />
       <div>
         <p class="bk-reassure-title">Refundable security deposit</p>

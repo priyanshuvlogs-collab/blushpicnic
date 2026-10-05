@@ -1,0 +1,59 @@
+---
+// Picnic styles from styles.yaml: the classic low table every package is built on, and the setups
+// chosen in the booking form (table & chairs, dome). included: true → "Included with every package";
+// price → "Starting at $X, before HST"; price: null → quoted.
+import { Picture } from 'astro:assets';
+import Icon from '../Icon.astro';
+import PhotoNote from '../PhotoNote.astro';
+import { getSettings, getStyles, money, type Style } from '../../lib/site';
+
+const s = await getSettings();
+const styles = await getStyles();
+const priceText = (x: Style) =>
+  x.data.included ? 'Comes with your picnic package' : x.data.price !== null ? `Starting at ${money(x.data.price)}, ${s.taxNote}` : 'Quoted — choose it in the booking form';
+const widths = (x: Style) => [400, 560, 720, 960, 1200].filter((w) => w <= x.data.image.width);
+const anyPriced = styles.some((x) => !x.data.included && x.data.price !== null);
+---
+{styles.length > 0 && (
+  <section id="styles" aria-labelledby="styles-title" class="section-y scroll-mt-20">
+    <div class="container-x">
+      <div class="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
+        <h2 id="styles-title" class="lg:col-span-6">Picnic styles</h2>
+        <p class="measure text-plum-soft lg:col-span-6 lg:pb-1">
+          How the picnic is set. The classic low table comes with your picnic package; choose another setup in the booking form and we’ll include it in your quote.
+        </p>
+      </div>
+
+      {/* The classic style (every package's base) leads full width; the chosen setups pair up under it. */}
+      <ul class="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 md:mt-14 lg:gap-x-10" role="list">
+        {styles.map((x, i) => (
+          <li class:list={['style', i === 0 && 'sm:col-span-2 sm:grid sm:grid-cols-12 sm:items-center sm:gap-x-8 lg:gap-x-10']}>
+            <Picture
+              src={x.data.image}
+              alt={x.data.imageAlt}
+              widths={widths(x)}
+              sizes={i === 0 ? '(min-width: 1280px) 600px, (min-width: 640px) 50vw, 100vw' : '(min-width: 1280px) 560px, (min-width: 640px) 46vw, 100vw'}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpg"
+              loading="lazy"
+              pictureAttributes={{ class: i === 0 ? 'block sm:col-span-6' : 'block' }}
+              class="aspect-[4/3] w-full rounded-[var(--radius-card)] bg-petal-deep object-cover"
+            />
+            <div class:list={[i === 0 ? 'mt-5 sm:col-span-6 sm:mt-0' : 'mt-4']}>
+              <h3 class:list={[i === 0 ? 'text-[1.75rem] md:text-[2.2rem]' : 'text-[1.4rem] md:text-[1.55rem]']}>{x.data.name}</h3>
+              <p class="mt-2 flex items-start gap-2 text-[0.95rem] font-semibold text-sage-ink">
+                <Icon name={x.data.included ? 'check' : 'sparkle'} size={18} class="mt-[0.2em] shrink-0" />{priceText(x)}
+              </p>
+              <p class:list={['mt-2 text-plum-soft', i === 0 && 'measure']}>{x.data.description}</p>
+              <PhotoNote src={x.data.image} alt={x.data.imageAlt} subject={`the ${x.data.name.toLowerCase()}`} class="mt-4" />
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <p class="mt-8 max-w-[52rem] border-t border-line pt-6 text-[0.95rem] text-plum-soft">
+        {anyPriced ? `Style prices are starting prices, ${s.taxNote}.` : `A chosen setup is priced in your quote, ${s.taxNote}.`} {s.locationNote}
+      </p>
+    </div>
+  </section>
+)}

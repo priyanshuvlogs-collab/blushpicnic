@@ -3,9 +3,9 @@
 // price in packages.yaml updates every page that mentions it.
 //
 // Available tokens
-//   {name} {phone} {text} {email} {instagram} {tiktok} {replyTime} {serviceArea} {taxNote} {locationNote}
+//   {name} {phone} {text} {email} {instagram} {tiktok} {replyTime} {serviceArea} {taxNote} {locationNote} {travelNote}
 //   {deposit} {depositPercent} {depositSummary} {securityDeposit} {securityReturned} {securityDepositSummary}
-//   Per package (ids: signature, proposal-romance, celebration):
+//   Per package (ids: simple, signature, proposal-romance, celebration):
 //   {price:signature} → $375   {guests:signature} → 2 guests   {hours:signature} → 2 hours
 //   {extraGuest:signature} → $35   {package:signature} → Signature Picnic   {guestsMax:celebration} → 8
 // Unknown {words} are left exactly as written.
@@ -33,6 +33,7 @@ export function buildTokenMaps(s: Settings, packages: Package[]): TokenMaps {
     serviceArea: s.serviceArea,
     taxNote: s.taxNote,
     locationNote: s.locationNote,
+    travelNote: s.travel.note,
     deposit: money(s.deposit.standard),
     depositPercent: `${s.deposit.largeEventPercent}%`,
     depositSummary: s.deposit.summary,

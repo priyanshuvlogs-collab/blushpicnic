@@ -1,13 +1,17 @@
 ---
 // Three steps from request to picnic. Copy comes from settings so deposit/reply-time stay in sync.
+// Pass `steps` for a service whose last step isn't a picnic (room decor), keeping step 2's deposit
+// sentence so every version says the same about money.
 import { getSettings, money } from '../lib/site';
 interface Props {
   title?: string;
   class?: string;
+  /** Replace the three picnic steps (same shape). */
+  steps?: { title: string; text: string }[];
 }
 const s = await getSettings();
 const { title = 'How it works', class: className = '' } = Astro.props;
-const steps = [
+const steps = Astro.props.steps ?? [
   {
     title: 'Tell us your idea',
     text: 'Send a booking request in about three minutes — your occasion, date, area and the little details that make it yours.',

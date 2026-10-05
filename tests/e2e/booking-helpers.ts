@@ -1,13 +1,19 @@
 // Shared helpers for the booking-form tests. The form is data-driven, so tests read the same schema the
-// page uses (/api/form-schema.json) instead of hard-coding questions.
+// page uses (/api/form-schema.json) instead of hard-coding questions, and decide which questions show
+// with the same showIf / lockBy rules as the browser (src/scripts/booking/conditions.ts).
 import { expect, type APIRequestContext, type Page, type Request, type Locator } from '@playwright/test';
 import type { FormSchema, ResolvedField, ResolvedGroup } from '../../src/lib/form';
+import { showIfConditions, showIfMatches, lockedValue } from '../../src/scripts/booking/conditions';
 
 export type { FormSchema, ResolvedField, ResolvedGroup };
 export type Occasion = FormSchema['occasions'][number];
 export type Fields = Map<string, string[]>;
 
 export const BOOK_ENDPOINT = '**/api/book.php';
+/** The service a test books unless it says otherwise. */
+export const DEFAULT_SERVICE = 'picnics';
+/** Step 1 answers the helpers pick themselves (choose / deep links), never from a sample value. */
+const STEP1_IDS = new Set(['service', 'occasion', 'package']);
 
 export async function getSchema(request: APIRequestContext): Promise<FormSchema> {
   const res = await request.get('/api/form-schema.json');
@@ -23,20 +29,38 @@ export function torontoDate(days = 0): string {
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
+export const fieldById = (schema: FormSchema, id: string): ResolvedField | undefined => schema.groups.flatMap((g) => g.fields).find((f) => f.id === id);
+export const serviceName = (schema: FormSchema, id: string) => schema.services.find((x) => x.id === id)?.name ?? id;
+
 export function groupApplies(g: ResolvedGroup, occ: Occasion): boolean {
   return g.appliesTo.includes('*') || g.appliesTo.includes(occ.formGroup);
 }
 
-/** Does a question show for this occasion (ignoring showIf answers, which start "off")? */
-export function fieldShows(g: ResolvedGroup, f: ResolvedField, occ: Occasion): boolean {
-  if (!groupApplies(g, occ)) return false;
-  if (f.onlyFor && !f.onlyFor.includes(occ.id)) return false;
-  if (f.showIf) return false;
-  return true;
+/** The step-1 answers other questions may depend on. Any other showIf answer counts as "off". */
+const known = (occ: Occasion, service: string): Record<string, string> => ({ service, occasion: occ.id });
+
+/** The answer the chosen service locks this question to (hidden but still submitted), or null. */
+export function lockedAnswer(f: ResolvedField, occ: Occasion, service = DEFAULT_SERVICE): string | null {
+  return f.lockBy ? lockedValue(f.lockBy, known(occ, service)[f.lockBy.field] ?? '') : null;
 }
 
-export const stepFields = (schema: FormSchema, step: number, occ: Occasion) =>
-  schema.groups.filter((g) => g.step === step).flatMap((g) => g.fields.filter((f) => fieldShows(g, f, occ)).map((f) => ({ g, f })));
+/** Does a question apply — is it validated and submitted — for this occasion and service? Every showIf condition must hold. */
+export function fieldApplies(g: ResolvedGroup, f: ResolvedField, occ: Occasion, service = DEFAULT_SERVICE): boolean {
+  if (!groupApplies(g, occ)) return false;
+  if (f.onlyFor && !f.onlyFor.includes(occ.id)) return false;
+  return showIfConditions(f.showIf).every((c) => {
+    const v = known(occ, service)[c.field];
+    return v !== undefined && showIfMatches(c, [v]);
+  });
+}
+
+/** Does a question show (applies and isn't locked to an answer by the service)? */
+export function fieldShows(g: ResolvedGroup, f: ResolvedField, occ: Occasion, service = DEFAULT_SERVICE): boolean {
+  return fieldApplies(g, f, occ, service) && lockedAnswer(f, occ, service) === null;
+}
+
+export const stepFields = (schema: FormSchema, step: number, occ: Occasion, service = DEFAULT_SERVICE) =>
+  schema.groups.filter((g) => g.step === step).flatMap((g) => g.fields.filter((f) => fieldShows(g, f, occ, service)).map((f) => ({ g, f })));
 
 /** A valid sample answer for a question. */
 export function sampleValue(f: ResolvedField, step: number): string {
@@ -55,7 +79,7 @@ export function sampleValue(f: ResolvedField, step: number): string {
     case 'month':
       return '2027-03';
     case 'textarea':
-      return clip('Test notes for the picnic');
+      return clip(`Test notes for ${f.label.replace(/[?:]/g, '').toLowerCase()}`);
     default:
       return f.id === 'name' ? 'Maya Test' : clip(`Test ${f.label}`.replace(/[?:]/g, ''));
   }
@@ -104,16 +128,24 @@ export async function next(page: Page) {
   await primaryButton(page).click();
 }
 
-export async function choose(page: Page, occasion: string, pkg: string) {
-  await page.locator(`input[name="occasion"][value="${occasion}"]`).check();
-  await page.locator(`input[name="package"][value="${pkg}"]`).check();
+/**
+ * Answer step 1: the service first, then the occasion and package where they show. The occasion is
+ * hidden when the service locks it (proposals, hampers) and the package only exists for picnics and
+ * proposals — pass '' to skip either on purpose.
+ */
+export async function choose(page: Page, occasion: string, pkg: string, service = DEFAULT_SERVICE) {
+  await page.locator(`input[name="service"][value="${service}"]`).check();
+  const occ = page.locator(`input[name="occasion"][value="${occasion}"]`);
+  if (occasion && (await occ.isVisible())) await occ.check();
+  const p = page.locator(`input[name="package"][value="${pkg}"]`);
+  if (pkg && (await p.isVisible())) await p.check();
 }
 
-/** Fill every required question that shows on a step. */
-export async function fillRequired(page: Page, schema: FormSchema, step: number, occ: Occasion) {
+/** Fill every required question that shows on a step (step 1's own answers come from choose()). */
+export async function fillRequired(page: Page, schema: FormSchema, step: number, occ: Occasion, service = DEFAULT_SERVICE) {
   const filled: Record<string, string | string[]> = {};
-  for (const { f } of stepFields(schema, step, occ)) {
-    if (!f.required || f.id === 'occasion' || f.id === 'package') continue;
+  for (const { f } of stepFields(schema, step, occ, service)) {
+    if (!f.required || STEP1_IDS.has(f.id)) continue;
     filled[f.id] = await answer(page, f, step);
   }
   return filled;
@@ -184,15 +216,15 @@ export async function recordAnalytics(page: Page): Promise<[string, Record<strin
   return log;
 }
 
-/** Go from step 1 to the review step for an occasion, answering only what's required. */
-export async function completeToReview(page: Page, schema: FormSchema, occasionId: string, pkg?: string) {
+/** Go from step 1 to the review step for an occasion (and service), answering only what's required. */
+export async function completeToReview(page: Page, schema: FormSchema, occasionId: string, pkg?: string, service = DEFAULT_SERVICE) {
   const occ = schema.occasions.find((o) => o.id === occasionId)!;
-  await choose(page, occ.id, pkg ?? occ.recommendedPackage ?? 'not-sure');
+  await choose(page, occ.id, pkg ?? occ.recommendedPackage ?? 'not-sure', service);
   await next(page);
   const answers: Record<string, string | string[]> = {};
   for (let step = 2; step <= schema.steps.length; step++) {
     await expect(stepHeading(page, new RegExp(escapeRe(schema.steps[step - 1])))).toBeVisible();
-    Object.assign(answers, await fillRequired(page, schema, step, occ));
+    Object.assign(answers, await fillRequired(page, schema, step, occ, service));
     await next(page);
   }
   await expect(stepHeading(page, /Review & send/)).toBeVisible();

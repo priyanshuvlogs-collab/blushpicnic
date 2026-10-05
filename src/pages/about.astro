@@ -20,9 +20,10 @@ if (!entry) throw new Error('src/content/pages/about.md is missing');
 const d = entry.data;
 const html = entry.rendered?.html ?? '';
 const pkgs = await getPackages();
-const signature = pkgs.find((p) => p.id === 'signature') ?? pkgs[0];
-// "Low picnic table", "Rugs and cushions", … → used to describe what arrives with us.
-const kit = signature.data.includes.slice(0, 4).map((x) => x.toLowerCase()).join(', ');
+// The entry package lists the basics every picnic starts from ("Low picnic table", "Rugs and
+// cushions", …); the others only list what they add. Used to describe what arrives with us.
+const simple = pkgs.find((p) => p.id === 'simple') ?? pkgs.reduce((a, b) => (b.data.priceFrom < a.data.priceFrom ? b : a));
+const kit = simple.data.includes.slice(0, 4).map((x) => x.toLowerCase()).join(', ');
 
 const verbs = [
   { word: 'Deliver', text: `Everything arrives with us — ${kit} and more.` },
@@ -132,7 +133,7 @@ const lede = d.lede ? await fillTokensText(d.lede) : undefined;
       <div class="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-10">
         <h2 id="what-title" class="lg:col-span-5">What we do</h2>
         <p class="measure text-plum-soft lg:col-span-7 lg:pb-1">
-          A styled picnic, without the logistics. In a park, on a beach, in your backyard, at home or in an indoor venue — anywhere in {s.serviceArea}.
+          A styled picnic, without the logistics. In a park, on a beach, in your backyard, at home or in an indoor venue — anywhere in {s.serviceArea}. The same care goes into our <a href="/services" class="about-link">proposals, room decor and hampers</a>.
         </p>
       </div>
       <ol class="mt-12 grid gap-y-8 sm:grid-cols-2 sm:gap-x-10 md:mt-16 lg:grid-cols-4 lg:gap-x-0">
@@ -195,6 +196,16 @@ const lede = d.lede ? await fillTokensText(d.lede) : undefined;
 </BaseLayout>
 
 <style>
+  .about-link {
+    font-weight: 600;
+    color: var(--color-cocoa);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+  .about-link:hover { text-decoration-color: var(--color-cocoa); }
+
   .story-badge {
     width: 5.5rem;
     height: auto;

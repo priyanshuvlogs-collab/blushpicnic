@@ -1,0 +1,40 @@
+---
+// The five things we set up (services.yaml), right under the hero: a numbered editorial list,
+// not five cards. Each row links to the page that explains that service.
+import Icon from '../Icon.astro';
+import { getSettings, getServices } from '../../lib/site';
+
+const s = await getSettings();
+const services = await getServices();
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+<section aria-labelledby="services-title" class="border-t border-line bg-cream">
+  <div class="container-x grid gap-x-12 gap-y-8 py-12 md:py-16 lg:grid-cols-12">
+    <div class="lg:col-span-4">
+      <h2 id="services-title" class="max-w-[12ch] text-[1.9rem] md:text-[2.3rem]">What can we set up for you?</h2>
+      <p class="mt-3 max-w-sm text-plum-soft">Picnics, proposals and room decor are set up and styled by us; hampers are put together and delivered — anywhere in {s.serviceArea}.</p>
+      <a href="/services" class="link-arrow mt-2">All five services<Icon name="arrow-right" size={18} /></a>
+    </div>
+
+    <ol class="divide-y divide-line border-y border-line lg:col-span-8" role="list">
+      {services.map((x, i) => (
+        <li class="svc group">
+          <a href={x.data.href} class="grid min-h-[4.5rem] grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-3 py-4 no-underline sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:gap-x-5 md:py-5">
+            <span aria-hidden="true" class="font-display text-[1.2rem] text-gold-ink sm:text-[1.3rem]">{pad(i + 1)}</span>
+            <span class="min-w-0">
+              <span class="svc-name block font-display text-[1.4rem] font-semibold leading-tight md:text-[1.6rem]">{x.data.name}</span>
+              <span class="mt-0.5 block text-[0.95rem] text-plum-soft">{x.data.short}</span>
+            </span>
+            <Icon name="arrow-right" size={20} class="shrink-0 text-plum-soft motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1" />
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .svc-name { text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  @media (prefers-reduced-motion: no-preference) { .svc-name { transition: text-decoration-color 0.2s; } }
+  .svc:hover .svc-name { text-decoration-color: var(--color-gold); }
+</style>

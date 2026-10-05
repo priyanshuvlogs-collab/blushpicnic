@@ -36,6 +36,57 @@ final class Booking
 
     // ── Headline facts ───────────────────────────────────────
 
+    /** The chosen service id (services.yaml): picnics, proposals, room-decor, birthday-hampers, custom-hampers. */
+    public function serviceId(): string
+    {
+        return $this->answers->get('service');
+    }
+
+    /** "Picnics" / "Room decor" / "Birthday hamper delivery"…, or '' when the schema doesn't know the id. */
+    public function serviceName(): string
+    {
+        $s = $this->schema->service($this->serviceId());
+        return $s ? trim((string) ($s['name'] ?? '')) : '';
+    }
+
+    /** A picnic or proposal: a package, guests and a picnic spot (an unanswered service counts as one, for old forms). */
+    public function isPicnic(): bool
+    {
+        $id = $this->serviceId();
+        return $id === '' || in_array($id, FormSchema::PICNIC_SERVICES, true);
+    }
+
+    /** A hamper: delivered (at midnight or during the day) rather than set up. */
+    /** The refundable security deposit (rented decor and equipment) applies unless the service says otherwise (services.yaml). */
+    public function hasSecurityDeposit(): bool
+    {
+        $s = $this->schema->service($this->serviceId());
+        return $s === null || !array_key_exists('securityDeposit', $s) || (bool) $s['securityDeposit'];
+    }
+
+    public function isHamper(): bool
+    {
+        return in_array($this->serviceId(), FormSchema::HAMPER_SERVICES, true);
+    }
+
+    /** What the client asked for, as the emails call it: "picnic request" for picnics and proposals, "request" otherwise. */
+    public function requestNoun(): string
+    {
+        return $this->isPicnic() ? 'picnic request' : 'request';
+    }
+
+    /**
+     * True when the service locked the occasion to the pseudo occasion "other" (custom hampers): the visitor
+     * never chose it, so it is left out of the subject and the client's summary (the business copy has
+     * "What’s the occasion?" instead).
+     */
+    public function occasionImplied(): bool
+    {
+        $lock = $this->schema->field('occasion')['lockBy'] ?? null;
+        return is_array($lock) && ($lock['field'] ?? '') === 'service'
+            && (($lock['values'][$this->serviceId()] ?? null) === 'other') && ($this->answers->occasion['id'] ?? '') === 'other';
+    }
+
     public function occasionName(): string
     {
         return (string) ($this->answers->occasion['name'] ?? 'Booking');
@@ -126,9 +177,24 @@ final class Booking
         return preg_match('/^[A-Za-z0-9._]{1,30}$/', $h) ? 'https://instagram.com/' . $h : '';
     }
 
+    /**
+     * The free-text place: the picnic spot, the room's address or the hamper's delivery address
+     * (the validator keeps only the one that applies to the service).
+     */
+    public function place(): string
+    {
+        foreach (['location', 'room_address', 'delivery_address'] as $id) {
+            $v = $this->answers->get($id);
+            if ($v !== '') {
+                return $v;
+            }
+        }
+        return '';
+    }
+
     public function mapsUrl(): string
     {
-        $loc = $this->answers->get('location');
+        $loc = $this->place();
         return $loc === '' ? '' : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($loc);
     }
 
@@ -157,10 +223,29 @@ final class Booking
         return implode(' · ', $out);
     }
 
-    /** "Park · Trinity Bellwoods Park" (· because some location types already contain a dash). */
+    /**
+     * The kind of place, from our own lists: "Park" (picnics, proposals) or "Hotel room" (room decor);
+     * '' for a hamper, which only has a delivery address.
+     */
+    public function placeType(): string
+    {
+        $t = $this->display('location_type');
+        return $t !== '' ? $t : $this->display('room_type');
+    }
+
+    /**
+     * "Park · Trinity Bellwoods Park" for a picnic, "Hotel room · 123 Front St W" for room decor,
+     * the delivery address for a hamper (· because some location types already contain a dash).
+     */
     public function locationLabel(): string
     {
-        return implode(' · ', array_filter([$this->display('location_type'), $this->answers->get('location')], 'strlen'));
+        return implode(' · ', array_filter([$this->placeType(), $this->place()], 'strlen'));
+    }
+
+    /** "At midnight" / "During the day" for a hamper delivery, '' otherwise. */
+    public function deliverySlot(): string
+    {
+        return $this->display('delivery_slot');
     }
 
     /** "Text" / "Call" / "Email" / "Instagram DM", or '' when not answered. */
@@ -174,28 +259,46 @@ final class Booking
         return $this->receivedAt->format('D M j, Y \a\t g:i A') . ' (Toronto time)';
     }
 
-    /** "New booking: Proposal · Sat Jun 13, 2026 · Priya S." — single line, no CR/LF. */
+    /**
+     * "New booking: Proposal · Sat Jun 13, 2026 · Priya S." for a picnic; every other service is named
+     * first: "New booking: Room decor · Birthday · Sat Jun 13, 2026 · Priya S." — single line, no CR/LF.
+     */
     public function businessSubject(): string
     {
-        $parts = array_filter(['New booking: ' . $this->occasionName(), $this->dateLabel(), $this->shortName()], 'strlen');
+        $parts = array_filter(['New booking: ' . implode(' · ', $this->headlineParts()), $this->dateLabel(), $this->shortName()], 'strlen');
         return self::oneLine(implode(' · ', $parts));
     }
 
+    /** "We’ve received your picnic request (BP-…)" / "We’ve received your request (BP-…)". */
     public function clientSubject(): string
     {
-        return self::oneLine(sprintf('We’ve received your picnic request (%s)', $this->ref));
+        return self::oneLine(sprintf('We’ve received your %s (%s)', $this->requestNoun(), $this->ref));
+    }
+
+    /** [service, occasion] for everything but plain picnics, where the occasion says it all. @return list<string> */
+    public function headlineParts(): array
+    {
+        // A picnic or a proposal is named by its occasion ("Proposals · Proposal" would say it twice);
+        // room decor and hampers lead with the service.
+        $parts = $this->isPicnic() ? [] : [$this->serviceName()];
+        if (!$this->occasionImplied()) {
+            $parts[] = $this->occasionName();
+        }
+        return array_values(array_filter($parts, 'strlen'));
     }
 
     /** Answers the business email already shows in its summary rows, so sections() skips them. */
     public const SUMMARY_FIELDS = [
-        'occasion', 'package', 'date', 'backup_date', 'start_time', 'guests_adults', 'guests_kids',
-        'location_type', 'location', 'budget', 'is_surprise', 'contact_pref',
+        'service', 'occasion', 'package', 'date', 'backup_date', 'start_time', 'delivery_slot', 'guests_adults', 'guests_kids',
+        'location_type', 'location', 'room_type', 'room_address', 'delivery_address', 'area', 'budget', 'is_surprise', 'contact_pref',
     ];
 
     /**
      * Short summary rows at the top of both emails. @return list<array{0:string,1:string}>
-     * The client's copy holds only answers chosen from our own lists (plus the date, time and guest
-     * count): no free text, so the confirmation can't be used to mail someone else's words.
+     * Rows without an answer are left out, so a hamper has no Package, Guests or Start time row and a
+     * picnic has no "When it arrives". The client's copy holds only answers chosen from our own lists
+     * (plus the date, time, guest count and area): no free text, so the confirmation can't be used to
+     * mail someone else's words — the picnic spot, room address and delivery address never appear in it.
      */
     public function summaryRows(bool $forBusiness): array
     {
@@ -203,12 +306,15 @@ final class Booking
         $backup = $this->dateLabel('backup_date');
         $notSure = $this->answers->get('package') === 'not-sure';
         $rows = [
-            ['Occasion', $this->occasionName()],
+            ['Service', $this->serviceName()],
+            ['Occasion', $this->occasionImplied() ? '' : $this->occasionName()],
             ['Package', $forBusiness ? $this->packageWithPrice() : ($notSure ? 'Not sure yet — we’ll recommend one' : $this->packageName())],
             ['Date', $date . ($backup !== '' ? ($forBusiness ? " (backup: {$backup})" : " · backup {$backup}") : '')],
             ['Start time', $this->timeLabel()],
+            ['When it arrives', $this->deliverySlot()],
             ['Guests', $this->guestsLabel()],
-            ['Location', $forBusiness ? $this->locationLabel() : $this->display('location_type')],
+            ['Location', $forBusiness ? $this->locationLabel() : $this->placeType()],
+            ['Area', $this->display('area')],
         ];
         if ($forBusiness) {
             $rows[] = ['Budget', $this->display('budget')];

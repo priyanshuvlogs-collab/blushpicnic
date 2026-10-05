@@ -11,6 +11,12 @@
 //   pkg-signature.jpg              Signature Picnic
 //   pkg-proposal-romance.jpg       Proposal & Romance
 //   pkg-celebration.jpg            Celebration
+//   pkg-simple.jpg                 Simple Picnic
+//   service-room-decor.jpg         Room decor (services page + home)
+//   service-birthday-hamper.jpg    Birthday hamper delivery
+//   service-custom-hamper.jpg      Custom hamper
+//   style-table-chairs.jpg         Table & chair setup (picnic styles)
+//   style-dome.jpg                 Dome picnic
 //   occasion-<id>.jpg              top photo of an occasion page, e.g. occasion-proposal.jpg
 //   gallery/<id>/<any name>.jpg    gallery photos, one folder per occasion, e.g. gallery/birthday/IMG_2041.jpg
 //
@@ -361,7 +367,7 @@ if (skipped.length) {
 }
 
 // Soft-photo warnings: big spots want big photos.
-const big = /^(hero|about|occasion-)/;
+const big = /^(hero|about|occasion-|service-)/;
 const soft = slotJobs.filter((j) => big.test(j.slot) && Math.max(j.width, j.height) < 1600);
 if (soft.length) {
   say('These may look soft on large screens (under 1600 px on the long side); use a larger original if you have one:');
@@ -374,9 +380,13 @@ const todo = [];
 for (const j of slotJobs) {
   const pkg = j.slot.match(/^pkg-(.+)$/);
   const occ = j.slot.match(/^occasion-(.+)$/);
-  if (pkg) {
-    const p = (yaml.load(readFileSync(path.join(root, 'src/content/packages.yaml'), 'utf8')) ?? []).find((x) => x.id === pkg[1]);
-    todo.push(`src/content/packages.yaml → ${pkg[1]} → imageAlt${p?.imageAlt ? `\n      now: "${p.imageAlt}"` : ''}`);
+  // service-<id>.jpg → services.yaml, style-<id>.jpg → styles.yaml (same imageAlt line as a package)
+  const listed = j.slot.match(/^(service|style)-(.+)$/);
+  if (pkg || listed) {
+    const file = pkg ? 'packages.yaml' : listed[1] === 'service' ? 'services.yaml' : 'styles.yaml';
+    const id = pkg ? pkg[1] : listed[2];
+    const p = (yaml.load(readFileSync(path.join(root, 'src/content', file), 'utf8')) ?? []).find((x) => x.id === id);
+    todo.push(`src/content/${file} → ${id} → imageAlt${p?.imageAlt ? `\n      now: "${p.imageAlt}"` : ''}`);
   } else if (occ) {
     const o = occasions.get(occ[1]);
     todo.push(`${rel(o.file)} → heroAlt${o.data.heroAlt ? `\n      now: "${o.data.heroAlt}"` : ''}`);

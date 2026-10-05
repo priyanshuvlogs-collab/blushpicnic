@@ -1,31 +1,55 @@
 # ─────────────────────────────────────────────────────────────
-#  Packages. Prices are "starting at", before HST.
+#  Packages. Prices are "starting at", before HST. A travel fee by area is added on top
+#  (settings.yaml → travel), and the picnic style (styles.yaml) and add-ons (addons.yaml)
+#  are chosen separately in the booking form.
 #  To change a price, edit priceFrom / extraGuestPrice and redeploy.
 #  The extra-guest price is shown next to the price automatically, so
 #  don't type amounts into summary or priceNote (an optional extra line
-#  under the price).
-#  Keep the id lines (signature, proposal-romance, celebration) as they are —
-#  booking links use them.
+#  under the price). extraGuestPrice: null shows "we'll quote extra guests".
+#  Keep the id lines (simple, signature, proposal-romance, celebration) as
+#  they are — booking links use them.
+#  "includesFrom" names another package: that package's list is inherited
+#  in the comparison table ("Everything in the Simple Picnic, plus:").
 # ─────────────────────────────────────────────────────────────
-- id: signature
-  name: "Signature Picnic"
+- id: simple
+  name: "Simple Picnic"
   order: 1
   featured: false
+  tagline: "The easy, pretty picnic for two"
+  summary: "The essentials, beautifully done: a low table dressed with rugs, cushions, tableware and florals, set up in your spot and cleared away afterwards."
+  priceFrom: 250
+  guestsIncluded: 2
+  guestsMax: null
+  guestsLabel: "for 2 guests"
+  extraGuestPrice: null
+  durationHours: 2
+  includesFrom: null
+  includes:
+    - "Low picnic table"
+    - "Rugs and cushions"
+    - "Tableware"
+    - "Florals"
+    - "Letter board with your message"
+  bestFor: ["picnic-date", "birthday", "anniversary", "family", "appreciation", "announcement"]
+  image: "../assets/photos/pkg-simple.jpg"
+  imageAlt: "Simple picnic for two in a park: a low oak table on a cream rug with pink roses in a vase, a jug of pink lemonade, two plates with blush napkins, a blank letter board and cushions"
+  priceNote: "Bringing more people? We'll quote extra guests."
+
+- id: signature
+  name: "Signature Picnic"
+  order: 2
+  featured: false
   tagline: "Our classic styled picnic for two or more"
-  summary: "A low table dressed with rugs, cushions, florals, tableware and glassware — everything you need for an easy, beautiful afternoon."
+  summary: "Everything in the Simple Picnic, plus the touches that make an afternoon of it: a fringe umbrella for shade, a Bluetooth speaker for your playlist and games for the table."
   priceFrom: 375
   guestsIncluded: 2
   guestsMax: null
   guestsLabel: "for 2 guests"
   extraGuestPrice: 35
   durationHours: 2
-  includesFrom: null
+  includesFrom: "Everything in the Simple Picnic, plus:"
   includes:
-    - "Low picnic table"
-    - "Rugs and cushions"
-    - "Tableware and glassware"
-    - "Florals"
-    - "Letter board with your message"
+    - "Fringe umbrella"
     - "Bluetooth speaker"
     - "Games"
   bestFor: ["picnic-date", "birthday", "anniversary", "family", "appreciation", "just-engaged", "newly-married", "announcement"]
@@ -34,7 +58,7 @@
 
 - id: proposal-romance
   name: "Proposal & Romance"
-  order: 2
+  order: 3
   featured: true
   tagline: "For the question, or the moment that deserves more"
   summary: "Everything in the Signature Picnic, plus the romantic details: a Marry Me or custom sign, rose petals, candles and a fresh flower arrangement."
@@ -57,7 +81,7 @@
 
 - id: celebration
   name: "Celebration"
-  order: 3
+  order: 4
   featured: false
   tagline: "A full themed setup for your group"
   summary: "For birthdays, showers, reveals and team days: a full themed setup with a backdrop, balloon garland or flower arch, custom signage and games."

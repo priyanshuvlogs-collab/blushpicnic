@@ -30,7 +30,7 @@ faqs:
   - q: "Can we hold it close to the office?"
     a: "If there's a park or an indoor venue nearby, that works. We set up in parks, on beaches, in backyards, at homes and in indoor venues across Toronto and the GTA. Enter the address, park name or area in the booking form, as location affects the price."
   - q: "Is there anything planned for the team to do?"
-    a: "Games are part of the Celebration setup, and the rest of the agenda is yours. If you'd like more, add a grazing board, a custom cake or a photographer in the booking form, and we'll include them in your quote."
+    a: "Games are part of the Celebration setup, and the rest of the agenda is yours. If you'd like more, add a charcuterie board, a cake or beverages in the booking form, and we'll include them in your quote."
 related: ["appreciation", "retirement", "birthday"]
 ---
 
@@ -48,10 +48,10 @@ Our Celebration package is the natural fit for teams: a themed backdrop for the 
 
 It suits summer socials, project wrap-ups, welcome days for new hires, client thank-yous and send-offs. If someone on the team is retiring, our [retirement picnics](/retirement-picnic-toronto) page has ideas for that too. Planning it as a surprise for the team? Switch on the surprise section and tell us how everyone will arrive.
 
-Add a grazing board, a custom cake, a neon sign or a photographer for team photos that weren't taken in a meeting room. Tick them in the form and we'll include them in your quote.
+Add a charcuterie board, a cake or beverages for the table, or a balloon garland in your company colours behind the team photo. Tick them in the form and we'll include them in your quote.
 
 ## Booking for your team
 
 1. **Send the brief.** Company name, headcount, the area, whether you need an invoice, plus a date and a backup date.
-2. **Take the quote to sign-off.** We reply within 24 hours with availability and pricing for whoever approves the spend. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
+2. **Take the quote to sign-off.** We reply {replyTime} with availability and pricing for whoever approves the spend. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit.
 3. **Bring the team.** Everything is styled when they arrive and packed away when you're done.

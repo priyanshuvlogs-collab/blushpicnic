@@ -17,7 +17,7 @@ highlights:
   - title: "The photo spot, sorted"
     text: "A themed backdrop with a balloon garland or flower arch gives every guest a place for a picture with the parent-to-be."
   - title: "Food on your terms"
-    text: "Bring your own spread, or add a grazing board and a custom cake in the booking form so they're part of your quote."
+    text: "Bring your own spread, or add a charcuterie board, a cake and beverages in the booking form so they're part of your quote."
   - title: "Planning it in secret?"
     text: "Throwing it as a surprise? Tell us who's in on it and how the guest of honour will arrive, and we'll plan around it."
 faqs:
@@ -28,7 +28,7 @@ faqs:
   - q: "Can the shower be a surprise for the parent-to-be?"
     a: "Of course. Switch on the surprise section, tell us who else knows and how they'll arrive, and choose whether our team stays out of sight nearby or heads off before they get there."
   - q: "Do you supply food for the shower?"
-    a: "Food isn't part of our packages, so you're welcome to bring your own or arrange it separately. You can also tick a grazing board or a custom cake in the booking form and we'll include it in your quote. Note any allergies in the same section."
+    a: "Food isn't part of our packages, so you're welcome to bring your own or arrange it separately. You can also tick a charcuterie board, a cake or beverages in the booking form and we'll include them in your quote. Note any allergies in the same section."
   - q: "Does it have to be outdoors?"
     a: "Not at all. Alongside parks and beaches, we set up in backyards, at home and in indoor venues across Toronto and the GTA. Tell us the address or area when you book, since location affects the price."
 related: ["gender-reveal", "bridal-shower", "new-baby"]
@@ -50,10 +50,10 @@ Planning it as a surprise? Switch on the surprise section and tell us who else k
 
 For showers we recommend our Celebration package: a themed backdrop for photos with the parent-to-be, a balloon garland or flower arch, custom signage that can carry the baby's details, and games for between the gifts. It starts at {price:celebration} for {guests:celebration} and {hours:celebration}, before HST. Showers often grow beyond that, and when yours does, we'll quote the larger group. Prices vary by location across the GTA, and we confirm your exact quote by message.
 
-Food isn't part of the packages, so bring your own spread or add a grazing board and a custom cake to your request. A photographer, a neon sign or a flower arch alongside the balloons can be added the same way, each one priced into your quote.
+Food isn't part of the packages, so bring your own spread or add a charcuterie board, a cake and beverages to your request. Helium balloons, fresh flowers or a canopy over the table can be added the same way, each one priced into your quote.
 
 ## From group chat to shower
 
 1. **Fill in the shower basics.** The parents' names, due date or month, colours, a date and a backup date.
-2. **Hold the date.** Within 24 hours we send availability and a quote. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit. The balance is due before the shower.
+2. **Hold the date.** We send availability and a quote {replyTime}. A {deposit} booking deposit (or {depositPercent} for larger events) holds your date, plus a {securityDeposit} refundable security deposit. The balance is due before the shower.
 3. **Welcome your guests.** The setup is styled before anyone arrives, and we clear it all away when the shower wraps up.

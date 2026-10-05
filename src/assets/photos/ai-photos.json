@@ -47,29 +47,11 @@
     "generated": "2026-10-04",
     "sha256": "e17c59ee8947e53d62ff673cec3a68003c749b7dc57ec727a1a05f7d6e26e806"
   },
-  "occasion-proposal.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A proposal picnic at sunset on a grassy waterfront park in Toronto: a tall arch of blush, white and dusty-rose roses, a rose-petal path leading to a low table for two, many pillar candles in glass lanterns, blush velvet cushions on a cream rug. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "65c86d07970b19d560cc6eba9e31bf21960b11907c07b47390f5383bf58f480d"
-  },
   "gallery-be-my-girlfriend-2.jpg": {
     "model": "grok-imagine-image",
     "prompt": "Close-up of a hand-tied bouquet of red and blush roses lying on cream linen beside chocolate-dipped strawberries and a small gift box with a satin bow. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
     "generated": "2026-10-04",
     "sha256": "59ad55d3e8eeb0a4d9146a5fd4c9b2ca70be8c5c43603f51f50271c623f33c54"
-  },
-  "gallery-proposal-1.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "A proposal setup inside an elegant venue with tall arched windows: floor arrangements of white and blush roses, a cream rug, a low table for two and dozens of candles glowing warmly. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "b25617045d94b21c687ca410de20ef84d078a72156fe6980cd20eb74d0aab59f"
-  },
-  "gallery-proposal-2.jpg": {
-    "model": "grok-imagine-image",
-    "prompt": "Close-up of an open blush velvet ring box holding a diamond engagement ring, resting on cream linen among rose petals and flickering candles. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. No people, no hands, no faces, no text, no lettering, no signs, no logos, no watermark, no alcohol bottles, no confetti.",
-    "generated": "2026-10-04",
-    "sha256": "dd65887b9431fa9ef2fc8fdbebefbbfa579b62048d868b1d7758c627eb829b2e"
   },
   "occasion-just-engaged.jpg": {
     "model": "grok-imagine-image",
@@ -268,5 +250,41 @@
     "prompt": "Close-up of open, completely plain cream lunch boxes with the lids removed, holding gourmet sandwiches, with salads in blush bowls on a sage linen runner over a light oak table, and glass jugs of water with lemon slices. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
     "generated": "2026-10-04",
     "sha256": "2839238ce8918c43688c84ac05ff707f8f002aa3ef8eb5f092f30798d46c3581"
+  },
+  "service-room-decor.jpg": {
+    "model": "grok-imagine-image",
+    "prompt": "A bedroom styled for a birthday surprise, seen from the doorway in soft daylight. An organic balloon garland in blush, cream and gold above a neatly made bed with a cream duvet, rose petals scattered on the bed, pillar candles in glass on a side table, a vase of blush roses, a small styled tray with a cake on a stand. Calm, luxurious and tidy. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
+    "generated": "2026-10-05",
+    "sha256": "308dc89c671a3f537d6615820a615dad6bddab1d7eb3f0e48d7f8fc07f1046c4"
+  },
+  "service-birthday-hamper.jpg": {
+    "model": "grok-imagine-image",
+    "prompt": "A luxury birthday gift hamper in a woven willow basket on a cream linen tablecloth in soft window light. Inside: a small cake in a clear box, chocolates wrapped in blush paper, a bunch of blush and cream roses, a satin ribbon bow, a blank cream card. Blush tissue paper, a few cream balloons softly out of focus behind. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
+    "generated": "2026-10-05",
+    "sha256": "69fe9a6bf4c0ea86b636af6e39f65f97973d5d115253ba7c4e8e725502834d67"
+  },
+  "service-custom-hamper.jpg": {
+    "model": "grok-imagine-image",
+    "prompt": "A bespoke gift hamper being styled on a light-oak table: an open woven basket lined with cream tissue paper, assorted gifts wrapped in blush and gold paper, dried florals, a candle in a glass jar, a jar of honey, a blank kraft tag on a ribbon. Soft daylight, minimal and elegant. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
+    "generated": "2026-10-05",
+    "sha256": "260b6b2671333e1bf4fb67d9563ffa953c7f6f07d5bad4fa683c35b9f50d559e"
+  },
+  "style-dome.jpg": {
+    "model": "grok-imagine-image",
+    "prompt": "A clear transparent dome tent on green grass in a Toronto park at dusk, warm fairy lights glowing inside. Inside the dome a low light-oak table with blush and cream florals, candles in glass and blush velvet cushions on a cream rug. The Toronto skyline softly out of focus in the distance. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
+    "generated": "2026-10-05",
+    "sha256": "6c59b974d540c7d2f552186ede92ad05eb9ecfa14c3e63a6d39a5ac3d531c05d"
+  },
+  "pkg-simple.jpg": {
+    "model": "grok-imagine-image",
+    "prompt": "A simple, pretty picnic for two on green grass in a Toronto park in soft afternoon light. A small low light-oak table with a cream linen runner, a posy of blush roses in a bud vase, two ceramic plates with linen napkins, a glass jug of cloudy pink lemonade and two short tumblers, a blank small letter board. Two cream and blush floor cushions on a neutral woven rug. Minimal and uncluttered. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
+    "generated": "2026-10-05",
+    "sha256": "0a363e261d0fca6157bdb803cc956fbdf091dd169962703a201902c00545b9b3"
+  },
+  "style-table-chairs.jpg": {
+    "model": "grok-imagine-image",
+    "prompt": "An elegant outdoor dinner for two in a leafy Toronto park at golden hour: a round dining table with a cream linen cloth and two cross-back wooden chairs, blush roses in a low vase, taper candles, ceramic plates and linen napkins, a glass jug of cloudy pink lemonade and two short tumblers, a cream rug underneath. Photorealistic editorial lifestyle photograph for a luxury picnic styling company. Soft natural light, shallow depth of field, gentle film grain, refined, airy and calm. Colour palette: blush pink, dusty rose, cream, linen white, sage green, warm gold accents, light oak wood. Any drinks are cloudy pink lemonade or water in short stemless tumblers or glass jugs. No people, no hands, no faces, no text, no lettering, no signs, no labels, no stamps, no logos, no watermark, no confetti.",
+    "generated": "2026-10-05",
+    "sha256": "455ebee75ca4e7778c50cf15b340f2f79c5d3bda1b029c4e8f666cc1d94f5438"
   }
 }

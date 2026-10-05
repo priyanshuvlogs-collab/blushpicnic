@@ -8,12 +8,12 @@ const priceText = (price: number | null, suffix: string) =>
   price === null ? 'Price on request' : `Starting at ${money(price)}${suffix ? ` ${suffix}` : ''}, ${s.taxNote}`;
 ---
 {addons.length > 0 && (
-  <section id="add-ons" aria-labelledby="addons-title" class="section-y scroll-mt-20">
+  <section id="add-ons" aria-labelledby="addons-title" class="section-y scroll-mt-20 bg-cream">
     <div class="container-x grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
         <h2 id="addons-title">Add-ons to make it yours</h2>
         <p class="mt-4 max-w-md text-plum-soft">
-          Add any of these to a package. Tick them in the booking form and we'll include them in your quote — no need to decide everything now.
+          Add any of these to a package (or to <a href="/room-decor" class="font-semibold text-cocoa underline decoration-gold decoration-2 underline-offset-4 hover:decoration-cocoa">room decor</a>). Tick them in the booking form and we'll include them in your quote — no need to decide everything now.
         </p>
         <a href="/book" class="btn btn-secondary mt-7" data-track="booking_cta" data-track-location="packages_addons">Start your booking request</a>
       </div>

@@ -73,8 +73,10 @@ Several builds can run side by side without clobbering each other:
 src/
   content/              ← every editable fact and text (validated by src/content.config.ts)
     settings.yaml         business facts, contact, deposit, analytics IDs, booking provider
-    packages.yaml         the three packages (prices, inclusions, photos)
+    packages.yaml         the four packages (prices, inclusions, photos)
     addons.yaml           add-ons (price: null = "Price on request")
+    styles.yaml           picnic styles: classic low table, table & chairs, dome (price: null = quoted)
+    services.yaml         what the business offers: picnics, proposals, room decor, hampers (the form's first question)
     faqs.yaml             FAQ page + home preview
     booking-form.yaml     every booking question, per occasion group
     gallery.yaml          gallery photos, alt text, occasions
@@ -87,7 +89,8 @@ src/
     form.ts               booking-form.yaml → one schema for the form AND the PHP validator
   layouts/BaseLayout.astro  <head>, SEO tags, JSON-LD, header/footer, sticky bar, consent banner
   components/           shared pieces + one folder per page area (home, packages, occasion, book, gallery, pages)
-  pages/                routes; [occasion].astro builds every occasion page from occasions/*.md
+  pages/                routes; [occasion].astro builds every occasion page from occasions/*.md;
+                        services, room-decor and hampers are the service pages (from services.yaml)
     api/form-schema.json.ts   → /api/form-schema.json (read by book.php)
     robots.txt.ts             → /robots.txt
   scripts/              client-side TypeScript (booking form, gallery filter, lightbox, analytics, tracking)
@@ -118,12 +121,16 @@ instead of shipping. The main rules (details in [CLAUDE.md](CLAUDE.md)):
 - **Never invent facts**: no reviews, ratings, stats, awards or policies that the owner hasn't
   given. Missing content gets a visible placeholder (`<p class="placeholder-note"><strong>Placeholder —</strong> …</p>`)
   and a line in HANDOVER.md → "Waiting on you".
-- **Ids are part of URLs and analytics.** Packages are `signature`, `proposal-romance` and `celebration`,
+- **Ids are part of URLs and analytics.** Packages are `simple`, `signature`, `proposal-romance` and `celebration`,
   plus the pseudo-id `not-sure`. Occasions are the file names in `src/content/occasions/`, plus the pseudo-id `other`.
-  An occasion's page URL is its front-matter `urlSlug` (`/proposal-picnic-toronto`).
-- **Deep links into the form**: `bookUrl({ occasion, package })` → `/book?occasion=proposal&package=proposal-romance`.
+  Services are the ids in `services.yaml` (`picnics`, `proposals`, `room-decor`, `birthday-hampers`, `custom-hampers`)
+  and picnic styles the ids in `styles.yaml` (`classic`, `table-chairs`, `dome`).
+  An occasion's page URL is its front-matter `urlSlug` (`/proposal-picnic-toronto`); the service pages are
+  `/services`, `/room-decor` and `/hampers`.
+- **Deep links into the form**: `bookUrl({ service, occasion, package })` → `/book?occasion=proposal&package=proposal-romance`
+  or `/book?service=room-decor`.
 - **Analytics**: add `data-track="<event>"` (plus `data-track-*` params) to links, or call
-  `window.bpTrack(event, params)`. Events: `booking_start`, `booking_step`, `booking_submit`, `click_call`,
+  `window.bpTrack(event, params)`. Events: `booking_start`, `booking_step`, `service_select`, `booking_submit`, `click_call`,
   `click_text`, `click_instagram`, `package_select`, `booking_cta`. GA4 and the Meta Pixel load only
   after the visitor accepts cookies. Their IDs come from `settings.yaml`, or from the env vars
   `PUBLIC_GA4_ID` / `PUBLIC_META_PIXEL_ID`.
@@ -131,13 +138,16 @@ instead of shipping. The main rules (details in [CLAUDE.md](CLAUDE.md)):
 ## Booking flow
 
 1. **The form.** `/book` renders the four-step form from `src/content/booking-form.yaml`.
-   `buildFormSchema()` in `src/lib/form.ts` resolves it, filling options from occasions, packages
-   and add-ons. Groups appear per occasion `formGroup`, and fields can be limited with `onlyFor` or `showIf`.
+   `buildFormSchema()` in `src/lib/form.ts` resolves it, filling options from services, occasions, packages,
+   picnic styles, add-ons and the travel areas. Groups appear per occasion `formGroup`, and fields can be limited
+   with `onlyFor` or `showIf`, or follow another answer with `lockBy` (a proposal sets the occasion; a hamper
+   sets it to birthday or "other").
 2. **The contract.** The same resolved schema is built to **`/api/form-schema.json`**. `book.php`
    validates every submission against it, so the server checks exactly the questions the browser
    showed. Change a question in the YAML and both sides follow; no PHP edit is needed. The file holds the
-   steps, groups and fields (id, type, required, options, limits, `onlyFor`/`showIf`), occasions,
-   packages with prices, add-ons, deposit and security deposit facts, and the tax note.
+   steps, groups and fields (id, type, required, options, limits, `onlyFor`/`showIf`), services, occasions,
+   packages with prices, picnic styles, add-ons, the travel areas and fees, deposit and security deposit facts,
+   and the tax note.
 3. **Submitting.** The form `POST`s to `/api/book.php` (`settings.booking.endpoint`) with
    `Accept: application/json`. Field names are the YAML field ids, and checkbox groups use `name[]`.
    Responses:

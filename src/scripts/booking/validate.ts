@@ -20,13 +20,20 @@ export const PAST_DATE_MESSAGE = 'Enter a date that’s today or later';
 // Friendlier wording for the core questions every booking has. Everything else gets a message built
 // from its label, so new questions in booking-form.yaml need no code.
 const REQUIRED_MESSAGES: Record<string, string> = {
+  service: 'Choose what you’d like us to set up',
   occasion: 'Choose what we’re celebrating',
   package: 'Choose a package, or “Help me choose”',
   date: 'Enter your preferred date',
   start_time: 'Enter a preferred start time, e.g. 4:00 PM',
+  delivery_slot: 'Choose when it should arrive',
   guests_adults: 'Enter the number of adults (at least 1)',
   location_type: 'Choose where you’d like your picnic',
+  room_type: 'Choose the kind of room',
+  area: 'Choose the area',
   location: 'Enter an address, park name or area',
+  room_address: 'Enter the address of the room, or the hotel name',
+  delivery_address: 'Enter the delivery address',
+  hamper_vision: 'Describe your vision — who it’s for and what should be in it',
   name: 'Enter your name',
   phone: PHONE_MESSAGE,
   email: EMAIL_MESSAGE,
