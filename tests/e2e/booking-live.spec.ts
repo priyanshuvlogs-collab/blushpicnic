@@ -21,7 +21,7 @@ import { test, expect, type Page, type Locator, type TestInfo, type BrowserConte
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { torontoDate, escapeRe, type FormSchema, type ResolvedField, type ResolvedGroup, type Occasion } from './booking-helpers';
+import { torontoDate, escapeRe, fieldById, type FormSchema, type ResolvedField, type ResolvedGroup, type Occasion } from './booking-helpers';
 import { showIfConditions, showIfMatches, lockedValue } from '../../src/scripts/booking/conditions';
 
 const BASE_URL = process.env.LIVE_BASE_URL ?? 'http://127.0.0.1:4506';
@@ -568,7 +568,10 @@ const isHamper = (plan: Plan) => HAMPER_SERVICES.includes(plan.service.id);
 const requestNoun = (plan: Plan) => (isPicnic(plan) ? 'picnic request' : 'request');
 /** [service, occasion] for everything but a plain picnic, where the occasion says it all (Booking::headlineParts). */
 /** A custom hamper locks the pseudo occasion "other": not the visitor's choice, so it is left out of the subject and rows. */
-const impliedOccasion = (plan: Plan) => plan.occ.id === 'other' && lockedOccasion(plan.service.id) === 'other';
+const impliedOccasion = (plan: Plan) => {
+  const lock = fieldById(schema, 'occasion')?.lockBy;
+  return plan.occ.id === 'other' && !!lock && lockedValue(lock, [plan.service.id]) === 'other';
+};
 const headline = (plan: Plan) =>
   [...(['picnics', 'proposals'].includes(plan.service.id) ? [] : [plan.service.name]), ...(impliedOccasion(plan) ? [] : [plan.occ.name])].join(' · ');
 
