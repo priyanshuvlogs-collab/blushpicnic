@@ -32,7 +32,7 @@
     - "Letter board with your message"
   bestFor: ["picnic-date", "birthday", "anniversary", "family", "appreciation", "announcement"]
   image: "../assets/photos/pkg-simple.jpg"
-  imageAlt: "Placeholder — a photo of the Simple Picnic is coming soon"
+  imageAlt: "Simple picnic for two in a park: a low oak table on a cream rug with pink roses in a vase, a jug of pink lemonade, two plates with blush napkins, a blank letter board and cushions"
   priceNote: "Bringing more people? We'll quote extra guests."
 
 - id: signature

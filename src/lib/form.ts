@@ -15,6 +15,16 @@ export interface Option {
   label: string;
 }
 
+export interface ShowIfCondition {
+  field: string;
+  equals?: string;
+  in?: string[];
+}
+
+/** A field's showIf as a list of conditions (one or several; all must hold). */
+export const showIfConditions = (showIf: ResolvedField['showIf']): ShowIfCondition[] =>
+  showIf === undefined ? [] : Array.isArray(showIf) ? showIf : [showIf];
+
 export interface ResolvedField {
   id: string;
   label: string;
@@ -29,8 +39,8 @@ export interface ResolvedField {
   maxWords?: number;
   autocomplete?: string;
   onlyFor?: string[];
-  /** equals: one value · in: any of several · neither: any non-empty answer */
-  showIf?: { field: string; equals?: string; in?: string[] };
+  /** equals: one value · in: any of several · neither: any non-empty answer. A list = all must hold. */
+  showIf?: ShowIfCondition | ShowIfCondition[];
   /** answer follows another field's (browser only), e.g. service "proposals" → occasion "proposal" */
   lockBy?: { field: string; values: Record<string, string> };
   note?: string;
@@ -189,7 +199,7 @@ export function groupApplies(g: Pick<ResolvedGroup, 'appliesTo'>, formGroup: str
  * (booking.ts), the server (Validator.php) and the tests: equals → that value is among the
  * answers; in → any of those values is; neither → there is a non-empty answer.
  */
-export function showIfMatches(c: NonNullable<ResolvedField['showIf']>, answers: string[]): boolean {
+export function showIfMatches(c: ShowIfCondition, answers: string[]): boolean {
   const vals = answers.filter(Boolean);
   if (c.equals !== undefined) return vals.includes(c.equals);
   if (c.in !== undefined) return vals.some((v) => c.in!.includes(v));

@@ -10,6 +10,7 @@
 #  A question can also depend on another answer:
 #    showIf: { field: service, in: ["picnics", "proposals"] }   (one of several answers)
 #    showIf: { field: is_surprise, equals: "yes" }               (one answer)
+#    showIf: [ {…}, {…} ]                                        (a list: all must hold)
 #  Service ids come from src/content/services.yaml: picnics, proposals, room-decor,
 #  birthday-hampers, custom-hampers.
 #
@@ -413,17 +414,22 @@
       half: true
       placeholder: "e.g. their sister, my best friend"
       showIf: { field: "is_surprise", equals: "yes" }
+    # Not for a hamper delivery: nobody "arrives" and there is no team on site.
     - id: arrival_plan
       label: "How will they arrive?"
       type: textarea
       maxLength: 500
       placeholder: "e.g. I’ll suggest a walk and we’ll arrive at 5:30"
-      showIf: { field: "is_surprise", equals: "yes" }
+      showIf:
+        - { field: "is_surprise", equals: "yes" }
+        - { field: service, in: ["picnics", "proposals", "room-decor"] }
     - id: team_presence
       label: "Once it’s set up, should our team…"
       type: radio
       options: ["Stay hidden nearby", "Leave before you arrive", "Not sure — advise me"]
-      showIf: { field: "is_surprise", equals: "yes" }
+      showIf:
+        - { field: "is_surprise", equals: "yes" }
+        - { field: service, in: ["picnics", "proposals", "room-decor"] }
 
 # ── Step 3: style & add-ons (everyone) ──────────────────────
 - id: style

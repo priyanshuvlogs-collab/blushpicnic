@@ -22,7 +22,7 @@
   included: false
   price: null
   image: "../assets/photos/style-table-chairs.jpg"
-  imageAlt: "Placeholder — a photo of the table & chair setup is coming soon"
+  imageAlt: "Table and chair setup for two under park trees at golden hour: a round table with a cream linen cloth, cross-back wooden chairs, pink roses, taper candles and pink lemonade"
 
 - id: dome
   name: "Dome picnic"
@@ -31,4 +31,4 @@
   included: false
   price: null
   image: "../assets/photos/style-dome.jpg"
-  imageAlt: "Placeholder — a photo of a dome picnic is coming soon"
+  imageAlt: "Dome picnic at dusk: a clear dome lit with fairy lights over a low oak table with candles, pink and white flowers and blush cushions, the city skyline behind"

@@ -253,6 +253,10 @@ const pages = defineCollection({
 
 // Booking form questions (conditional per occasion). Also exported as /api/form-schema.json so the
 // PHP handler validates exactly the same fields the browser shows.
+const showIfCondition = z
+  .object({ field: z.string(), equals: z.string().optional(), in: z.array(z.string()).min(1).optional() })
+  .refine((c) => !(c.equals !== undefined && c.in !== undefined), { message: 'showIf: use either "equals" or "in", not both' });
+
 const field = z.object({
   id: z.string().regex(/^[a-z][a-z0-9_]*$/),
   label: z.string(),
@@ -275,10 +279,8 @@ const field = z.object({
   onlyFor: z.array(z.string()).optional(),
   // only show when another field has a truthy / specific value, e.g. { field: "is_surprise", equals: "yes" }
   // or one of several values: { field: "service", in: ["picnics", "proposals"] }
-  showIf: z
-    .object({ field: z.string(), equals: z.string().optional(), in: z.array(z.string()).min(1).optional() })
-    .refine((c) => !(c.equals !== undefined && c.in !== undefined), { message: 'showIf: use either "equals" or "in", not both' })
-    .optional(),
+  // Several conditions (a list) must all hold: [{ field: is_surprise, equals: "yes" }, { field: service, in: [...] }]
+  showIf: z.union([showIfCondition, z.array(showIfCondition).min(1)]).optional(),
   // the answer follows another field's answer and the question is hidden (browser only; the server
   // just validates the value): { field: "service", values: { proposals: "proposal" } }
   lockBy: z.object({ field: z.string(), values: z.record(z.string(), z.string()) }).optional(),

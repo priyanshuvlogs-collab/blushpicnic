@@ -34,7 +34,7 @@
   href: "/room-decor"
   cta: "Plan room decor"
   image: "../assets/photos/service-room-decor.jpg"
-  imageAlt: "Placeholder — a photo of a room decor setup is coming soon"
+  imageAlt: "Bedroom styled for a surprise: a blush, cream and gold balloon garland above the bed, rose petals on cream linen, pink roses and candles on the side table and a cake on a tray"
   dm: false
 
 - id: birthday-hampers
@@ -45,7 +45,7 @@
   href: "/hampers"
   cta: "Send a birthday hamper"
   image: "../assets/photos/service-birthday-hamper.jpg"
-  imageAlt: "Placeholder — a photo of a birthday hamper is coming soon"
+  imageAlt: "Birthday hamper in a wicker basket with blush tissue paper, a small cake in a clear box, wrapped chocolates, pink and cream roses, a satin bow and a blank card"
   dm: false
 
 - id: custom-hampers
@@ -56,5 +56,5 @@
   href: "/hampers#custom"
   cta: "DM us your vision"
   image: "../assets/photos/service-custom-hamper.jpg"
-  imageAlt: "Placeholder — a photo of a custom hamper is coming soon"
+  imageAlt: "Custom gift hamper in a rattan basket: blush and gold wrapped gifts, dried flowers, a candle, a jar of honey and a kraft tag, with glasses of pink lemonade beside it"
   dm: true

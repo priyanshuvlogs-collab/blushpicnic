@@ -8,7 +8,8 @@
 //
 // Runs api/book.php under `php -S 127.0.0.1:4406 -t dist-api tests/router.php` with
 // BLUSH_CONFIG=tests/fixtures/blush-config.test.php: emails become .eml files in tests/.mail/,
-// rate-limit data and logs go to tests/.tmp/. Every occasion in form-schema.json is exercised.
+// rate-limit data and logs go to tests/.tmp/. Every occasion and every service in form-schema.json
+// is exercised (picnics, proposals, room decor and the hampers each send different step-1/2 answers).
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
@@ -139,7 +140,12 @@ function fmtDate(s) {
 
 const occasionOf = (id) => SCHEMA.occasions.find((o) => o.id === id);
 const packageOf = (id) => SCHEMA.packages.find((p) => p.id === id);
+const serviceOf = (id) => SCHEMA.services.find((s) => s.id === id);
+const styleOf = (id) => SCHEMA.styles.find((s) => s.id === id);
 const optionLabel = (field, value) => field.options?.find((o) => o.value === value)?.label ?? value;
+const money = (n) => `$${n.toLocaleString('en-US')}`;
+/** Services that book a picnic package (FormSchema::PICNIC_SERVICES). */
+const PICNIC_SERVICES = ['picnics', 'proposals'];
 
 /** Mirrors the PHP applicability rule (group appliesTo → onlyFor → showIf). */
 function applicable(fieldId, payload) {
@@ -149,12 +155,23 @@ function applicable(fieldId, payload) {
   const fg = occasionOf(payload.occasion)?.formGroup;
   if (!(group.appliesTo.includes('*') || group.appliesTo.includes(fg))) return false;
   if (field.onlyFor?.length && !field.onlyFor.includes(payload.occasion)) return false;
-  if (field.showIf) {
-    if (!applicable(field.showIf.field, payload)) return false;
-    const v = payload[field.showIf.field];
-    if (field.showIf.equals !== undefined ? v !== field.showIf.equals : !v) return false;
+  // showIf: one condition, or a list of conditions that must all hold (same as Validator.php).
+  for (const c of [].concat(field.showIf ?? [])) {
+    if (!applicable(c.field, payload)) return false;
+    if (!showIfMatches(c, payload[c.field])) return false;
   }
   return true;
+}
+
+/**
+ * Same rule as showIfMatches() in src/lib/form.ts and Validator::showIfMatches(): equals → that
+ * value is among the answers; in → any of those values is; neither → there is a non-empty answer.
+ */
+function showIfMatches(c, answer) {
+  const vals = [].concat(answer ?? []).map(String).filter(Boolean);
+  if (c.equals !== undefined && c.equals !== null) return vals.includes(c.equals);
+  if (Array.isArray(c.in)) return vals.some((v) => c.in.includes(v));
+  return vals.length > 0;
 }
 
 function sampleValue(field) {
@@ -177,25 +194,47 @@ function sampleValue(field) {
   }
 }
 
+/** The free-text places a payload may carry (never allowed in the client's confirmation). */
+const PLACE = { location: 'Trinity Bellwoods Park', room_address: '123 Front St W, Toronto', delivery_address: '45 Lakeshore Rd E, Mississauga' };
+
+/** The occasion a service forces (booking-form.yaml → occasion.lockBy): proposals → proposal, hampers → birthday / other. */
+function lockedOccasion(service) {
+  const lock = FIELDS.get('occasion')?.field.lockBy;
+  if (lock?.field === 'service') return lock.values?.[service];
+  return { proposals: 'proposal', 'birthday-hampers': 'birthday', 'custom-hampers': 'other' }[service];
+}
+
 /**
- * A valid submission for an occasion. full=false: only required answers (plus a realistic core);
- * full=true: every applicable question answered (surprise on, so the showIf questions apply too).
+ * A valid submission for an occasion (and a service, default "picnics"; a service that locks the
+ * occasion wins). full=false: only required answers (plus a realistic core — only the core answers
+ * that apply to the service); full=true: every applicable question answered (surprise on, so the
+ * showIf questions apply too).
  */
-function validPayload(occasion, { full = false, pkg } = {}) {
+function validPayload(occasion, { full = false, pkg, service = 'picnics' } = {}) {
+  occasion = lockedOccasion(service) ?? occasion;
   const occ = occasionOf(occasion);
   const p = {
+    service,
     occasion,
-    package: pkg ?? occ.recommendedPackage ?? 'not-sure',
     date: FUTURE,
-    start_time: '17:30',
-    guests_adults: '2',
-    location_type: FIELDS.get('location_type').field.options[0].value,
-    location: 'Trinity Bellwoods Park',
     name: CLIENT.name,
     phone: CLIENT.phone,
     email: CLIENT.email,
     _ts: String(Date.now() - 120_000),
   };
+  const core = {
+    package: pkg ?? occ.recommendedPackage ?? 'not-sure',
+    start_time: '17:30',
+    delivery_slot: FIELDS.get('delivery_slot')?.field.options[0].value,
+    guests_adults: '2',
+    location_type: FIELDS.get('location_type').field.options[0].value,
+    room_type: FIELDS.get('room_type')?.field.options[0].value,
+    area: SCHEMA.travel.areas[0].name,
+    ...PLACE,
+  };
+  for (const [id, value] of Object.entries(core)) {
+    if (value !== undefined && FIELDS.has(id) && applicable(id, p)) p[id] = value;
+  }
   if (full) {
     p.backup_date = FUTURE2;
     p.is_surprise = 'yes';
@@ -308,12 +347,17 @@ function assertEmails(ref, payload) {
   const biz = readMail(ref, 'business');
   const cli = readMail(ref, 'client');
   const occ = occasionOf(payload.occasion);
+  const svc = serviceOf(payload.service);
+  assert.ok(svc, `service ${payload.service} is in form-schema.json`);
+  const picnic = PICNIC_SERVICES.includes(svc.id);
 
   assert.equal(addressOf(biz.headers.to), CFG.to, 'business To');
   assert.equal(addressOf(biz.headers['reply-to']), payload.email.toLowerCase(), 'business Reply-To = client');
   assert.match(biz.headers['reply-to'], new RegExp(payload.name.split(' ')[0]), 'business Reply-To carries the client name');
   assert.equal(addressOf(biz.headers.from), CFG.from, 'business From');
-  assert.equal(biz.headers.subject, `New booking: ${occ.name} · ${fmtDate(payload.date)} · ${CLIENT.short}`, 'business Subject');
+  // A plain picnic is named by its occasion; every other service leads with its name.
+  const head = svc.id === 'picnics' ? occ.name : `${svc.name} · ${occ.name}`;
+  assert.equal(biz.headers.subject, `New booking: ${head} · ${fmtDate(payload.date)} · ${CLIENT.short}`, 'business Subject');
   assert.ok(!/[\r\n]/.test(biz.headers.subject));
 
   assert.equal(addressOf(cli.headers.to), payload.email.toLowerCase(), 'client To');
@@ -321,7 +365,7 @@ function assertEmails(ref, payload) {
   assert.equal(addressOf(cli.headers['reply-to']), CFG.replyToForClient, 'client Reply-To');
   assert.equal(addressOf(cli.headers.from), CFG.from, 'client From');
   assert.match(cli.headers.from, /Blush Picnic/);
-  assert.ok(cli.headers.subject.includes(ref), 'client Subject has the reference');
+  assert.equal(cli.headers.subject, `We’ve received your ${picnic ? 'picnic request' : 'request'} (${ref})`, 'client Subject');
   assert.equal(cli.headers['auto-submitted'], 'auto-generated');
 
   for (const part of [biz.text, biz.html]) assert.ok(part.length > 200, 'business email has text and HTML parts');
@@ -346,16 +390,22 @@ function assertEmails(ref, payload) {
     }
   }
   assert.ok(biz.text.includes(occ.name));
+  for (const m of [biz, cli]) assert.ok(m.text.includes(`\nService: ${svc.name}\n`), 'the Service row comes first in both summaries');
+  assert.ok(biz.text.indexOf('\nService: ') < biz.text.indexOf('\nOccasion: '), 'Service before Occasion');
   assert.ok(biz.text.includes(ref) && biz.html.includes(ref), 'business email has the reference');
   assert.match(biz.text, /\(Toronto time\)/);
   assert.match(biz.text, /STARTING ESTIMATE: (Starting at \$[\d,]+ before HST|To be quoted)/);
+  if (!picnic) assert.match(biz.text, /STARTING ESTIMATE: To be quoted/, 'only picnics and proposals have a total');
   assert.ok(biz.html.includes('href="tel:+14165550123"') && biz.html.includes('href="sms:+14165550123"') && biz.html.includes(`href="mailto:${payload.email}`), 'quick actions');
   assert.ok(biz.html.includes('#3B2A26') && biz.html.includes('#F6E6E1'), 'brand colours');
 
   assert.ok(cli.text.includes(`Thank you, ${CLIENT.first}.`));
-  assert.ok(cli.text.includes(occ.name) && cli.text.includes(fmtDate(payload.date)) && cli.text.includes('5:30 PM'));
-  assert.ok(cli.text.includes('Here’s a summary:') && !cli.text.includes('copy of what you sent'), 'the client copy calls itself a summary');
-  assert.match(cli.text, /within 24 hours/);
+  assert.ok(cli.text.includes(occ.name) && cli.text.includes(fmtDate(payload.date)));
+  if (applicable('start_time', payload)) assert.ok(cli.text.includes('5:30 PM'), 'client copy has the start time');
+  if (applicable('delivery_slot', payload)) assert.ok(cli.text.includes(`When it arrives: ${optionLabel(FIELDS.get('delivery_slot').field, payload.delivery_slot)}`), 'client copy has the delivery slot');
+  if (payload.area) assert.ok(cli.text.includes(`\nArea: ${payload.area}\n`) && biz.text.includes(`\nArea: ${payload.area}\n`), 'Area row in both');
+  assert.ok(cli.text.includes(`We’ve received your ${picnic ? 'picnic request' : 'request'}. Here’s a summary:`) && !cli.text.includes('copy of what you sent'), 'the client copy calls itself a summary');
+  assert.ok(cli.text.includes(`We’ll get back to you ${SCHEMA.business.replyTime} with availability and your quote.`), 'reply time from settings.yaml (via form-schema.json)');
   // The two deposits are separate steps, word for word from settings.yaml (via form-schema.json).
   assert.ok(cli.text.includes(`Your booking deposit\n   ${SCHEMA.deposit.summary}`), 'booking deposit step');
   assert.ok(cli.text.includes(`Your security deposit\n   ${SCHEMA.securityDeposit.summary}`), 'security deposit step');
@@ -366,16 +416,21 @@ function assertEmails(ref, payload) {
   assert.match(cli.text, /\(647\) 878-0539/);
   assert.match(cli.text, /@blush\.picnic/);
   assert.ok(cli.html.includes(ref));
-  // Only answers from our own lists: the free-text location never reaches the client's inbox.
-  assert.ok(!cli.raw.includes(payload.location), 'client copy has no free-text location');
+  // Only answers from our own lists: the picnic spot, room address or delivery address never reaches the client's inbox.
+  for (const id of Object.keys(PLACE)) {
+    if (!payload[id]) continue;
+    assert.ok(!cli.raw.includes(payload[id]) && !cli.text.includes(payload[id]) && !cli.html.includes(payload[id]), `client copy has no free-text ${id}`);
+    if (applicable(id, payload)) assert.ok(biz.text.includes(`\nLocation: `) && biz.text.includes(payload[id]), `business summary shows the ${id}`);
+  }
   for (const s of ['Budget', 'Starting estimate', 'To quote', 'Possible spam']) assert.ok(!cli.text.includes(s), `client copy has no "${s}"`);
   return { biz, cli };
 }
 
 /** Answers the business email shows in its summary rows (Booking::SUMMARY_FIELDS) → the row label. */
 const SUMMARY_ROWS = {
-  occasion: 'Occasion', package: 'Package', date: 'Date', backup_date: 'Date', start_time: 'Start time',
-  guests_adults: 'Guests', guests_kids: 'Guests', location_type: 'Location', location: 'Location',
+  service: 'Service', occasion: 'Occasion', package: 'Package', date: 'Date', backup_date: 'Date', start_time: 'Start time',
+  delivery_slot: 'When it arrives', guests_adults: 'Guests', guests_kids: 'Guests', location_type: 'Location', location: 'Location',
+  room_type: 'Location', room_address: 'Location', delivery_address: 'Location', area: 'Area',
   budget: 'Budget', is_surprise: 'Surprise', contact_pref: 'Prefers',
 };
 
@@ -613,11 +668,10 @@ describe('booking handler (file transport)', () => {
   test('starting estimate matches the site: guest ranges and unpriced extra guests', async () => {
     const cel = packageOf('celebration');
     const prop = packageOf('proposal-romance');
-    const money = (n) => `$${n.toLocaleString('en-US')}`;
     const within = await post({ ...validPayload('baby-shower', { pkg: 'celebration' }), guests_adults: String(cel.guestsMax ?? cel.guestsIncluded) });
     const wText = readMail(within.data.ref, 'business').text;
     assert.ok(wText.includes(`STARTING ESTIMATE: Starting at ${money(cel.priceFrom)} before HST`), wText);
-    assert.ok(!wText.includes('To quote:'), 'no note inside the package guest range');
+    assert.ok(!/To quote: \d+ (guests|kids?)/.test(wText), 'no guest note inside the package guest range');
     if (cel.guestsMax) {
       const big = await post({ ...validPayload('baby-shower', { pkg: 'celebration' }), guests_adults: String(cel.guestsMax + 2) });
       assert.ok(readMail(big.data.ref, 'business').text.includes(`To quote: ${cel.guestsMax + 2} guests: larger groups quoted`));
@@ -632,6 +686,213 @@ describe('booking handler (file transport)', () => {
     const r = await post(validPayload('other', { pkg: 'not-sure' }));
     assert.equal(r.status, 200, r.text);
     assert.match(readMail(r.data.ref, 'business').text, /STARTING ESTIMATE: To be quoted/);
+  });
+
+  // ── Services: picnics, proposals, room decor, hampers ───────────────────────
+
+  test('form-schema.json lists the five services, the picnic styles and the travel areas', () => {
+    for (const id of ['picnics', 'proposals', 'room-decor', 'birthday-hampers', 'custom-hampers']) assert.ok(serviceOf(id), `service ${id}`);
+    assert.deepEqual(FIELDS.get('service').field.options.map((o) => o.value), SCHEMA.services.map((s) => s.id), 'the first question offers every service');
+    assert.ok(SCHEMA.styles.some((s) => s.included) && styleOf('dome'), 'styles: an included one and the dome');
+    assert.ok(SCHEMA.travel.areas.length >= 1 && typeof SCHEMA.travel.note === 'string');
+    const areas = FIELDS.get('area').field.options.map((o) => o.value);
+    assert.deepEqual(areas, [...SCHEMA.travel.areas.map((a) => a.name), 'Somewhere else in the GTA', 'Not sure yet'], 'area options = travel areas + the two catch-alls');
+    assert.deepEqual(FIELDS.get('package').field.showIf, { field: 'service', in: PICNIC_SERVICES }, 'a package only for picnics and proposals');
+  });
+
+  test('showIf rule (Validator::showIfMatches): equals, in and bare, exactly like the browser', () => {
+    const php = `
+      require 'public/api/lib/FormSchema.php';
+      require 'public/api/lib/Validator.php';
+      $m = static fn (array $c, $v) => Blush\\Validator::showIfMatches($c, $v);
+      echo json_encode([
+        $m(['field' => 'service', 'equals' => 'room-decor'], 'room-decor'), $m(['field' => 'service', 'equals' => 'room-decor'], 'picnics'),
+        $m(['field' => 'x', 'equals' => 'a'], ['b', 'a']), $m(['field' => 'x', 'equals' => 'a'], ''),
+        $m(['field' => 'service', 'in' => ['picnics', 'proposals']], 'proposals'), $m(['field' => 'service', 'in' => ['picnics', 'proposals']], 'custom-hampers'),
+        $m(['field' => 'x', 'in' => ['a']], ['b', 'a']), $m(['field' => 'x', 'in' => ['a']], []), $m(['field' => 'x', 'in' => []], 'a'),
+        $m(['field' => 'x'], 'anything'), $m(['field' => 'x'], ''), $m(['field' => 'x'], ['']),
+      ]);`;
+    const r = spawnSync('php', ['-r', php], { cwd: ROOT, encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    assert.deepEqual(JSON.parse(r.stdout), [true, false, true, false, true, false, true, false, false, true, false, false]);
+    // The JS mirror used to build payloads agrees.
+    assert.deepEqual(
+      [showIfMatches({ equals: 'a' }, ['b', 'a']), showIfMatches({ in: ['a'] }, 'c'), showIfMatches({ in: ['a'] }, ['c', 'a']), showIfMatches({}, ''), showIfMatches({}, 'x')],
+      [true, false, true, false, true]
+    );
+  });
+
+  test('every service is accepted with its required answers and emailed with the right summary rows', async () => {
+    const locType = optionLabel(FIELDS.get('location_type').field, FIELDS.get('location_type').field.options[0].value);
+    for (const svc of SCHEMA.services) {
+      const payload = validPayload('birthday', { service: svc.id });
+      assert.equal(payload.occasion, lockedOccasion(svc.id) ?? 'birthday');
+      const r = await post(payload);
+      assert.equal(r.status, 200, `${svc.id}: ${r.text}`);
+      const { biz, cli } = assertEmails(r.data.ref, payload);
+      if (PICNIC_SERVICES.includes(svc.id)) {
+        assert.ok(biz.text.includes('\nPackage: ') && biz.text.includes('\nGuests: 2 adults\n') && biz.text.includes('\nStart time: 5:30 PM\n'), `${svc.id}: package, guests, time`);
+        assert.ok(biz.text.includes(`\nLocation: ${locType} · ${PLACE.location}\n`), `${svc.id}: location type · spot for the business`);
+        assert.ok(cli.text.includes(`\nLocation: ${locType}\n`) && cli.text.includes('\nPackage: '), `${svc.id}: the client sees the location type and package`);
+        assert.ok(!biz.text.includes('When it arrives'));
+        assert.match(biz.text, /STARTING ESTIMATE: Starting at \$[\d,]+ before HST/);
+      } else if (svc.id === 'room-decor') {
+        const roomType = optionLabel(FIELDS.get('room_type').field, payload.room_type);
+        assert.ok(biz.text.includes(`\nLocation: ${roomType} · ${PLACE.room_address}\n`), 'room type · address for the business');
+        assert.ok(biz.text.includes('\nStart time: 5:30 PM\n'), 'room decor has a start time');
+        assert.ok(!biz.text.includes('\nPackage: ') && !biz.text.includes('\nGuests: ') && !biz.text.includes('When it arrives'), 'no package, guests or delivery slot for room decor');
+        assert.ok(cli.text.includes(`\nLocation: ${roomType}\n`), 'the client sees the room type (from our list)');
+        assert.ok(!cli.text.includes(PLACE.room_address) && !cli.html.includes(PLACE.room_address), 'the client never sees the room address');
+        assert.ok(!cli.text.includes('\nPackage: '), 'no package row for the client');
+      } else {
+        assert.ok(biz.text.includes('\nWhen it arrives: At midnight\n'), `${svc.id}: delivery slot for the business`);
+        assert.ok(cli.text.includes('\nWhen it arrives: At midnight\n'), `${svc.id}: delivery slot for the client`);
+        assert.ok(biz.text.includes(`\nLocation: ${PLACE.delivery_address}\n`), `${svc.id}: delivery address for the business`);
+        assert.ok(!cli.text.includes('\nLocation: '), `${svc.id}: the client copy has no Location row (only free text would fit)`);
+        assert.ok(!biz.text.includes('\nPackage: ') && !biz.text.includes('\nGuests: ') && !biz.text.includes('\nStart time: '), `${svc.id}: no package, guests or start time`);
+        assert.ok(cli.text.includes('We deliver your hamper') && !cli.text.includes('you just arrive'), `${svc.id}: the hamper’s last step is a delivery`);
+      }
+      if (svc.id === 'custom-hampers') {
+        assert.equal(payload.occasion, 'other');
+        assert.ok(biz.text.includes(`${FIELDS.get('other_occasion').field.label}: ${payload.other_occasion}`), 'custom hamper: the occasion in their words');
+        assert.ok(biz.text.includes(`${FIELDS.get('hamper_vision').field.label}: ${payload.hamper_vision}`), 'custom hamper: the vision');
+      }
+      const full = validPayload('anniversary', { service: svc.id, full: true });
+      const rf = await post(full);
+      assert.equal(rf.status, 200, `${svc.id} (every question): ${rf.text}`);
+      assertEmails(rf.data.ref, full);
+    }
+  });
+
+  test('each service’s required questions are enforced', async () => {
+    let checked = 0;
+    const seen = new Set();
+    for (const svc of SCHEMA.services) {
+      const payload = validPayload('birthday', { service: svc.id });
+      for (const [id, { field }] of FIELDS) {
+        if (!field.required || !applicable(id, payload)) continue;
+        seen.add(id);
+        const p = { ...payload };
+        delete p[id];
+        const r = await post(p);
+        assert.equal(r.status, 422, `${svc.id} without ${id}: ${r.text}`);
+        assert.ok(r.data.errors?.[id], `${svc.id}: errors.${id} present`);
+        checked++;
+      }
+    }
+    for (const id of ['service', 'delivery_slot', 'room_type', 'room_address', 'delivery_address', 'hamper_vision', 'area']) assert.ok(seen.has(id), `${id} was checked`);
+    assert.ok(checked >= 30, `${checked} required questions checked`);
+  });
+
+  test('a hamper request ignores a package, picnic spot, guests, style or time sent anyway (they don’t apply)', async () => {
+    const payload = {
+      ...validPayload('birthday', { service: 'birthday-hampers' }),
+      package: 'signature',
+      location_type: 'Park',
+      location: 'IGNORED-PICNIC-SPOT',
+      guests_adults: 'not a number', // would be a 422 if it applied
+      start_time: '25:00',            // same
+      picnic_style: 'dome',
+      addons: ['helium-balloons'],
+    };
+    const r = await post(payload);
+    assert.equal(r.status, 200, r.text);
+    const { biz, cli } = assertEmails(r.data.ref, payload);
+    for (const m of [biz, cli]) {
+      for (const s of ['Package:', 'Guests:', 'Start time:', 'IGNORED-PICNIC-SPOT', 'Signature Picnic', 'Dome picnic', 'Helium balloons', FIELDS.get('addons').field.label]) {
+        assert.ok(!m.text.includes(s) && !m.html.includes(escHtml(s)), `"${s}" is not in the email`);
+      }
+    }
+    assert.match(biz.text, /STARTING ESTIMATE: To be quoted/);
+  });
+
+  test('a service outside the list, or a package for a picnic that is missing, is a 422', async () => {
+    const bad = await post({ ...validPayload('birthday'), service: 'skywriting' });
+    assert.equal(bad.status, 422, bad.text);
+    assert.ok(bad.data.errors.service);
+    const noPkg = validPayload('birthday');
+    delete noPkg.package;
+    const r = await post(noPkg);
+    assert.equal(r.status, 422, r.text);
+    assert.ok(r.data.errors.package);
+  });
+
+  test('starting estimate: travel by area — a line when the fee is set, otherwise “quoted by area”', async () => {
+    const sig = packageOf('signature');
+    const area = SCHEMA.travel.areas.find((a) => a.name === 'Mississauga') ?? SCHEMA.travel.areas[0];
+    const r = await post({ ...validPayload('birthday', { pkg: 'signature' }), area: area.name });
+    assert.equal(r.status, 200, r.text);
+    const text = readMail(r.data.ref, 'business').text;
+    assert.ok(text.includes(`\nArea: ${area.name}\n`));
+    if (area.fee === null) {
+      assert.ok(text.includes(`To quote: Travel to ${area.name}: quoted by area`), text);
+      assert.ok(text.includes(`STARTING ESTIMATE: Starting at ${money(sig.priceFrom)} before HST`), 'an unpriced area adds nothing to the total');
+    } else {
+      assert.ok(text.includes(`  - Travel to ${area.name}: ${money(area.fee)}`), text);
+      assert.ok(text.includes(`STARTING ESTIMATE: Starting at ${money(sig.priceFrom + area.fee)} before HST`), 'the fee is added to the total');
+      assert.ok(!text.includes(`Travel to ${area.name}: quoted`));
+    }
+    // The two answers after the areas never have a fee.
+    const unsure = await post({ ...validPayload('birthday', { pkg: 'signature' }), area: 'Not sure yet' });
+    assert.ok(readMail(unsure.data.ref, 'business').text.includes('To quote: Travel: quoted once you choose an area'));
+    const other = await post({ ...validPayload('birthday', { pkg: 'signature' }), area: 'Somewhere else in the GTA' });
+    const oText = readMail(other.data.ref, 'business').text;
+    assert.ok(oText.includes('To quote: Travel: quoted by area') && !oText.includes('Travel to '));
+    // The travel line also shows for a service without a total.
+    const room = await post({ ...validPayload('birthday', { service: 'room-decor' }), area: area.name });
+    const rText = readMail(room.data.ref, 'business').text;
+    assert.match(rText, /STARTING ESTIMATE: To be quoted/);
+    assert.ok(rText.includes(area.fee === null ? `To quote: Travel to ${area.name}: quoted by area` : `  - Travel to ${area.name}: ${money(area.fee)}`));
+  });
+
+  test('starting estimate: picnic style — a line when priced, otherwise “quoted”; the classic one adds nothing', async () => {
+    const sig = packageOf('signature');
+    const dome = styleOf('dome');
+    const r = await post({ ...validPayload('birthday', { pkg: 'signature' }), picnic_style: 'dome' });
+    assert.equal(r.status, 200, r.text);
+    const text = readMail(r.data.ref, 'business').text;
+    assert.ok(text.includes(`${FIELDS.get('picnic_style').field.label}: ${dome.name}`), 'the style answer is shown under its section');
+    if (dome.price === null) {
+      assert.ok(text.includes(`To quote: ${dome.name}: quoted`), text);
+      assert.ok(text.includes(`STARTING ESTIMATE: Starting at ${money(sig.priceFrom)} before HST`));
+    } else {
+      assert.ok(text.includes(`  - ${dome.name}: ${money(dome.price)}`), text);
+      assert.ok(text.includes(`STARTING ESTIMATE: Starting at ${money(sig.priceFrom + dome.price)} before HST`));
+    }
+    const classic = SCHEMA.styles.find((s) => s.included);
+    const c = await post({ ...validPayload('birthday', { pkg: 'signature' }), picnic_style: classic.id });
+    const cText = readMail(c.data.ref, 'business').text;
+    assert.ok(!cText.includes(`  - ${classic.name}`) && !cText.includes(`${classic.name}: quoted`), 'the included style is neither a line nor a note');
+    assert.ok(cText.includes(`STARTING ESTIMATE: Starting at ${money(sig.priceFrom)} before HST`));
+  });
+
+  test('starting estimate: room decor is “To be quoted” but still lists its priced add-ons', async () => {
+    const helium = SCHEMA.addons.find((a) => a.id === 'helium-balloons');
+    assert.ok(helium, 'helium balloons add-on');
+    const r = await post({ ...validPayload('birthday', { service: 'room-decor' }), addons: [helium.id] });
+    assert.equal(r.status, 200, r.text);
+    const text = readMail(r.data.ref, 'business').text;
+    assert.match(text, /STARTING ESTIMATE: To be quoted/);
+    if (helium.price !== null) assert.ok(text.includes(`  - ${helium.name}: ${money(helium.price)}`), text);
+    else assert.ok(text.includes(`Price on request: ${helium.name}`), text);
+    assert.ok(!/  - .*Picnic/.test(text), 'no package line');
+  });
+
+  test('the Simple Picnic exists and prices $250', async () => {
+    const simple = packageOf('simple');
+    assert.ok(simple, 'simple package in form-schema.json');
+    assert.equal(simple.priceFrom, 250);
+    const r = await post(validPayload('picnic-date', { pkg: 'simple' }));
+    assert.equal(r.status, 200, r.text);
+    const text = readMail(r.data.ref, 'business').text;
+    assert.ok(text.includes('STARTING ESTIMATE: Starting at $250 before HST'), text);
+    assert.ok(text.includes(`Package: ${simple.name} · Starting at $250 for ${simple.guestsIncluded} guests, before HST`));
+  });
+
+  test('the log line carries the service next to the occasion and package', async () => {
+    const r = await post(validPayload('birthday', { service: 'room-decor' }));
+    assert.equal(r.status, 200, r.text);
+    assert.match(logText(), new RegExp(`"ref":"${r.data.ref}","service":"room-decor","occasion":"birthday","package":""`));
   });
 
   test('checkbox lists arrive intact as repeated keys, key[] (urlencoded), multipart and JSON', async () => {
@@ -728,8 +989,10 @@ describe('booking handler (file transport)', () => {
     assert.ok(buttons.some(([h, t]) => h.startsWith('sms:') && t === 'Text'), 'Text is still offered');
     assert.match(biz.text, /\n {2}Email: priya@example\.com \(or just reply\) {2}← preferred\n/);
     assert.ok(biz.text.includes('\nPrefers: Email\n') && biz.text.includes('\nSurprise: Yes\n'));
-    assert.ok(biz.text.includes(`\nLocation: ${FIELDS.get('location_type').field.options[0].label} · Trinity Bellwoods Park\n`), 'location type · place');
-    assert.ok(!/OCCASION & PACKAGE|WHEN & WHERE/.test(biz.text), 'no sections that only repeat the summary');
+    assert.ok(biz.text.includes(`\nLocation: ${FIELDS.get('location_type').field.options[0].label} · ${PLACE.location}\n`), 'location type · place');
+    for (const g of SCHEMA.groups.filter((g) => g.step <= 2)) {
+      assert.ok(!biz.text.includes(`— ${g.title.toUpperCase()} —`), `no "${g.title}" section: its answers are all summary rows`);
+    }
     const plain = readMail((await post(validPayload('proposal'))).data.ref, 'business');
     assert.ok(/<a href="sms:\+14165550123"[^>]*>Text Priya<\/a>/.test(plain.html), 'no preference → Text is the main button');
   });
