@@ -259,7 +259,9 @@ final class Booking
     /** [service, occasion] for everything but plain picnics, where the occasion says it all. @return list<string> */
     public function headlineParts(): array
     {
-        $parts = $this->serviceId() === 'picnics' ? [] : [$this->serviceName()];
+        // A picnic or a proposal is named by its occasion ("Proposals · Proposal" would say it twice);
+        // room decor and hampers lead with the service.
+        $parts = $this->isPicnic() ? [] : [$this->serviceName()];
         $parts[] = $this->occasionName();
         return array_values(array_filter($parts, 'strlen'));
     }

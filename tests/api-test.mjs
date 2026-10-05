@@ -355,8 +355,8 @@ function assertEmails(ref, payload) {
   assert.equal(addressOf(biz.headers['reply-to']), payload.email.toLowerCase(), 'business Reply-To = client');
   assert.match(biz.headers['reply-to'], new RegExp(payload.name.split(' ')[0]), 'business Reply-To carries the client name');
   assert.equal(addressOf(biz.headers.from), CFG.from, 'business From');
-  // A plain picnic is named by its occasion; every other service leads with its name.
-  const head = svc.id === 'picnics' ? occ.name : `${svc.name} · ${occ.name}`;
+  // A picnic or a proposal is named by its occasion; room decor and hampers lead with the service name.
+  const head = picnic ? occ.name : `${svc.name} · ${occ.name}`;
   assert.equal(biz.headers.subject, `New booking: ${head} · ${fmtDate(payload.date)} · ${CLIENT.short}`, 'business Subject');
   assert.ok(!/[\r\n]/.test(biz.headers.subject));
 
