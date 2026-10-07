@@ -46,6 +46,24 @@ const jsonLd = [
   },
 ];
 const widths = (x: Service, list: number[]) => list.filter((w) => w <= x.data.image.width);
+
+// A plain guide from the moment to the service. Every line points at a service in services.yaml.
+const href = (id: string) => services.find((x) => x.id === id)?.data.href ?? '/services';
+const guide = [
+  { when: 'You want to be outdoors, or somewhere with a view', then: 'A picnic', text: 'A park, a beach, your backyard or Toronto Island: we set the table, rugs, cushions and florals and clear it all away afterwards.', href: href('picnics') },
+  { when: 'You’re asking the question', then: 'A proposal', text: 'The sign, petals, candles and flowers are waiting before you arrive; tell us how they’ll get there and whether we should stay hidden nearby.', href: href('proposals') },
+  { when: 'You’d rather it happened indoors', then: 'Room decor', text: 'A birthday, anniversary or proposal styled in a room, in your colours, with your words on the sign.', href: href('room-decor') },
+  { when: 'You can’t be there yourself, or it’s a gift', then: 'A birthday hamper', text: 'Put together around them and delivered at midnight or during the day, anywhere in the GTA.', href: href('birthday-hampers') },
+  { when: 'You have something specific in mind', then: 'A custom hamper', text: 'Send us your vision on Instagram and we put it together and quote it.', href: href('custom-hampers') },
+];
+
+// What holds across all five (settings.yaml).
+const always = [
+  { icon: 'clock', text: `We reply ${s.replyTime}, with availability and your quote.` },
+  { icon: 'map-pin', text: `${s.serviceArea}. ${s.travel.note}` },
+  { icon: 'sparkle', text: `Every price is a starting price, ${s.taxNote}. ${s.locationNote}` },
+  { icon: 'heart', text: 'Picnics, proposals and room decor are delivered, set up, styled and cleared away by us; hampers are delivered to the door.' },
+] as const;
 ---
 <BaseLayout {title} {description} {jsonLd}>
   <section aria-labelledby="page-title" class="container-x pt-3 md:pt-5">
@@ -163,6 +181,40 @@ const widths = (x: Service, list: number[]) => list.filter((w) => w <= x.data.im
       </div>
     )}
   </div>
+
+  <section aria-labelledby="guide-title" class="section-y border-t border-line bg-cream">
+    <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <h2 id="guide-title">Which one fits?</h2>
+        <p class="mt-4 max-w-md text-plum-soft">Start from the moment, not the menu. If it’s still not obvious, send a request and say “not sure” — we’ll suggest one.</p>
+      </div>
+      <dl class="divide-y divide-line border-y border-line lg:col-span-8">
+        {guide.map((g) => (
+          <div class="grid gap-x-8 gap-y-2 py-5 md:grid-cols-12 md:py-6">
+            <dt class="font-semibold md:col-span-5">{g.when}</dt>
+            <dd class="md:col-span-7">
+              <a href={g.href} class="font-display text-[1.45rem] font-semibold leading-tight text-cocoa no-underline hover:underline hover:decoration-gold hover:decoration-2 hover:underline-offset-4 md:text-[1.6rem]">{g.then}</a>
+              <p class="mt-1 text-plum-soft">{g.text}</p>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section aria-labelledby="always-title" class="section-y">
+    <div class="container-x">
+      <h2 id="always-title" class="heading-sm">Whichever you choose</h2>
+      <ul class="mt-5 grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+        {always.map((a) => (
+          <li class="flex items-start gap-3 text-plum-soft">
+            <Icon name={a.icon} size={20} class="mt-[0.2em] shrink-0 text-sage-ink" />
+            <span>{a.text}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
 
   <CtaBand title="Not sure which one you need?" text={`Tell us about the moment and the person it’s for. We reply ${s.replyTime} with ideas and your quote.`} buttonLabel="Send a request" />
 </BaseLayout>

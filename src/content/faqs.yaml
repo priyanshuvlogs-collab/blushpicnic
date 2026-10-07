@@ -165,3 +165,69 @@
   answer: "You're responsible for the rental items during your booking. Lost, damaged, broken, heavily stained or unreturned items may be deducted from your {securityDeposit} security deposit, and any cost above it is charged separately. See our [damage policy](/policies#damage)."
   category: policies
   order: 3
+
+- id: proposals
+  question: "Do you set up proposals?"
+  answer: "Yes — it's one of our five services. A proposal picnic is ready before you arrive: a Marry Me or custom sign, rose petals, candles and fresh flowers in the spot you choose, with the **Proposal & Romance** package starting at {price:proposal-romance} for {guests:proposal-romance}, before HST. Tell us how they'll arrive and whether our team should stay hidden nearby or leave before you get there. See [proposal picnics](/proposal-picnic-toronto)."
+  category: booking
+  order: 1.5
+
+- id: simple-vs-signature
+  question: "What's the difference between the Simple and Signature Picnic?"
+  answer: "Both are set for two. The **Simple Picnic** ({price:simple}, {hours:simple}) is the low table with rugs and cushions, tableware, florals and a letter board with your message. The **Signature Picnic** ({price:signature}, {hours:signature}) adds a fringe umbrella, a Bluetooth speaker and games, and takes extra guests at {extraGuest:signature} each. Both are starting prices, before HST, plus a travel fee by area. [Compare the packages](/packages#compare)."
+  category: pricing
+  order: 1.5
+
+- id: dome
+  question: "What is a dome picnic?"
+  answer: "Your picnic set inside a clear dome. Choose it under “How should we set your picnic?” in the booking form and we quote it with your request. The same goes for a table & chair setup, if you'd rather sit up than on cushions."
+  category: the-day
+  order: 1.6
+
+- id: what-to-bring
+  question: "What should we bring?"
+  answer: "Just your food and drinks, unless you've added a charcuterie board, cake or beverages to your booking. We bring and set up everything else: the table, rugs, cushions, tableware, florals and your letter board. Glassware is an add-on. At the end, please take your own food, drinks and rubbish with you — we pack away the rest."
+  category: the-day
+  order: 2.5
+
+- id: indoors
+  question: "Can you set up indoors?"
+  answer: "Yes. Picnics can be set up in homes and indoor venues as well as parks, beaches and backyards. For a birthday, anniversary or proposal styled in a room rather than as a picnic, see [room decor](/room-decor)."
+  category: locations
+  order: 1.2
+
+- id: room-decor-what
+  question: "What can you set up in a room?"
+  answer: "A balloon garland, fresh flowers or an arrangement, helium balloons, a candle walkway, a red carpet walk, and a cake, charcuterie board or beverages for the table — in your colours, with your words on the sign. Tick what you'd like in the [booking form](/book?service=room-decor) and we include it in your quote."
+  category: the-day
+  order: 1.7
+
+- id: room-decor-surprise
+  question: "Can room decor be a surprise?"
+  answer: "Yes. Turn on the surprise section in the booking form, tell us who's being surprised and how they'll arrive, and choose whether our team stays hidden nearby or leaves before they walk in."
+  category: the-day
+  order: 1.8
+
+- id: room-decor-security
+  question: "Is there a security deposit for room decor?"
+  answer: "Yes, the same as for a picnic: a {securityDeposit} refundable security deposit for the rented decor and equipment, returned within {securityReturned} after your event once everything is collected and checked. Hamper deliveries don't have one, because nothing is collected afterwards."
+  category: policies
+  order: 3.5
+
+- id: hamper-message
+  question: "Can I add a message to a hamper?"
+  answer: "Yes. The booking form has a “Message for the card” box for birthday and custom hampers — write it exactly as you'd like it to read."
+  category: booking
+  order: 8.5
+
+- id: hamper-deposit
+  question: "Is there a security deposit for a hamper?"
+  answer: "No. The security deposit covers rented decor and equipment, and nothing is collected after a hamper delivery. Your quote covers the hamper and the travel fee by area, {taxNote}."
+  category: policies
+  order: 3.6
+
+- id: hamper-where
+  question: "Where do you deliver hampers?"
+  answer: "Anywhere in {serviceArea}, at midnight or during the day — you choose the time and give the delivery address in the [booking form](/book?service=birthday-hampers). {travelNote}"
+  category: locations
+  order: 1.3
