@@ -100,7 +100,8 @@ export async function getOccasion(id: string) {
 
 /** "$1,200" — whole dollars, Canadian formatting. */
 export function money(n: number): string {
-  return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0, minimumFractionDigits: 0 })
+  const digits = Number.isInteger(n) ? 0 : 2; // "$1,200" or "$22.50" — the same as Money::format in the PHP handler
+  return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: digits, minimumFractionDigits: digits })
     .format(n)
     .replace('CA', '');
 }

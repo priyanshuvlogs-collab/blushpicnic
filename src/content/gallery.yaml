@@ -240,8 +240,9 @@
   placeholder: false
 
 - id: birthday-5
-  image: "../assets/photos/gallery-birthday-5.jpg"
-  alt: "Birthday picnic on Toronto Island facing the CN Tower and skyline, with a white teepee, cream fringed parasol, pink peonies and pink and white cushions"
+  # the home page hero photo (one file, used in both places)
+  image: "../assets/photos/hero.jpg"
+  alt: "Birthday picnic on Toronto Island facing the CN Tower and city skyline: a low table with white roses and pink peonies, a white teepee, cream fringed parasol and pink cushions"
   occasions: ["birthday"]
   order: 33
   showOnHome: false

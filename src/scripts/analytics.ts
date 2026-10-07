@@ -33,7 +33,7 @@ export interface AnalyticsIds {
 
 const GA4_ID = /^G-[A-Z0-9]{4,20}$/;
 const PIXEL_ID = /^\d{6,20}$/;
-const CONTACT_EVENTS = new Set(['click_call', 'click_text', 'click_instagram']);
+const CONTACT_EVENTS = new Set(['click_call', 'click_text', 'click_instagram', 'click_tiktok']);
 
 let gaStarted = false;
 let pixelStarted = false;

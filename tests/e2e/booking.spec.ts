@@ -642,7 +642,7 @@ test('server and network errors keep every answer and offer a text-us fallback',
   expect(await page.evaluate(() => sessionStorage.getItem('bp-booking-v1'))).toBeNull();
 });
 
-test('a request that hangs times out after 15 seconds with the same fallback', async ({ page }) => {
+test('a request that hangs times out after 50 seconds (longer than the server’s mail budget) with the same fallback', async ({ page }) => {
   await page.clock.install();
   let release: () => void = () => {};
   await page.route('**/api/book.php', async (route) => {
@@ -655,7 +655,9 @@ test('a request that hangs times out after 15 seconds with the same fallback', a
   await expect(page.locator('[data-primary]')).toBeDisabled();
   await expect(page.locator('[data-primary]')).toContainText('Sending…');
   await expect(page.locator('form[data-booking-form]')).toHaveAttribute('aria-busy', 'true');
-  await page.clock.runFor(15_500);
+  await page.clock.runFor(45_000); // the server may still be talking to the mail server: don't give up yet
+  await expect(page.locator('[data-primary]')).toContainText('Sending…');
+  await page.clock.runFor(5_500);
   await expect(page.getByRole('alert')).toContainText('This is taking longer than it should');
   await expect(page.locator('a[data-sms-fallback]')).toBeVisible();
   await expect(sendButton(page)).toBeEnabled();
@@ -672,6 +674,7 @@ test('rate limits and other refusals explain what to do next', async ({ page }) 
   await completeToReview(page, schema, 'appreciation');
   await sendButton(page).click();
   await expect(page.getByRole('alert')).toContainText('Too many attempts in a short time');
+  await expect(page.getByRole('alert')).toContainText('Too many requests.'); // the server's own advice, not a generic line
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(page.getByRole('alert')).toContainText('please shorten your notes');
   await expect(page.locator('a[data-sms-fallback]')).toBeVisible();
@@ -731,8 +734,9 @@ test('analytics: booking_start once, booking_step per step, service_select, pack
   const log = await recordAnalytics(page);
   await mockBooking(page);
   await openBooking(page);
-  await expect.poll(() => log.filter(([e]) => e === 'booking_step').length).toBe(1);
-  expect(log.find(([e]) => e === 'booking_step')![1]).toMatchObject({ step: 1 });
+  // Opening the form is not a step reached: booking_step counts forward moves only (so page loads,
+  // Back and a server error re-showing a step never inflate the funnel).
+  expect(log.filter(([e]) => e === 'booking_step')).toHaveLength(0);
 
   await choose(page, 'retirement', 'celebration');
   await expect.poll(() => log.filter(([e]) => e === 'service_select').map(([, p]) => p.service)).toEqual([DEFAULT_SERVICE]);
@@ -746,7 +750,11 @@ test('analytics: booking_start once, booking_step per step, service_select, pack
   await sendButton(page).click();
   await page.waitForURL('**/thank-you');
   const steps = log.filter(([e]) => e === 'booking_step').map(([, p]) => p.step);
-  expect(steps).toEqual([1, 2, 3, 4, 5]);
+  expect(steps).toEqual([2, 3, 4, 5]);
+  // booking_submit is sent by /thank-you (so leaving /book can't cancel it), and only once.
+  await expect.poll(() => log.filter(([e]) => e === 'booking_submit').length).toBe(1);
+  await page.reload();
+  await page.waitForLoadState('networkidle');
   expect(log.filter(([e]) => e === 'booking_submit')).toHaveLength(1);
   expect(log.find(([e]) => e === 'booking_submit')![1]).toMatchObject({ service: DEFAULT_SERVICE, occasion: 'retirement', package: 'celebration' });
 

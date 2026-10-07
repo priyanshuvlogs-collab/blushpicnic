@@ -100,6 +100,9 @@ ErrorDocument 403 /404.html
   RewriteCond %{THE_REQUEST} ^[A-Z]+\s/+([^?\s]*[^/?\s])/+(?:[?\s])
   RewriteRule ^ /%1 [R=301,L,NE]
 
+  # 9a. /404 is the error page, not a page of its own: asking for it directly answers 404 (no soft 404).
+  RewriteRule ^404$ - [R=404,L]
+
   # 9. Clean URLs: /packages is served from packages.html (no redirect).
   #    Only extension-less paths, so a missing nested page can never loop.
   RewriteCond %{REQUEST_FILENAME} !-f
@@ -128,25 +131,25 @@ ErrorDocument 403 /404.html
 # year. Later sections win, so the fingerprint rule comes last.
 <IfModule mod_headers.c>
   <FilesMatch "\.html?$">
-    Header set Cache-Control "no-cache"
+    Header always set Cache-Control "no-cache"
   </FilesMatch>
 
   # sitemap-index.xml, sitemap-0.xml, robots.txt
   <FilesMatch "\.(?:xml|txt)$">
-    Header set Cache-Control "public, max-age=3600"
+    Header always set Cache-Control "public, max-age=3600"
   </FilesMatch>
 
   <FilesMatch "\.(?:webmanifest|json)$">
-    Header set Cache-Control "public, max-age=86400"
+    Header always set Cache-Control "public, max-age=86400"
   </FilesMatch>
 
   <FilesMatch "\.(?:css|m?js)$">
-    Header set Cache-Control "public, max-age=86400"
+    Header always set Cache-Control "public, max-age=86400"
   </FilesMatch>
 
   # Images and fonts outside /_astro/ (logo, favicons, og.jpg): 30 days.
   <FilesMatch "\.(?:avif|webp|jpe?g|png|gif|svg|ico|woff2?|ttf|otf|mp4|webm)$">
-    Header set Cache-Control "public, max-age=2592000"
+    Header always set Cache-Control "public, max-age=2592000"
   </FilesMatch>
 
   # Fingerprinted build files: name.HASH.ext or name.HASH_VARIANT.ext (HASH = 8 characters).
@@ -155,7 +158,7 @@ ErrorDocument 403 /404.html
   # Fonts from Astro's font pipeline: /_astro/fonts/HASH.woff2 (HASH = 16 hex characters of the
   # file's content) are fingerprinted the same way.
   <FilesMatch "(?:\.[A-Za-z0-9_-]{8}(?:_[A-Za-z0-9_-]+)?\.(?:css|m?js|avif|webp|jpe?g|png|gif|svg|woff2?|ttf|otf)|^[0-9a-f]{16}\.(?:woff2?|ttf|otf))$">
-    Header set Cache-Control "public, max-age=31536000, immutable"
+    Header always set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 </IfModule>
 

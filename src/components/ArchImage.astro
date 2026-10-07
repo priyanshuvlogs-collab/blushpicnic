@@ -44,7 +44,7 @@ const urgent = priority && fetchpriority === 'high';
     fallbackFormat="jpg"
     loading={priority ? 'eager' : 'lazy'}
     fetchpriority={urgent ? 'high' : 'auto'}
-    decoding={urgent ? 'sync' : 'async'}
+    decoding="async"
     class="arch h-full w-full object-cover"
     style={`aspect-ratio:${aspect}`}
   />

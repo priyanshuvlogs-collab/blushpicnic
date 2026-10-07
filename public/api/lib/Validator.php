@@ -37,6 +37,14 @@ final class ValidationResult
         $v = $this->values[$id] ?? [];
         return is_array($v) ? $v : ($v === '' ? [] : [$v]);
     }
+
+    /** Every accepted answer, in a stable order — the same answers give the same string. */
+    public function fingerprint(): string
+    {
+        $values = $this->values;
+        ksort($values);
+        return (string) json_encode($values, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
 }
 
 final class Validator
@@ -74,8 +82,10 @@ final class Validator
         // other), so a hand-made post can't pair a hamper with, say, a corporate occasion.
         $lock = $this->schema->field('occasion')['lockBy'] ?? null;
         $service = $this->firstScalar($input['service'] ?? '');
-        if (is_array($lock) && ($lock['field'] ?? '') === 'service' && is_string($lock['values'][$service] ?? null)) {
-            $input['occasion'] = $lock['values'][$service];
+        $locked = is_array($lock) && ($lock['field'] ?? '') === 'service' ? ($lock['values'][$service] ?? null) : null;
+        // Only a real occasion locks (as in the browser); a typo in lockBy.values leaves the question open.
+        if (is_string($locked) && in_array($locked, FormSchema::optionValues($this->schema->field('occasion')), true)) {
+            $input['occasion'] = $locked;
             $this->input = $input;
         }
         $occasionId = $this->firstScalar($input['occasion'] ?? '');
@@ -245,8 +255,10 @@ final class Validator
                 return [$value, null];
 
             case 'tel':
-                $digits = preg_replace('/\D+/', '', $value) ?? '';
-                if (!preg_match('/^[0-9+\-().\/\s]+$/', $value) || strlen($digits) < 10 || strlen($digits) > 15) {
+                // An extension ("ext 12", "x12") is allowed, as in the browser (validate.ts isValidPhone).
+                $number = preg_replace('/\b(ext|x)\.?\s*\d+$/i', '', $value) ?? $value;
+                $digits = preg_replace('/\D+/', '', $number) ?? '';
+                if (!preg_match('/^[0-9+\-().\/\s]+$/', $number) || strlen($digits) < 10 || strlen($digits) > 15) {
                     return ['', 'Please enter a phone number with the area code, for example 416-555-0123.'];
                 }
                 return [$value, null];

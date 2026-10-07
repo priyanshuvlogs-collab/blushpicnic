@@ -1,6 +1,6 @@
 ---
 title: "Booking policies"
-metaTitle: "Booking Policies | Deposit, Weather & Rescheduling | Blush Picnic"
+metaTitle: "Booking Policies | Deposits & Weather | Blush Picnic"
 metaDescription: "Blush Picnic booking policies in plain language: deposits, when payment is due, prices before HST, weather, cancellations, late arrivals and rental items."
 lede: "Everything to know before you pay your deposit, in plain language. If anything is unclear, text us and we'll explain."
 hasPlaceholders: true

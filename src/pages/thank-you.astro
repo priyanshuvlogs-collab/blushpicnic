@@ -26,7 +26,7 @@ const next: { title: string; text: string; security?: string; link?: { href: str
     title: 'A booking deposit holds your date',
     text: `Once you’re happy with your quote, a ${money(s.deposit.standard)} booking deposit (or ${s.deposit.largeEventPercent}% for larger events) holds your date. It’s non-refundable.`,
     // only for services with rented decor (services.yaml securityDeposit); hidden by the script for the others
-    security: `There’s also a ${money(s.securityDeposit.amount)} refundable security deposit, returned within ${s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.`,
+    security: `For picnics, proposals and room decor there’s also a ${money(s.securityDeposit.amount)} refundable security deposit, returned within ${s.securityDeposit.returnedWithin} after your event once all rental items are collected and checked.`,
     link: { href: '/policies', label: 'Read our booking policies' },
   },
   {
@@ -133,10 +133,20 @@ const heroSources = await Promise.all(
 </BaseLayout>
 
 <script>
-  import { loadDone } from '../scripts/booking/storage';
+  import { loadDone, saveDone } from '../scripts/booking/storage';
   import { isPricedService } from '../scripts/booking/estimate';
 
   const done = loadDone();
+  // The form hands booking_submit over to this page so the page unload can't cancel it; sent once.
+  if (done?.track) {
+    const { track, ...rest } = done;
+    saveDone(rest);
+    try {
+      window.bpTrack?.('booking_submit', track);
+    } catch {
+      /* analytics must never break the page */
+    }
+  }
   const refParam = new URLSearchParams(location.search).get('ref');
   const validRef = (r: unknown): r is string => typeof r === 'string' && /^BP-[A-Z0-9-]{3,24}$/i.test(r);
 

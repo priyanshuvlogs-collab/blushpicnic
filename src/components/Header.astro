@@ -124,6 +124,8 @@ const isCurrent = (item: { href: string; also?: string[] }) => matches(item.href
       iconOpen.hidden = open;
       iconClose.hidden = !open;
       document.documentElement.classList.toggle('overflow-hidden', open);
+      // Everything under the open menu is inert (no focus, no screen-reader reading) until it closes.
+      document.querySelectorAll<HTMLElement>('body > :not(header)').forEach((el) => el.toggleAttribute('inert', open));
       if (open) menu.querySelector<HTMLElement>('a')?.focus();
       else if (returnFocus) toggle.focus();
     };

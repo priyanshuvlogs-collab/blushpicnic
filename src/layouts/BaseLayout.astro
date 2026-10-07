@@ -73,7 +73,8 @@ const ldJson = (data: Record<string, unknown>) => JSON.stringify(data).replace(/
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <meta name="robots" content="max-image-preview:large" />}
+    {!noindex && <link rel="canonical" href={canonical} />}
     <meta name="theme-color" content={THEME_COLOR} />
     <meta name="format-detection" content="telephone=no" />
 

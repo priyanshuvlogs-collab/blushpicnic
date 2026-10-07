@@ -170,3 +170,71 @@ final class Log
         error_log('[blush-book] ' . str_replace(["\r", "\n"], ' ', $message));
     }
 }
+
+/**
+ * Remembers recent sends so a retry of the very same request (the browser gave up waiting while
+ * the mail server was still slow, then "Try again") answers with the first booking's reference
+ * instead of emailing the business twice.
+ */
+final class RecentSends
+{
+    private const MAX_KEYS = 2000;
+
+    public function __construct(private readonly string $file, private readonly int $window)
+    {
+    }
+
+    /** The reference a matching send got within the window, or null. */
+    public function find(string $key, int $now): ?string
+    {
+        $ref = null;
+        $this->withFile(function (array $data) use ($key, $now, &$ref) {
+            $hit = $data[$key] ?? null;
+            if (is_array($hit) && is_int($hit[0] ?? null) && $hit[0] > $now - $this->window && is_string($hit[1] ?? null)) {
+                $ref = $hit[1];
+            }
+            return [$data, false];
+        });
+        return $ref;
+    }
+
+    public function remember(string $key, string $ref, int $now): void
+    {
+        $this->withFile(function (array $data) use ($key, $ref, $now) {
+            $cut = $now - $this->window;
+            $data = array_filter($data, static fn ($hit) => is_array($hit) && is_int($hit[0] ?? null) && $hit[0] > $cut);
+            $data[$key] = [$now, $ref];
+            if (count($data) > self::MAX_KEYS) {
+                $data = array_slice($data, -self::MAX_KEYS, null, true);
+            }
+            return [$data, true];
+        });
+    }
+
+    /** @param callable(array): array{0: array, 1: bool} $fn */
+    private function withFile(callable $fn): void
+    {
+        $fh = @fopen($this->file, 'c+');
+        if ($fh === false) {
+            Log::error('recent-sends file not writable: ' . basename($this->file));
+            return;
+        }
+        try {
+            if (!flock($fh, LOCK_EX)) {
+                return;
+            }
+            $raw = stream_get_contents($fh);
+            $data = json_decode($raw === false || $raw === '' ? '{}' : $raw, true);
+            [$data, $write] = $fn(is_array($data) ? $data : []);
+            if ($write) {
+                ftruncate($fh, 0);
+                rewind($fh);
+                fwrite($fh, (string) json_encode($data, JSON_UNESCAPED_SLASHES));
+                fflush($fh);
+            }
+            flock($fh, LOCK_UN);
+        } finally {
+            fclose($fh);
+        }
+    }
+}
