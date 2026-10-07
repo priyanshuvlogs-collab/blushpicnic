@@ -9,6 +9,9 @@ final class Handler
 {
     /** The hidden "leave this empty" field in the booking form. */
     private const HONEYPOT = 'company_website';
+    /** A repeat of the same request inside this many seconds is treated as the earlier send. */
+    private const DUPLICATE_WINDOW = 600;
+
     /** How far ahead of the server a visitor's clock may run before _ts counts as forged (seconds). */
     private const CLOCK_AHEAD_MAX = 600;
     /** Spam signal → the note at the top of the flagged business email. */
@@ -107,6 +110,19 @@ final class Handler
             throw new HttpError(422, 'Please check the highlighted answers.', $result->errors, 'invalid');
         }
 
+        // The same request sent again within a few minutes (the browser timed out while the mail server
+        // was slow, then "Try again") is answered with the first booking's reference, not emailed twice.
+        $recent = $dataOk ? new RecentSends($config->str('data_dir') . '/recent-sends.json', self::DUPLICATE_WINDOW) : null;
+        $ts = is_string($input['_ts'] ?? null) ? $input['_ts'] : '';
+        $dupKey = $recent ? hash_hmac('sha256', $ts . "\n" . $result->fingerprint(), DataDir::salt($config->str('data_dir'))) : '';
+        $earlierRef = $recent?->find($dupKey, $now);
+        if ($earlierRef !== null) {
+            $limiter?->release($ipKey, $now);
+            $this->log->event('duplicate', ['ref' => $earlierRef, 'ip' => substr($ipKey, 0, 12)]);
+            $this->succeed($json, $earlierRef, Booking::firstNameOf($result->get('name')));
+            return;
+        }
+
         $received = new \DateTimeImmutable('now', new \DateTimeZone(Booking::TZ));
         $booking = new Booking(Booking::newRef($received), $received, $schema, $result);
         $mailer = new Mailer($config, $this->apiDir . '/lib');
@@ -139,6 +155,7 @@ final class Handler
 
         // The client confirmation never blocks success. Where the server allows it, reply first
         // and send it after the visitor already has their answer.
+        $recent?->remember($dupKey, $booking->ref, $now);
         $confirm = $config->bool('send_client_confirmation') && $suspect === '';
         $early = $confirm && (function_exists('fastcgi_finish_request') || function_exists('litespeed_finish_request'));
         if ($confirm && !$early) {

@@ -7,8 +7,8 @@ export type Value = string | string[];
 export interface ValidateContext {
   /** Today in Toronto, YYYY-MM-DD. */
   today: string;
-  /** Event dates (preferred / backup) can't be in the past. */
-  notBeforeToday?: boolean;
+  /** Event dates (preferred / backup) can't be in the past, nor more than MAX_EVENT_YEARS_AHEAD away. */
+  eventDate?: boolean;
   /** Word limit (letter board). */
   maxWords?: number;
 }
@@ -16,6 +16,23 @@ export interface ValidateContext {
 export const PHONE_MESSAGE = 'Enter a phone number with area code, e.g. 647 555 0123';
 export const EMAIL_MESSAGE = 'Enter an email address like name@example.com';
 export const PAST_DATE_MESSAGE = 'Enter a date that’s today or later';
+export const TIME_MESSAGE = 'Enter a time, e.g. 16:30 or 4:30 PM';
+/** The same ceilings as Validator.php: event dates within 3 years, any other date 1900 … 5 years ahead. */
+export const MAX_EVENT_YEARS_AHEAD = 3;
+export const MAX_YEARS_AHEAD = 5;
+
+/** YYYY-MM-DD plus n years (29 Feb lands on 28 Feb — close enough for a ceiling). */
+export function yearsAhead(ymd: string, n: number): string {
+  const [y, m, d] = ymd.split('-').map(Number);
+  const dd = m === 2 && d === 29 ? 28 : d;
+  return `${y + n}-${String(m).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+}
+
+/** Accepts "16:30", "4:30 pm", "4pm" — the same forms as the server's parseTime. */
+export function isValidTime(v: string): boolean {
+  const t = v.trim().toLowerCase();
+  return /^([01]?\d|2[0-3]):[0-5]\d(:[0-5]\d(\.\d+)?)?$/.test(t) || /^(1[0-2]|0?[1-9])(?:[:.][0-5]\d)?\s*[ap]\.?\s*m\.?$/.test(t);
+}
 
 // Friendlier wording for the core questions every booking has. Everything else gets a message built
 // from its label, so new questions in booking-form.yaml need no code.
@@ -115,10 +132,12 @@ export function validateField(f: ResolvedField, value: Value, ctx: ValidateConte
     }
     case 'date':
       if (!isRealDate(v)) return 'Enter a real date, e.g. 24/10/2026';
-      if (ctx.notBeforeToday && v < ctx.today) return PAST_DATE_MESSAGE;
+      if (ctx.eventDate && v < ctx.today) return PAST_DATE_MESSAGE;
+      if (ctx.eventDate && v > yearsAhead(ctx.today, MAX_EVENT_YEARS_AHEAD)) return `Check the year — that’s more than ${MAX_EVENT_YEARS_AHEAD} years away`;
+      if (!ctx.eventDate && (v < '1900-01-01' || v > yearsAhead(ctx.today, MAX_YEARS_AHEAD))) return 'Check the year on that date';
       break;
     case 'time':
-      if (!/^\d{2}:\d{2}/.test(v)) return 'Enter a time, e.g. 4:30 PM';
+      if (!isValidTime(v)) return TIME_MESSAGE;
       break;
     case 'radio':
     case 'select':

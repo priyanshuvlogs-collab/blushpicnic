@@ -9,7 +9,7 @@ import { breadcrumbs } from '../lib/schema';
 
 const s = await getSettings();
 const crumbs = [{ name: 'Book', path: '/book' }];
-const title = 'Book a Picnic, Room Decor or Hamper in Toronto | Blush Picnic';
+const title = 'Book a Picnic, Room Decor or Hamper | Blush Picnic';
 const description = `Request a picnic, room decor or a hamper delivery in Toronto or the GTA. Tell us what you’d like, the date and where; we reply ${s.replyTime} with a quote.`;
 ---
 <BaseLayout {title} {description} jsonLd={[breadcrumbs(s, crumbs)]} hideStickyBar>

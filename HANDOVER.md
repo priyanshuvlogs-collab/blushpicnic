@@ -495,6 +495,8 @@ https://blushpicnic.com/policies once and confirm every line is right.**
 - [ ] **Damage to decor**: confirm the wording (deducted from the $100 security deposit, extra charged).
 - [ ] **Permits**: confirm the wording (the client gets any permit the park or venue needs).
 - [ ] **Alcohol**: your stance (still a placeholder on /policies).
+- [ ] **"By paying your deposit you agree to these policies"** (last line of /policies): we added this line as the usual closing of booking terms — keep it, or tell us to remove it.
+- [ ] **Room decor venues** (draft): the site says "at home, in a hotel or in a rental", and the booking form offers "Hotel room" and "Airbnb or rental". Confirm those are places you decorate, or tell us which to drop.
 - [ ] **Accepted payment methods** (still a placeholder on /policies).
 - [ ] **About page**: your story in your own words (3–4 short paragraphs) and a photo of you (`about.jpg`).
 - [ ] **More real photos**: packages, the other occasions, gallery (home, Birthday and Anniversary are done). Use `npm run photos` (see [Photos](#photos)).

@@ -39,7 +39,7 @@ export function localBusiness(s: Settings, opts: { image?: string; priceRange?: 
     '@id': businessId(s),
     name: s.name,
     description: s.description,
-    url: s.url,
+    url: `${s.url}/`,
     email: s.email,
     telephone: s.phoneE164,
     image: opts.image,
@@ -64,7 +64,7 @@ export function website(s: Settings): Thing {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     '@id': `${s.url}/#website`,
-    url: s.url,
+    url: `${s.url}/`,
     name: s.name,
     publisher: { '@id': businessId(s) },
   };
@@ -138,7 +138,7 @@ export function breadcrumbs(s: Settings, crumbs: { name: string; path: string }[
       '@type': 'ListItem',
       position: i + 1,
       name: c.name,
-      item: `${s.url}${c.path === '/' ? '' : c.path}`,
+      item: c.path === '/' ? `${s.url}/` : `${s.url}${c.path}`,
     })),
   };
 }

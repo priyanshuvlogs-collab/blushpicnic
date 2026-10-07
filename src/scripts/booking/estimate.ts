@@ -95,15 +95,11 @@ export const AREA_UNSURE = 'Not sure yet';
 /** Headline for the "quote" kind (also the short text in the mobile bar). */
 export const QUOTE_HEADLINE = 'We’ll quote this for you';
 
-const fmt = new Intl.NumberFormat('en-CA', {
-  style: 'currency',
-  currency: 'CAD',
-  maximumFractionDigits: 0,
-  minimumFractionDigits: 0,
-});
+const fmt = (digits: number) =>
+  new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: digits, minimumFractionDigits: digits });
 
-/** "$1,200" — same output as money() in src/lib/site.ts. */
-export const money = (n: number) => fmt.format(n).replace('CA', '');
+/** "$1,200" or "$22.50" — same output as money() in src/lib/site.ts and Money::format in PHP. */
+export const money = (n: number) => fmt(Number.isInteger(n) ? 0 : 2).format(n).replace('CA', '');
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 

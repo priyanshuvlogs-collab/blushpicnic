@@ -61,6 +61,8 @@ export interface FormSchema {
     priceFrom: number | null;
     guestsIncluded: number | null;
     guestsMax: number | null;
+    /** "for 2 guests" as written in packages.yaml — the estimate's package line, in the browser and the email */
+    guestsLabel: string | null;
     extraGuestPrice: number | null;
     durationHours: number | null;
   }[];
@@ -113,10 +115,11 @@ export async function buildFormSchema(): Promise<FormSchema> {
       priceFrom: p.data.priceFrom,
       guestsIncluded: p.data.guestsIncluded,
       guestsMax: p.data.guestsMax,
+      guestsLabel: p.data.guestsLabel ?? null,
       extraGuestPrice: p.data.extraGuestPrice,
       durationHours: p.data.durationHours,
     })),
-    { id: NOT_SURE_PACKAGE.id, name: NOT_SURE_PACKAGE.name, priceFrom: null, guestsIncluded: null, guestsMax: null, extraGuestPrice: null, durationHours: null },
+    { id: NOT_SURE_PACKAGE.id, name: NOT_SURE_PACKAGE.name, priceFrom: null, guestsIncluded: null, guestsMax: null, guestsLabel: null, extraGuestPrice: null, durationHours: null },
   ];
   const adds = addons.map((a) => ({ id: a.id, name: a.data.name, price: a.data.price }));
   const svcs = services.map((x) => ({ id: x.id, name: x.data.name, short: x.data.short, dm: x.data.dm, securityDeposit: x.data.securityDeposit }));
@@ -142,6 +145,8 @@ export async function buildFormSchema(): Promise<FormSchema> {
       ...f,
       // the area question explains the travel fee with the owner's own sentence (settings.yaml)
       help: f.help ?? (source === 'areas' ? s.travel.note : undefined),
+      // the letter-board limit lives in settings.yaml; the schema carries it so browser and server agree
+      maxWords: f.id === 'letter_board' ? s.booking.letterBoardMaxWords : f.maxWords,
       required: f.required ?? false,
       options: source ? sources[source] : options?.map((o) => ({ value: o, label: o })),
     })),

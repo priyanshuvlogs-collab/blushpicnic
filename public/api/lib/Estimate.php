@@ -50,7 +50,7 @@ final class Estimate
             $given = $adults + $kids;
             $included = (int) ($pkg['guestsIncluded'] ?? 0);
             $guests = $given > 0 ? $given : $included;
-            $lines[] = [trim($pkg['name'] . ', ' . self::guestsLabel($pkg), ', '), (float) $pkg['priceFrom']];
+            $lines[] = [trim($pkg['name'] . ', ' . (is_string($pkg['guestsLabel'] ?? null) && $pkg['guestsLabel'] !== '' ? $pkg['guestsLabel'] : self::guestsLabel($pkg)), ', '), (float) $pkg['priceFrom']];
 
             $extra = max(0, $guests - $included);
             if ($extra > 0) {

@@ -1199,6 +1199,62 @@ describe('rate limit', () => {
   });
 });
 
+describe('the same request sent twice (a retry after the browser gave up waiting)', () => {
+  before(async () => {
+    rmSync(path.join(TMP_DIR, 'recent-sends.json'), { force: true });
+    await startServer();
+  });
+
+  test('a repeat within minutes answers with the first reference and sends nothing new', async () => {
+    const payload = validPayload('anniversary');
+    const first = await post(payload);
+    assert.equal(first.status, 200, first.text);
+    const before = mailFiles().length;
+    const again = await post(payload);
+    assert.equal(again.status, 200, again.text);
+    assert.equal(again.data.ref, first.data.ref);
+    assert.match(again.data.message, /^Thank you, Priya/);
+    assert.equal(mailFiles().length, before, 'no second business email or confirmation');
+    // The same person changing one answer is a new request, not a repeat.
+    const changed = await post({ ...payload, notes: 'Could we start half an hour later?' });
+    assert.equal(changed.status, 200, changed.text);
+    assert.notEqual(changed.data.ref, first.data.ref);
+    assert.equal(mailFiles().length, before + 2);
+  });
+
+  test('a no-JS repeat (no _ts) is caught the same way', async () => {
+    const payload = validPayload('family');
+    delete payload._ts;
+    const first = await post(payload, { json: false });
+    assert.equal(first.status, 303);
+    const before = mailFiles().length;
+    const again = await post(payload, { json: false });
+    assert.equal(again.status, 303);
+    assert.equal(again.headers.get('location'), first.headers.get('location'));
+    assert.equal(mailFiles().length, before);
+  });
+
+  test('stored data holds hashed keys and references, nothing from the form', () => {
+    const raw = readFileSync(path.join(TMP_DIR, 'recent-sends.json'), 'utf8');
+    assert.ok(!raw.includes(CLIENT.email) && !raw.includes('Priya'));
+    assert.match(raw, /"[0-9a-f]{64}":\[\d+,"BP-/);
+  });
+});
+
+describe('phone numbers with an extension', () => {
+  before(async () => {
+    await startServer();
+  });
+
+  test('"ext 12" / "x12" are accepted, as in the browser', async () => {
+    for (const phone of ['(416) 555-0123 ext 12', '416-555-0123 x12', '+1 416 555 0123 ext. 7']) {
+      const r = await post({ ...validPayload('proposal'), phone });
+      assert.equal(r.status, 200, `${phone}: ${r.text}`);
+      assert.ok(readMail(r.data.ref, 'business').text.includes(phone), 'the extension reaches the business email');
+    }
+  });
+});
+
 describe('rate limit under a burst of parallel requests', () => {
   before(async () => {
     rmSync(path.join(TMP_DIR, 'rate-limit.json'), { force: true });

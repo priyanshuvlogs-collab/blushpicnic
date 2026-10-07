@@ -64,7 +64,7 @@ const onlyIf = (f: ResolvedField): string | undefined => {
   });
   return clauses.length ? `Only ${clauses.join(', and ')}.` : undefined;
 };
-const wordLimit = (f: ResolvedField) => (f.maxWords ? (f.id === 'letter_board' ? schema.letterBoardMaxWords : f.maxWords) : undefined);
+const wordLimit = (f: ResolvedField) => f.maxWords;
 const progressItems = [...schema.steps, 'Review'];
 // A group named like its step ("What you'd like" typed with a straight apostrophe in the YAML, curly in
 // STEP_TITLES) gets no heading of its own.

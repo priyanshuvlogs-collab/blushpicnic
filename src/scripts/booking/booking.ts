@@ -13,7 +13,7 @@ import type { ResolvedField, ResolvedGroup } from '../../lib/form';
 import type { BookingConfig } from './config';
 import { showIfConditions, showIfMatches, lockedValue } from './conditions';
 import { computeEstimate, money, QUOTE_HEADLINE, type Estimate } from './estimate';
-import { validateField, torontoToday, wordCount } from './validate';
+import { validateField, torontoToday, wordCount, yearsAhead, MAX_EVENT_YEARS_AHEAD, MAX_YEARS_AHEAD } from './validate';
 import { loadState, saveState, clearState, saveDone, type BookingState, type Answers } from './storage';
 
 type Val = string | string[];
@@ -33,7 +33,9 @@ type Result =
   | { ok: false; kind: FailureKind; message?: string; errors?: Record<string, string> };
 
 const REVIEW = 5;
-const TIMEOUT_MS = 15_000;
+// Longer than the server's own SMTP budget (Mailer.php: 15 s connect + 30 s send), so a slow mail
+// server can't make the browser give up while the booking still goes through (and get sent twice).
+const TIMEOUT_MS = 50_000;
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const scrollBehavior = (): ScrollBehavior => (reducedMotion() ? ('instant' as ScrollBehavior) : 'smooth');
@@ -285,14 +287,13 @@ export function initBooking(root: HTMLElement): void {
   const hasError = (id: string) => !!wrapOf(id)?.classList.contains('has-error');
   const isChoice = (f: ResolvedField) => ['radio', 'checkboxes', 'toggle', 'select'].includes(f.type);
   const isEventDate = (e: Entry) => e.field.type === 'date' && e.group.step === 2;
-  const wordLimit = (f: ResolvedField) =>
-    f.maxWords ? (f.id === 'letter_board' ? schema.letterBoardMaxWords : f.maxWords) : undefined;
+  const wordLimit = (f: ResolvedField) => f.maxWords;
 
   function check(e: Entry): string | null {
     const server = serverErrors.get(e.field.id);
     if (server) return server;
     const v = readValue(e.field);
-    let msg = validateField(e.field, v, { today, notBeforeToday: isEventDate(e), maxWords: wordLimit(e.field) });
+    let msg = validateField(e.field, v, { today, eventDate: isEventDate(e), maxWords: wordLimit(e.field) });
     if (!msg && e.field.id === 'backup_date' && typeof v === 'string' && v && v === textOf('date'))
       msg = 'Choose a different backup date, or leave it blank';
     return msg;
@@ -422,7 +423,7 @@ export function initBooking(root: HTMLElement): void {
     window.scrollTo({ top: Math.max(0, top + window.scrollY - offset), behavior: scrollBehavior() });
   }
 
-  function showStep(n: number, opts: { focus?: boolean; scroll?: boolean } = {}) {
+  function showStep(n: number, opts: { focus?: boolean; scroll?: boolean; track?: boolean } = {}) {
     current = Math.min(Math.max(1, n), REVIEW);
     state.maxStep = Math.max(state.maxStep, current);
     stepEls.forEach((el, i) => {
@@ -434,7 +435,8 @@ export function initBooking(root: HTMLElement): void {
     updateNav();
     if (opts.scroll) scrollToCard();
     if (opts.focus) stepEls.get(current)?.querySelector<HTMLElement>('[data-step-heading]')?.focus({ preventScroll: true });
-    track('booking_step', { step: current, step_name: stepName(current) });
+    // Counted once per step reached, going forward — not on page load, Back, or a server error re-showing a step.
+    if (opts.track) track('booking_step', { step: current, step_name: stepName(current) });
     persist();
   }
 
@@ -471,7 +473,7 @@ export function initBooking(root: HTMLElement): void {
       return;
     }
     if (current === STEPS || state.maxStep === REVIEW) advanceTo(REVIEW);
-    else showStep(current + 1, { focus: true, scroll: true });
+    else showStep(current + 1, { focus: true, scroll: true, track: true });
   }
 
   /** Move forward several steps (Review, progress bar), stopping at the first step that needs answers. */
@@ -485,7 +487,7 @@ export function initBooking(root: HTMLElement): void {
         return false;
       }
     }
-    showStep(target, { focus: true, scroll: true });
+    showStep(target, { focus: true, scroll: true, track: true });
     return true;
   }
 
@@ -730,7 +732,7 @@ export function initBooking(root: HTMLElement): void {
     const bodies: Record<FailureKind, string> = {
       network: 'It looks like the connection dropped.',
       timeout: 'We didn’t hear back from our booking inbox in time.',
-      rate: 'Please wait a minute before trying again.',
+      rate: message || 'Please wait a while before trying again, or text us.',
       server: 'Your request didn’t go through.',
       rejected: message || 'Your request didn’t go through.',
       invalid: message || 'Some answers couldn’t be accepted.',
@@ -865,9 +867,10 @@ export function initBooking(root: HTMLElement): void {
     const service = textOf('service');
     const pkgEntry = entries.get('package');
     const pkg = pkgEntry && applies(pkgEntry) ? textOf('package') : '';
-    saveDone({ firstName: textOf('name').split(/\s+/)[0] ?? '', occasion: occ?.id ?? '', occasionName: occ?.name, service, ref });
+    // booking_submit is sent by /thank-you (storage.ts DoneInfo.track): firing it here, right before
+    // navigating away, lets the browser cancel the analytics request with the page.
+    saveDone({ firstName: textOf('name').split(/\s+/)[0] ?? '', occasion: occ?.id ?? '', occasionName: occ?.name, service, ref, track: { service, occasion: occ?.id ?? '', package: pkg } });
     clearState();
-    track('booking_submit', { service, occasion: occ?.id ?? '', package: pkg });
     primaryLabel!.textContent = 'Sent';
     announce('Request sent. Taking you to the confirmation page…');
     window.location.assign(cfg.thankYouUrl);
@@ -1036,8 +1039,14 @@ export function initBooking(root: HTMLElement): void {
     state.query = location.search;
     if (applied) state.step = 1;
   }
-  // 3. Event dates can't be in the past (Toronto time).
-  for (const e of entries.values()) if (isEventDate(e)) controlsOf(e.field.id).forEach((c) => ((c as HTMLInputElement).min = today));
+  // 3. Event dates can't be in the past (Toronto time) or unreasonably far ahead; the same limits as the server.
+  for (const e of entries.values())
+    if (e.field.type === 'date')
+      controlsOf(e.field.id).forEach((c) => {
+        const input = c as HTMLInputElement;
+        if (isEventDate(e)) input.min = today;
+        input.max = yearsAhead(today, isEventDate(e) ? MAX_EVENT_YEARS_AHEAD : MAX_YEARS_AHEAD);
+      });
 
   // 4. Switch to the step-by-step layout.
   form.noValidate = true;

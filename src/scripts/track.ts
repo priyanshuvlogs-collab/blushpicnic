@@ -1,8 +1,9 @@
 // Event tracking facade. Pages and components call window.bpTrack() or use data-track
 // attributes; the analytics loader (consent-gated) decides whether anything is sent.
 //
-// Events: booking_start, booking_step {step}, booking_submit, click_call, click_text,
-//         click_instagram, package_select {package}, booking_cta {location}
+// Events: booking_start, booking_step {step}, service_select {service}, booking_submit, click_call,
+//         click_text, click_instagram, click_tiktok, package_select {package}, booking_cta {location},
+//         link_click {link}
 
 type Params = Record<string, string | number | boolean | undefined>;
 

@@ -29,6 +29,8 @@ export interface DoneInfo {
   /** service id (services.yaml), so /thank-you can speak of a hamper or room decor, not a picnic */
   service?: string;
   ref?: string;
+  /** booking_submit params still to be sent (by /thank-you); removed once sent. */
+  track?: { service: string; occasion: string; package: string };
 }
 
 function read<T>(key: string): T | null {
