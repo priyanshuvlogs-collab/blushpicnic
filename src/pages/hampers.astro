@@ -8,10 +8,12 @@ import ArchImage from '../components/ArchImage.astro';
 import CtaBand from '../components/CtaBand.astro';
 import Icon from '../components/Icon.astro';
 import PhotoNote from '../components/PhotoNote.astro';
+import FaqList from '../components/FaqList.astro';
+import HowItWorks from '../components/HowItWorks.astro';
 import { Picture } from 'astro:assets';
 import { isStandIn } from '../components/photoNote';
-import { getSettings, getServices, bookUrl, igDmUrl, smsUrl, telUrl } from '../lib/site';
-import { breadcrumbs, genericService } from '../lib/schema';
+import { getSettings, getServices, getFaqs, bookUrl, igDmUrl, smsUrl, telUrl } from '../lib/site';
+import { breadcrumbs, genericService, faqPage } from '../lib/schema';
 
 const s = await getSettings();
 const services = await getServices();
@@ -22,6 +24,26 @@ const b = birthday.data;
 const c = custom.data;
 const birthdayHref = bookUrl({ service: birthday.id });
 const customHref = bookUrl({ service: custom.id });
+
+// What the booking form asks for a hamper (booking-form.yaml), so the sender can have it ready.
+const tell = [
+  { icon: 'heart', title: 'Who it’s for', text: 'Their name, what they love and the occasion. For a custom hamper, describe your vision — a photo you’ve saved, a colour, a theme.' },
+  { icon: 'clock', title: 'When it should arrive', text: 'At midnight or during the day, with your preferred date and a backup date.' },
+  { icon: 'map-pin', title: 'Where', text: `The delivery address, anywhere in ${s.serviceArea}. The area sets the travel fee, which we confirm with your quote.` },
+  { icon: 'message', title: 'The card', text: 'Your message for the card, written exactly as you’d like it to read.' },
+] as const;
+
+// Three steps from request to doorstep. No deposit sentence here: a hamper has no rented decor, so no
+// security deposit (services.yaml securityDeposit: false); what a hamper costs is quoted each time.
+const steps = [
+  { title: 'Send a request or a DM', text: 'Tell us who it’s for, what they love, the date, the delivery time and the address — about three minutes in the booking form, or a message on Instagram with your vision.' },
+  { title: `We reply ${s.replyTime} with your quote`, text: 'We tell you what we’d put together for them and what it costs, before HST, with the travel fee for the area. Say yes and your delivery is set.' },
+  { title: 'It arrives at the door', text: 'At midnight or during the day, whichever you chose, at the address you gave us — with your card message inside.' },
+];
+
+const FAQ_IDS = ['birthday-hampers', 'custom-hampers', 'hamper-message', 'hamper-where', 'hamper-deposit', 'travel-fee'];
+const faqAll = await getFaqs();
+const faqs = FAQ_IDS.map((id) => faqAll.find((f) => f.id === id)).filter((f): f is NonNullable<typeof f> => Boolean(f)).map((f) => ({ q: f.data.question, a: f.data.answer }));
 
 const crumbs = [
   { name: 'Services', path: '/services' },
@@ -34,6 +56,7 @@ const jsonLd = [
   breadcrumbs(s, crumbs),
   genericService(s, { name: `${b.name} in Toronto`, description: b.summary, url: `${s.url}/hampers#birthday` }),
   genericService(s, { name: `${c.name} in Toronto`, description: c.summary, url: `${s.url}/hampers#custom` }),
+  faqPage(faqs),
 ];
 const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
 ---
@@ -131,6 +154,28 @@ const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
     </div>
   </section>
 
+  <section id="tell-us" aria-labelledby="tell-title" class="section-y scroll-mt-20 border-t border-line bg-cream">
+    <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <h2 id="tell-title">What to tell us</h2>
+        <p class="mt-4 max-w-md text-plum-soft">Four things, and we can put the hamper together around them.</p>
+      </div>
+      <ol class="grid gap-6 sm:grid-cols-2 lg:col-span-7" role="list">
+        {tell.map((t) => (
+          <li class="flex gap-3.5">
+            <span class="mt-0.5 grid size-10 shrink-0 place-items-center rounded-full bg-petal text-sage-ink"><Icon name={t.icon} size={20} /></span>
+            <div>
+              <h3 class="heading-sm">{t.title}</h3>
+              <p class="mt-1.5 text-plum-soft">{t.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <HowItWorks title="How hamper delivery works" {steps} />
+
   <section id="pricing" aria-labelledby="pricing-title" class="section-y scroll-mt-20 border-t border-line bg-cream">
     <div class="container-x grid gap-x-14 gap-y-6 lg:grid-cols-12">
       <h2 id="pricing-title" class="lg:col-span-5">How it’s priced</h2>
@@ -144,6 +189,21 @@ const widths = [360, 540, 720, 960].filter((w) => w <= c.image.width);
       </div>
     </div>
   </section>
+
+  {faqs.length > 0 && (
+    <section aria-labelledby="faq-title" class="section-y">
+      <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
+        <div class="lg:col-span-5">
+          <h2 id="faq-title">Hamper questions</h2>
+          <p class="mt-4 max-w-md text-plum-soft">The ones we’re asked most. Anything else? Text us — we reply {s.replyTime}.</p>
+          <a href="/faq" class="link-arrow mt-5">All questions<Icon name="arrow-right" size={18} /></a>
+        </div>
+        <div class="lg:col-span-7">
+          <FaqList items={faqs} />
+        </div>
+      </div>
+    </section>
+  )}
 
   <CtaBand
     title="Sending a hamper?"

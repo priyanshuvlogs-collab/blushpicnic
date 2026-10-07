@@ -9,9 +9,10 @@ import CtaBand from '../components/CtaBand.astro';
 import HowItWorks from '../components/HowItWorks.astro';
 import Icon from '../components/Icon.astro';
 import PhotoNote from '../components/PhotoNote.astro';
+import FaqList from '../components/FaqList.astro';
 import { isStandIn } from '../components/photoNote';
-import { getSettings, getServices, getAddons, getOccasions, money, bookUrl, occasionUrl, smsUrl, telUrl, type Occasion } from '../lib/site';
-import { breadcrumbs, genericService } from '../lib/schema';
+import { getSettings, getServices, getAddons, getOccasions, getFaqs, money, bookUrl, occasionUrl, smsUrl, telUrl, type Occasion } from '../lib/site';
+import { breadcrumbs, genericService, faqPage } from '../lib/schema';
 
 const s = await getSettings();
 const svc = (await getServices()).find((x) => x.id === 'room-decor');
@@ -30,6 +31,19 @@ const byId = new Map((await getOccasions()).map((o) => [o.id, o]));
 const suits = SUITS.map((id) => byId.get(id)).filter((o): o is Occasion => Boolean(o));
 
 const bookHref = bookUrl({ service: svc.id });
+
+// What the booking form asks for room decor (booking-form.yaml), so visitors can have it ready.
+const tell = [
+  { icon: 'map-pin', title: 'The room', text: 'At home, a hotel room, an Airbnb or rental, or somewhere else — and its address, which we only use to plan the setup.' },
+  { icon: 'calendar', title: 'The date and time', text: 'Your preferred date, a backup date, and the time you’d like the room ready.' },
+  { icon: 'sparkle', title: 'Colours, vibe and words', text: `The colours and feeling you’re after, your message for the letter board or sign (up to ${s.booking.letterBoardMaxWords} words), and any add-ons you’d like priced.` },
+  { icon: 'heart', title: 'Who it’s for', text: 'If it’s a surprise: who’s being surprised, who else knows, how they’ll arrive, and whether our team should stay hidden nearby or leave before they walk in.' },
+] as const;
+
+// The questions that come up about room decor (faqs.yaml), in this order.
+const FAQ_IDS = ['room-decor', 'room-decor-what', 'room-decor-surprise', 'room-decor-security', 'travel-fee', 'balance'];
+const faqAll = await getFaqs();
+const faqs = FAQ_IDS.map((id) => faqAll.find((f) => f.id === id)).filter((f): f is NonNullable<typeof f> => Boolean(f)).map((f) => ({ q: f.data.question, a: f.data.answer }));
 const steps = [
   {
     title: 'Send a request',
@@ -55,6 +69,7 @@ const standIn = isStandIn(d.image, d.imageAlt);
 const jsonLd = [
   breadcrumbs(s, crumbs),
   genericService(s, { name: `${d.name} in Toronto`, description: d.summary, url: `${s.url}/room-decor` }),
+  faqPage(faqs),
 ];
 ---
 <BaseLayout {title} {description} {jsonLd} image={standIn ? undefined : d.image} imageAlt={standIn ? undefined : d.imageAlt} book={{ service: svc.id, label: 'Plan your room decor' }}>
@@ -122,8 +137,28 @@ const jsonLd = [
     </div>
   </section>
 
+  <section id="tell-us" aria-labelledby="tell-title" class="section-y scroll-mt-20">
+    <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <h2 id="tell-title">What to tell us</h2>
+        <p class="mt-4 max-w-md text-plum-soft">The booking form asks for these in about three minutes. Have them in mind and your quote comes back right the first time.</p>
+      </div>
+      <ol class="grid gap-6 sm:grid-cols-2 lg:col-span-7" role="list">
+        {tell.map((t) => (
+          <li class="flex gap-3.5">
+            <span class="mt-0.5 grid size-10 shrink-0 place-items-center rounded-full bg-cream text-sage-ink"><Icon name={t.icon} size={20} /></span>
+            <div>
+              <h3 class="heading-sm">{t.title}</h3>
+              <p class="mt-1.5 text-plum-soft">{t.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
   {suits.length > 0 && (
-    <section aria-labelledby="suits-title" class="section-y">
+    <section aria-labelledby="suits-title" class="section-y bg-cream">
       <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
         <div class="lg:col-span-5">
           <h2 id="suits-title">Occasions it suits</h2>
@@ -145,11 +180,9 @@ const jsonLd = [
     </section>
   )}
 
-  <div class="bg-cream">
-    <HowItWorks title="How room decor works" {steps} />
-  </div>
+  <HowItWorks title="How room decor works" {steps} />
 
-  <section id="pricing" aria-labelledby="pricing-title" class="section-y scroll-mt-20">
+  <section id="pricing" aria-labelledby="pricing-title" class="section-y scroll-mt-20 bg-cream">
     <div class="container-x grid gap-x-14 gap-y-6 lg:grid-cols-12">
       <h2 id="pricing-title" class="lg:col-span-5">How it’s priced</h2>
       <div class="lg:col-span-7">
@@ -163,6 +196,21 @@ const jsonLd = [
       </div>
     </div>
   </section>
+
+  {faqs.length > 0 && (
+    <section aria-labelledby="faq-title" class="section-y">
+      <div class="container-x grid gap-x-14 gap-y-8 lg:grid-cols-12">
+        <div class="lg:col-span-5">
+          <h2 id="faq-title">Room decor questions</h2>
+          <p class="mt-4 max-w-md text-plum-soft">The ones we’re asked most. Anything else? Text us — we reply {s.replyTime}.</p>
+          <a href="/faq" class="link-arrow mt-5">All questions<Icon name="arrow-right" size={18} /></a>
+        </div>
+        <div class="lg:col-span-7">
+          <FaqList items={faqs} />
+        </div>
+      </div>
+    </section>
+  )}
 
   <CtaBand
     title="Your room, styled and waiting"
