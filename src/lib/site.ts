@@ -73,6 +73,16 @@ export async function getOccasions() {
   });
 }
 
+export async function getGuides() {
+  const maps = await getTokenMaps();
+  return (await getCollection('guides'))
+    .sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf())
+    .map((g) => {
+      warnLiteralPrices(`src/content/guides/${g.id}.md`, JSON.stringify(g.data) + (g.body ?? ''));
+      return { ...g, data: { ...fillDeep(g.data, maps), published: g.data.published, updated: g.data.updated } }; // fillDeep would flatten the Dates
+    });
+}
+
 export async function getFaqs() {
   const maps = await getTokenMaps();
   return (await getCollection('faqs')).sort(byOrder).map((f) => {

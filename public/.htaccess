@@ -100,6 +100,11 @@ ErrorDocument 403 /404.html
   RewriteCond %{THE_REQUEST} ^[A-Z]+\s/+([^?\s]*[^/?\s])/+(?:[?\s])
   RewriteRule ^ /%1 [R=301,L,NE]
 
+  # 9b. /guides is served from guides.html even though a guides/ folder exists (the folder holds the
+  #     guide pages, so the clean-URL step below, which skips folders, would miss it).
+  RewriteRule ^guides$ guides.html [L]
+  RewriteRule ^guides/$ /guides [R=301,L]
+
   # 9a. /404 is the error page, not a page of its own: asking for it directly answers 404 (no soft 404).
   RewriteRule ^404$ - [R=404,L]
 

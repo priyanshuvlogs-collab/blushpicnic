@@ -256,6 +256,22 @@ const pages = defineCollection({
   }),
 });
 
+// Guides: long-form helpful articles at /guides (one Markdown file each; tokens like {price:simple} are filled at build).
+const guides = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/guides' }),
+  schema: z.object({
+    title: z.string(), // short title for cards and breadcrumbs
+    metaTitle: z.string().max(65),
+    metaDescription: z.string().min(70).max(220), // ≤160 after {tokens} are filled
+    h1: z.string(),
+    lede: z.string(),
+    published: z.coerce.date(),
+    updated: z.coerce.date().optional(),
+    faqs: z.array(z.object({ q: z.string(), a: z.string() })).min(3),
+    related: z.array(z.object({ label: z.string(), href: z.string().startsWith('/') })).default([]),
+  }),
+});
+
 // Booking form questions (conditional per occasion). Also exported as /api/form-schema.json so the
 // PHP handler validates exactly the same fields the browser shows.
 const showIfCondition = z
@@ -305,4 +321,4 @@ const formGroups = defineCollection({
   }),
 });
 
-export const collections = { settings, packages, addons, styles, services, occasions, faqs, gallery, reviews, pages, formGroups };
+export const collections = { settings, packages, addons, styles, services, occasions, faqs, gallery, reviews, pages, guides, formGroups };

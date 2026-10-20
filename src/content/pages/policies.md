@@ -79,7 +79,7 @@ Party poppers, confetti, glitter and similar items aren't permitted in public pa
 
 <h2 id="permits">Park permits</h2>
 
-If your chosen park or venue requires a permit, you're responsible for getting it. Rules differ between parks and cities across the GTA, so tell us your spot in the booking form — or choose “Not sure yet” and we'll suggest one.
+If your chosen park or venue requires a permit, you're responsible for getting it. Rules differ between parks and cities across the GTA, so tell us your spot in the booking form — or choose “Not sure yet” and we'll suggest one. Not sure whether you need a permit? Read our [guide to picnic permits in Toronto parks](/guides/picnic-permit-toronto-parks).
 
 <h2 id="agreement">Agreeing to these policies</h2>
 

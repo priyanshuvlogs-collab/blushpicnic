@@ -1,0 +1,68 @@
+---
+// One page per guide, generated from src/content/guides/*.md (URL /guides/<file name>).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import FaqList from '../../components/FaqList.astro';
+import Prose from '../../components/pages/Prose.astro';
+import { getSettings, getGuides } from '../../lib/site';
+import { breadcrumbs, faqPage, businessRef } from '../../lib/schema';
+import { fillTokensHtml } from '../../lib/tokens';
+
+export async function getStaticPaths() {
+  const guides = await getGuides();
+  return guides.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const s = await getSettings();
+const html = await fillTokensHtml(entry.rendered?.html ?? '');
+const path = `/guides/${entry.id}`;
+const crumbs = [
+  { name: 'Guides', path: '/guides' },
+  { name: d.title, path },
+];
+const article = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: d.h1,
+  description: d.metaDescription,
+  mainEntityOfPage: `${s.url}${path}`,
+  datePublished: d.published.toISOString().slice(0, 10),
+  dateModified: (d.updated ?? d.published).toISOString().slice(0, 10),
+  author: { '@type': 'Organization', name: s.name },
+  publisher: businessRef(s),
+};
+const jsonLd = [article, faqPage(d.faqs), breadcrumbs(s, crumbs)];
+const fmt = (x: Date) => x.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+---
+<BaseLayout title={d.metaTitle} description={d.metaDescription} {jsonLd}>
+  <section aria-labelledby="page-title" class="container-x pt-3 md:pt-5">
+    <Breadcrumbs crumbs={crumbs} />
+    <div class="mt-6 pb-10 md:mt-10 md:pb-12">
+      <h1 id="page-title" class="hero-enter max-w-[22ch]">{d.h1}</h1>
+      <p class="mt-6 max-w-[40rem] text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">{d.lede}</p>
+      <p class="mt-4 text-sm text-plum-soft">By {s.name} · Updated {fmt(d.updated ?? d.published)}</p>
+    </div>
+  </section>
+
+  <section class="container-x border-t border-line py-12 md:py-16">
+    <div class="max-w-3xl">
+      <Prose {html} />
+
+      <h2 class="mt-14 text-[1.9rem] md:text-[2.4rem]">Frequently asked questions</h2>
+      <FaqList items={d.faqs} headingLevel="h3" class="mt-5" />
+
+      <h2 class="mt-14 text-[1.5rem] md:text-[1.9rem]">Related guides and pages</h2>
+      <ul class="mt-3 space-y-1">
+        <li><a href="/guides" class="inline-flex min-h-11 items-center underline underline-offset-4">All picnic guides</a></li>
+        {d.related.map((r) => (
+          <li><a href={r.href} class="inline-flex min-h-11 items-center underline underline-offset-4">{r.label}</a></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>

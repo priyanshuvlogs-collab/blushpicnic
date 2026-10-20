@@ -1,0 +1,42 @@
+---
+// /guides — index of the helpful articles in src/content/guides/*.md, newest first.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { getSettings, getGuides } from '../lib/site';
+import { breadcrumbs } from '../lib/schema';
+
+const s = await getSettings();
+const guides = await getGuides();
+const crumbs = [{ name: 'Guides', path: '/guides' }];
+const title = 'Picnic Planning Guides | Toronto & GTA | Blush Picnic';
+const description = `Practical guides for planning a luxury picnic, proposal or celebration in ${s.serviceArea}: park rules, permits, setups and what to ask before you book.`;
+const fmt = (d: Date) => d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+---
+<BaseLayout {title} {description} jsonLd={[breadcrumbs(s, crumbs)]}>
+  <section aria-labelledby="page-title" class="container-x pt-3 md:pt-5">
+    <Breadcrumbs crumbs={crumbs} />
+    <div class="mt-6 pb-10 md:mt-10 md:pb-14">
+      <h1 id="page-title" class="hero-enter max-w-[16ch]">Picnic planning guides</h1>
+      <p class="mt-6 max-w-[38rem] text-lg text-plum-soft md:text-[1.2rem] md:leading-relaxed">
+        Straight answers for planning a picnic, proposal or celebration in {s.serviceArea}.
+      </p>
+    </div>
+  </section>
+
+  <section class="container-x border-t border-line pb-12 pt-10 md:pb-16" aria-label="All guides">
+    <ul class="grid gap-8 md:max-w-3xl">
+      {guides.map((g) => (
+        <li class="border-b border-line pb-8">
+          <h2 class="text-[1.6rem] md:text-[2rem]"><a href={`/guides/${g.id}`} class="no-underline hover:underline">{g.data.title}</a></h2>
+          <p class="mt-2 text-plum-soft">{g.data.lede}</p>
+          <p class="mt-2 text-sm text-plum-soft">{fmt(g.data.updated ?? g.data.published)}</p>
+          <a href={`/guides/${g.id}`} class="link-arrow mt-2">Read the guide<Icon name="arrow-right" size={18} /></a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
